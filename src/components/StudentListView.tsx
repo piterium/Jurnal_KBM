@@ -1,29 +1,26 @@
-import React, { useState, useMemo } from 'react';
-import { Student, ClassRoom, AttendanceRecord, AssessmentItem } from '../types';
+import React, { useState, useMemo, useRef } from 'react';
+import { Student, ClassRoom, AttendanceRecord, AssessmentItem, SchoolProfile } from '../types';
 import {
   Users,
   Search,
-  Filter,
   UploadCloud,
-  UserPlus,
   Edit2,
   Trash2,
   Download,
   CheckCircle2,
   XCircle,
-  GraduationCap,
-  CalendarCheck,
-  Layers,
-  Sparkles,
-  Hash,
+  Plus,
+  X,
 } from 'lucide-react';
-import { calculateStudentAttendanceSummary, calculateStudentFinalGrade } from '../utils/storage';
 
 interface StudentListViewProps {
   students: Student[];
   classes: ClassRoom[];
   attendances: AttendanceRecord[];
   assessments: AssessmentItem[];
+  profile?: SchoolProfile;
+  onSaveClass?: (cls: ClassRoom) => void;
+  onSaveStudent?: (student: Student) => void;
   onAddStudent: () => void;
   onEditStudent: (student: Student) => void;
   onDeleteStudent: (studentId: string) => void;
@@ -35,8 +32,9 @@ interface StudentListViewProps {
 export const StudentListView: React.FC<StudentListViewProps> = ({
   students,
   classes,
-  attendances,
-  assessments,
+  profile,
+  onSaveClass,
+  onSaveStudent,
   onAddStudent,
   onEditStudent,
   onDeleteStudent,
@@ -44,13 +42,30 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
   selectedClassId: controlledClassId,
   onSelectClassId,
 }) => {
-  const [internalClassId, setInternalClassId] = useState<string>('ALL');
+  // If controlledClassId is provided and not empty, use it. Otherwise internal state
+  const [internalClassId, setInternalClassId] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [genderFilter, setGenderFilter] = useState<'ALL' | 'L' | 'P'>('ALL');
-  const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
-  const [sortBy, setSortBy] = useState<'ABSEN' | 'NAME' | 'NISN'>('ABSEN');
+  const formRef = useRef<HTMLDivElement>(null);
+
+  // Form State for quick inline creation / editing matching the user requirement
+  const [editingStudentId, setEditingStudentId] = useState<string | null>(null);
+  const [formAttendanceNo, setFormAttendanceNo] = useState<string>('');
+  const [formNisn, setFormNisn] = useState<string>('');
+  const [formName, setFormName] = useState<string>('');
+  const [formClassName, setFormClassName] = useState<string>('');
+  const [formGender, setFormGender] = useState<'L' | 'P'>('L');
 
   const activeClassId = controlledClassId !== undefined ? controlledClassId : internalClassId;
+
+  // Sync initial or selected class into manual input field if user has selected a specific class
+  React.useEffect(() => {
+    if (activeClassId && activeClassId !== 'ALL') {
+      const cls = classes.find((c) => c.id === activeClassId);
+      if (cls && !editingStudentId) {
+        setFormClassName(cls.name);
+      }
+    }
+  }, [activeClassId, classes, editingStudentId]);
 
   const handleClassChange = (newClassId: string) => {
     if (onSelectClassId) {
@@ -60,463 +75,495 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
     }
   };
 
+  const handleStartEdit = (std: Student) => {
+    setEditingStudentId(std.id);
+    setFormAttendanceNo(std.attendanceNo !== undefined ? String(std.attendanceNo) : '');
+    setFormNisn(std.nisn || '');
+    setFormName(std.name || '');
+    const stdClass = classes.find((c) => c.id === std.classId);
+    setFormClassName(stdClass ? stdClass.name : '');
+    setFormGender(std.gender || 'L');
+
+    // Scroll smoothly to form
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingStudentId(null);
+    setFormAttendanceNo('');
+    setFormNisn('');
+    setFormName('');
+    if (activeClassId && activeClassId !== 'ALL') {
+      const cls = classes.find((c) => c.id === activeClassId);
+      setFormClassName(cls?.name || '');
+    } else {
+      setFormClassName('');
+    }
+    setFormGender('L');
+  };
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formName.trim()) {
+      alert('Silakan masukkan Nama Lengkap siswa.');
+      return;
+    }
+    if (!formClassName.trim()) {
+      alert('Silakan masukkan Kelas (contoh: VII A).');
+      return;
+    }
+
+    const trimmedClassName = formClassName.trim();
+    let targetClass = classes.find(
+      (c) => c.name.trim().toLowerCase() === trimmedClassName.toLowerCase()
+    );
+
+    let targetClassId = targetClass?.id;
+
+    // If the typed class does not exist yet, auto-create the class room
+    if (!targetClass) {
+      const newClassId = `cls_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+      const newClass: ClassRoom = {
+        id: newClassId,
+        name: trimmedClassName,
+        gradeLevel: trimmedClassName.replace(/[^0-9]/g, '') || 'VII',
+        subject: profile?.subject || 'Mata Pelajaran',
+        academicYear: profile?.academicYear || '2024/2025',
+        kkm: 75,
+      };
+      if (onSaveClass) {
+        onSaveClass(newClass);
+      }
+      targetClassId = newClassId;
+    }
+
+    const parsedAttendanceNo = formAttendanceNo.trim()
+      ? isNaN(Number(formAttendanceNo.trim()))
+        ? formAttendanceNo.trim()
+        : parseInt(formAttendanceNo.trim(), 10)
+      : undefined;
+
+    const studentData: Student = {
+      id: editingStudentId || `std_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      attendanceNo: parsedAttendanceNo,
+      nisn: formNisn.trim() || '-',
+      name: formName.trim(),
+      gender: formGender,
+      classId: targetClassId!,
+      active: true,
+    };
+
+    if (onSaveStudent) {
+      onSaveStudent(studentData);
+    } else {
+      onEditStudent(studentData);
+    }
+
+    // Reset form
+    handleCancelEdit();
+  };
+
+  const handleDownloadTemplate = () => {
+    const targetCls = classes.find((c) => c.id === activeClassId) || classes[0];
+    const classNameStr = targetCls?.name || 'VII A';
+    const csvContent =
+      'data:text/csv;charset=utf-8,' +
+      'No Absen,NISN,Nama Lengkap,Jenis Kelamin (L/P),Kelas\n' +
+      `1,0098765401,Ahmad Rizky Pratama,L,${classNameStr}\n` +
+      `2,0098765402,Annisa Rahmawati,P,${classNameStr}\n` +
+      `3,0098765403,Bagas Dwi Santoso,L,${classNameStr}\n` +
+      `4,0098765404,Cantika Putri Permata,P,${classNameStr}\n` +
+      `5,0098765405,Daffa Arya Maulana,L,${classNameStr}`;
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `template_siswa_${classNameStr.replace(/\s+/g, '_')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const filteredStudents = useMemo(() => {
+    // If no class is selected and no search query, return empty list (to trigger empty state matching screenshot)
+    if (!activeClassId && !searchQuery.trim()) {
+      return [];
+    }
+
     const list = students.filter((std) => {
       // Class filter
-      if (activeClassId !== 'ALL' && std.classId !== activeClassId) {
+      if (activeClassId && activeClassId !== 'ALL' && std.classId !== activeClassId) {
         return false;
       }
-      // Gender filter
-      if (genderFilter !== 'ALL' && std.gender !== genderFilter) {
-        return false;
-      }
-      // Status filter
-      if (statusFilter === 'ACTIVE' && !std.active) return false;
-      if (statusFilter === 'INACTIVE' && std.active) return false;
       // Search query
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase();
         const matchName = std.name.toLowerCase().includes(query);
         const matchNisn = std.nisn.toLowerCase().includes(query);
-        const matchAbsen = std.attendanceNo !== undefined && String(std.attendanceNo).includes(query);
+        const matchAbsen =
+          std.attendanceNo !== undefined && String(std.attendanceNo).includes(query);
         return matchName || matchNisn || matchAbsen;
       }
       return true;
     });
 
     return list.sort((a, b) => {
-      if (sortBy === 'ABSEN') {
-        const numA = a.attendanceNo !== undefined && a.attendanceNo !== '' ? Number(a.attendanceNo) : 9999;
-        const numB = b.attendanceNo !== undefined && b.attendanceNo !== '' ? Number(b.attendanceNo) : 9999;
-        if (numA !== numB) return numA - numB;
-        return a.name.localeCompare(b.name);
-      } else if (sortBy === 'NAME') {
-        return a.name.localeCompare(b.name);
-      } else {
-        return a.nisn.localeCompare(b.nisn);
-      }
+      const numA =
+        a.attendanceNo !== undefined && a.attendanceNo !== ''
+          ? Number(a.attendanceNo)
+          : 9999;
+      const numB =
+        b.attendanceNo !== undefined && b.attendanceNo !== ''
+          ? Number(b.attendanceNo)
+          : 9999;
+      if (numA !== numB) return numA - numB;
+      return a.name.localeCompare(b.name);
     });
-  }, [students, activeClassId, genderFilter, statusFilter, searchQuery, sortBy]);
-
-  // Statistics
-  const totalStudents = students.length;
-  const activeStudents = students.filter((s) => s.active).length;
-  const lCount = students.filter((s) => s.gender === 'L' && s.active).length;
-  const pCount = students.filter((s) => s.gender === 'P' && s.active).length;
+  }, [students, activeClassId, searchQuery]);
 
   const currentClass = classes.find((c) => c.id === activeClassId);
 
-  const handleExportCsv = () => {
-    const headers = 'No,No Absen,NISN,Nama Lengkap,Jenis Kelamin,Kelas,Status\n';
-    const rows = filteredStudents
-      .map((std, idx) => {
-        const cls = classes.find((c) => c.id === std.classId)?.name || '-';
-        return `${idx + 1},"${std.attendanceNo || idx + 1}","${std.nisn || '-'}","${std.name}","${
-          std.gender === 'L' ? 'Laki-laki' : 'Perempuan'
-        }","${cls}","${std.active ? 'Aktif' : 'Non-Aktif'}"`;
-      })
-      .join('\n');
-
-    const blob = new Blob([headers + rows], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute(
-      'download',
-      `daftar_siswa_${activeClassId === 'ALL' ? 'semua_kelas' : currentClass?.name || 'kelas'}.csv`
-    );
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   return (
     <div className="space-y-6">
-      {/* Header & Main Actions */}
+      {/* 1. Header with Title & Action Buttons (Matching Screenshot) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-wide">
-              Daftar Siswa & Rombel
-            </h2>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">
-              {filteredStudents.length} Siswa
-            </span>
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <Users className="w-5 h-5" />
           </div>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Kelola pangkalan data peserta didik, nomor absen, mutasi, dan impor berkas siswa per rombongan belajar
-          </p>
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white tracking-tight">
+              Kelola Master Data Siswa
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+              Kelola daftar seluruh siswa, NISN, dan kelas untuk administrasi guru.
+            </p>
+          </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2.5">
+        {/* Action Buttons: Download Template & Import Excel */}
+        <div className="flex items-center gap-3">
           <button
-            id="btn-upload-students-modal"
-            onClick={() => onOpenUploadModal(activeClassId !== 'ALL' ? activeClassId : classes[0]?.id)}
-            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-lg shadow-blue-600/20 transition-all active:scale-95 cursor-pointer"
+            id="btn-download-template-csv"
+            type="button"
+            onClick={handleDownloadTemplate}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#1E293B] hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold shadow-xs transition-colors cursor-pointer"
+          >
+            <Download className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+            <span>Download Template</span>
+          </button>
+
+          <button
+            id="btn-import-excel-modal"
+            type="button"
+            onClick={() =>
+              onOpenUploadModal(activeClassId && activeClassId !== 'ALL' ? activeClassId : classes[0]?.id)
+            }
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-semibold shadow-md shadow-blue-600/20 transition-all active:scale-95 cursor-pointer"
           >
             <UploadCloud className="w-4 h-4 text-white" />
-            <span>Unggah Siswa Per Kelas</span>
-          </button>
-
-          <button
-            id="btn-add-single-student"
-            onClick={onAddStudent}
-            className="inline-flex items-center gap-2 bg-[#1E293B] hover:bg-slate-700 text-white px-3.5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm border border-slate-700 transition-all active:scale-95 cursor-pointer"
-          >
-            <UserPlus className="w-4 h-4 text-blue-400" />
-            <span>Tambah Siswa</span>
-          </button>
-
-          <button
-            onClick={handleExportCsv}
-            className="inline-flex items-center gap-2 bg-[#1E293B]/70 hover:bg-slate-700 text-slate-300 hover:text-white px-3.5 py-2.5 rounded-xl font-medium text-xs sm:text-sm border border-slate-700 transition-colors cursor-pointer"
-            title="Ekspor Data ke Format CSV"
-          >
-            <Download className="w-4 h-4" />
-            <span>Ekspor CSV</span>
+            <span>Import Excel</span>
           </button>
         </div>
       </div>
 
-      {/* KPI Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-        <div className="p-4 rounded-2xl bg-[#0F172A] border border-slate-800 flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 flex-shrink-0">
-            <Users className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">
-              Total Siswa
+      {/* 2. Form Tambah / Edit Siswa Card (Exact Model as Uploaded Image + No Absen) */}
+      <div
+        ref={formRef}
+        className="rounded-2xl bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-slate-800 p-5 sm:p-6 shadow-sm"
+      >
+        <form onSubmit={handleFormSubmit} className="space-y-4">
+          {editingStudentId && (
+            <div className="flex items-center justify-between p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs text-amber-500 mb-2">
+              <span className="font-semibold">Mode Edit Siswa: Mengubah data siswa yang dipilih</span>
+              <button
+                type="button"
+                onClick={handleCancelEdit}
+                className="text-slate-400 hover:text-white flex items-center gap-1 font-medium cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" /> Batal Edit
+              </button>
             </div>
-            <div className="text-xl font-bold text-white mt-0.5">{totalStudents} <span className="text-xs text-slate-400 font-normal">Anak</span></div>
-          </div>
-        </div>
+          )}
 
-        <div className="p-4 rounded-2xl bg-[#0F172A] border border-slate-800 flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 flex-shrink-0">
-            <Users className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">
-              Siswa Laki-laki (L)
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3.5 items-end">
+            {/* No Absen */}
+            <div className="lg:col-span-2">
+              <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wider">
+                NO. ABSEN *
+              </label>
+              <input
+                type="number"
+                min="1"
+                placeholder="Contoh: 1"
+                value={formAttendanceNo}
+                onChange={(e) => setFormAttendanceNo(e.target.value)}
+                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-slate-50 dark:bg-[#0B1120] text-slate-800 dark:text-white placeholder:text-slate-400"
+              />
             </div>
-            <div className="text-xl font-bold text-sky-400 mt-0.5">{lCount} <span className="text-xs text-slate-400 font-normal">Siswa</span></div>
-          </div>
-        </div>
 
-        <div className="p-4 rounded-2xl bg-[#0F172A] border border-slate-800 flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-pink-400 flex-shrink-0">
-            <Users className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">
-              Siswa Perempuan (P)
+            {/* NISN */}
+            <div className="lg:col-span-3">
+              <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wider">
+                NISN *
+              </label>
+              <input
+                type="text"
+                placeholder="Contoh: 0012345678"
+                value={formNisn}
+                onChange={(e) => setFormNisn(e.target.value)}
+                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-slate-50 dark:bg-[#0B1120] text-slate-800 dark:text-white placeholder:text-slate-400 font-mono"
+              />
             </div>
-            <div className="text-xl font-bold text-pink-400 mt-0.5">{pCount} <span className="text-xs text-slate-400 font-normal">Siswi</span></div>
-          </div>
-        </div>
 
-        <div className="p-4 rounded-2xl bg-[#0F172A] border border-slate-800 flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 flex-shrink-0">
-            <Layers className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">
-              Rombel / Kelas Aktif
+            {/* Nama Lengkap */}
+            <div className="lg:col-span-4">
+              <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wider">
+                NAMA LENGKAP *
+              </label>
+              <input
+                type="text"
+                required
+                placeholder="Nama lengkap siswa"
+                value={formName}
+                onChange={(e) => setFormName(e.target.value)}
+                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-slate-50 dark:bg-[#0B1120] text-slate-800 dark:text-white placeholder:text-slate-400 font-medium"
+              />
             </div>
-            <div className="text-xl font-bold text-emerald-400 mt-0.5">{classes.length} <span className="text-xs text-slate-400 font-normal">Kelas</span></div>
+
+            {/* Kelas (Manual text input) */}
+            <div className="lg:col-span-2">
+              <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wider">
+                KELAS *
+              </label>
+              <input
+                type="text"
+                required
+                list="classes-datalist"
+                placeholder="Contoh: VII A"
+                value={formClassName}
+                onChange={(e) => setFormClassName(e.target.value)}
+                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-slate-50 dark:bg-[#0B1120] text-slate-800 dark:text-white placeholder:text-slate-400 font-medium"
+              />
+              <datalist id="classes-datalist">
+                {classes.map((cls) => (
+                  <option key={cls.id} value={cls.name} />
+                ))}
+              </datalist>
+            </div>
+
+            {/* Simpan Button */}
+            <div className="lg:col-span-1">
+              <button
+                type="submit"
+                id="btn-save-student-inline"
+                className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md shadow-blue-600/20 transition-all active:scale-95 cursor-pointer whitespace-nowrap"
+              >
+                <Plus className="w-4 h-4 text-white stroke-[2.5]" />
+                <span>{editingStudentId ? 'Simpan' : 'Simpan'}</span>
+              </button>
+            </div>
           </div>
-        </div>
+
+          {/* Optional Quick Gender Selection */}
+          <div className="flex items-center gap-4 pt-1">
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              Jenis Kelamin:
+            </span>
+            <div className="flex items-center gap-3 text-xs">
+              <label className="inline-flex items-center gap-1.5 cursor-pointer text-slate-700 dark:text-slate-300">
+                <input
+                  type="radio"
+                  name="gender"
+                  checked={formGender === 'L'}
+                  onChange={() => setFormGender('L')}
+                  className="text-blue-600 focus:ring-blue-500"
+                />
+                <span>Laki-laki (L)</span>
+              </label>
+              <label className="inline-flex items-center gap-1.5 cursor-pointer text-slate-700 dark:text-slate-300">
+                <input
+                  type="radio"
+                  name="gender"
+                  checked={formGender === 'P'}
+                  onChange={() => setFormGender('P')}
+                  className="text-pink-600 focus:ring-pink-500"
+                />
+                <span>Perempuan (P)</span>
+              </label>
+            </div>
+          </div>
+        </form>
       </div>
 
-      {/* Filter & Search Bar */}
-      <div className="p-4 rounded-2xl bg-[#0F172A] border border-slate-800 space-y-3">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-          {/* Class Filter */}
-          <div>
-            <label className="block text-[11px] font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">
-              Pilih Rombel (Kelas)
-            </label>
+      {/* 3. Lower Card: Filter, Search & Table (Exact Layout & Empty State) */}
+      <div className="rounded-2xl bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-slate-800 p-5 sm:p-6 shadow-sm space-y-4">
+        {/* Top Controls: Search (Left) & Dropdown Kelas (Right) */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          {/* Search Box */}
+          <div className="relative flex-1 max-w-md">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Cari NISN atau Nama..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full text-xs sm:text-sm pl-9 pr-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-slate-50 dark:bg-[#0B1120] text-slate-800 dark:text-white placeholder:text-slate-400"
+            />
+          </div>
+
+          {/* Class Dropdown Filter */}
+          <div className="min-w-[260px]">
             <select
               value={activeClassId}
               onChange={(e) => handleClassChange(e.target.value)}
-              className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-[#0B1120] text-white font-medium"
+              className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-slate-50 dark:bg-[#0B1120] text-blue-600 dark:text-blue-400 font-semibold cursor-pointer"
             >
-              <option value="ALL">Semua Kelas ({students.length} Siswa)</option>
+              <option value="">-- Pilih Kelas untuk Melihat Siswa --</option>
+              <option value="ALL">-- Tampilkan Semua Kelas ({students.length} Siswa) --</option>
               {classes.map((cls) => {
                 const count = students.filter((s) => s.classId === cls.id).length;
                 return (
                   <option key={cls.id} value={cls.id}>
-                    {cls.name} ({count} Siswa)
+                    Kelas {cls.name} ({count} Siswa)
                   </option>
                 );
               })}
             </select>
           </div>
-
-          {/* Search Box */}
-          <div className="md:col-span-2">
-            <label className="block text-[11px] font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">
-              Cari Nama / No Absen / NISN
-            </label>
-            <div className="relative">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Ketik nama siswa, nomor absen, atau NISN..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full text-xs sm:text-sm pl-9 pr-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-[#0B1120] text-white"
-              />
-            </div>
-          </div>
-
-          {/* Gender Filter */}
-          <div>
-            <label className="block text-[11px] font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">
-              Jenis Kelamin
-            </label>
-            <select
-              value={genderFilter}
-              onChange={(e) => setGenderFilter(e.target.value as any)}
-              className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-[#0B1120] text-white"
-            >
-              <option value="ALL">Semua Gender</option>
-              <option value="L">Laki-laki (L)</option>
-              <option value="P">Perempuan (P)</option>
-            </select>
-          </div>
-
-          {/* Sort By */}
-          <div>
-            <label className="block text-[11px] font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">
-              Urutkan Berdasarkan
-            </label>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-[#0B1120] text-white"
-            >
-              <option value="ABSEN">No. Absen</option>
-              <option value="NAME">Nama Siswa (A-Z)</option>
-              <option value="NISN">Nomor NISN</option>
-            </select>
-          </div>
         </div>
 
-        {/* Active Class Highlight Banner with 1-click upload */}
-        {currentClass && (
-          <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 text-xs text-slate-200">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-blue-400" />
-              <span>
-                Menampilkan data <strong>{currentClass.name}</strong> • Mapel: <strong>{currentClass.subject}</strong> • KKM: <strong>{currentClass.kkm}</strong>
-              </span>
-            </div>
-            <button
-              onClick={() => onOpenUploadModal(currentClass.id)}
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-400 hover:text-blue-300 underline cursor-pointer"
-            >
-              <UploadCloud className="w-3.5 h-3.5" />
-              <span>Unggah / Impor Data Siswa {currentClass.name}</span>
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Student Data Table */}
-      <div className="rounded-2xl bg-[#0F172A] border border-slate-800 overflow-hidden shadow-xl">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs sm:text-sm">
-            <thead className="bg-[#0B1120] border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[11px] font-semibold">
-              <tr>
-                <th className="py-3.5 px-3 w-12 text-center">No</th>
-                <th className="py-3.5 px-3 w-20 text-center">No Absen</th>
-                <th className="py-3.5 px-4">Nama Peserta Didik</th>
-                <th className="py-3.5 px-4">NISN</th>
-                <th className="py-3.5 px-3 text-center">JK</th>
-                <th className="py-3.5 px-4">Kelas</th>
-                <th className="py-3.5 px-4 text-center">Kehadiran</th>
-                <th className="py-3.5 px-4 text-center">Rata-Rata Nilai</th>
-                <th className="py-3.5 px-3 text-center">Status</th>
-                <th className="py-3.5 px-4 text-right">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800">
-              {filteredStudents.length > 0 ? (
-                filteredStudents.map((std, idx) => {
-                  const studentClass = classes.find((c) => c.id === std.classId);
-                  const attSummary = calculateStudentAttendanceSummary(std.id, attendances);
-                  const classAssessments = assessments.filter((a) => a.classId === std.classId);
-                  const gradeSummary = calculateStudentFinalGrade(
-                    std.id,
-                    classAssessments,
-                    studentClass?.kkm || 75
-                  );
-
-                  return (
-                    <tr
-                      key={std.id}
-                      className="hover:bg-slate-800/40 transition-colors group"
-                    >
-                      <td className="py-3 px-3 text-center font-mono text-slate-500">
-                        {idx + 1}
-                      </td>
-
-                      <td className="py-3 px-3 text-center">
-                        <span className="inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 font-bold font-mono text-xs">
-                          {std.attendanceNo !== undefined && std.attendanceNo !== '' ? std.attendanceNo : idx + 1}
-                        </span>
-                      </td>
-
-                      <td className="py-3 px-4">
-                        <div className="font-semibold text-white group-hover:text-blue-400 transition-colors">
-                          {std.name}
+        {/* Table Content */}
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs sm:text-sm">
+              <thead className="bg-slate-50 dark:bg-[#0B1120] border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[11px] font-bold">
+                <tr>
+                  <th className="py-3 px-4 w-16 text-center">NO</th>
+                  <th className="py-3 px-4 w-32">NISN</th>
+                  <th className="py-3 px-4">NAMA LENGKAP</th>
+                  <th className="py-3 px-4 w-32">KELAS</th>
+                  <th className="py-3 px-4 w-28 text-center">AKSI</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80 bg-white dark:bg-[#0F172A]">
+                {/* Case 1: No Class Selected and No Search Query -> Exact Empty State in Image */}
+                {!activeClassId && !searchQuery.trim() ? (
+                  <tr>
+                    <td colSpan={5} className="py-16 text-center">
+                      <div className="flex flex-col items-center justify-center space-y-3">
+                        <div className="w-14 h-14 rounded-2xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
+                          <Users className="w-8 h-8" />
                         </div>
-                        <div className="text-[11px] text-slate-500 font-mono">
-                          ID: {std.id}
-                        </div>
-                      </td>
+                        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+                          Silakan pilih kelas pada dropdown filter di atas untuk menampilkan daftar siswa.
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : filteredStudents.length > 0 ? (
+                  /* Case 2: Displaying Students */
+                  filteredStudents.map((std, idx) => {
+                    const studentClass = classes.find((c) => c.id === std.classId);
+                    const displayNo =
+                      std.attendanceNo !== undefined && std.attendanceNo !== ''
+                        ? std.attendanceNo
+                        : idx + 1;
 
-                      <td className="py-3 px-4 font-mono text-xs text-slate-300">
-                        {std.nisn || '-'}
-                      </td>
+                    return (
+                      <tr
+                        key={std.id}
+                        className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors group"
+                      >
+                        {/* NO */}
+                        <td className="py-3.5 px-4 text-center font-bold font-mono text-slate-700 dark:text-slate-300">
+                          {displayNo}
+                        </td>
 
-                      <td className="py-3 px-3 text-center">
-                        <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${
-                            std.gender === 'L'
-                              ? 'bg-blue-500/15 text-blue-400 border border-blue-500/30'
-                              : 'bg-pink-500/15 text-pink-400 border border-pink-500/30'
-                          }`}
-                        >
-                          {std.gender === 'L' ? 'L' : 'P'}
-                        </span>
-                      </td>
+                        {/* NISN */}
+                        <td className="py-3.5 px-4 font-mono text-xs text-slate-600 dark:text-slate-300 font-medium">
+                          {std.nisn || '-'}
+                        </td>
 
-                      <td className="py-3 px-4">
-                        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg bg-[#1E293B] border border-slate-700 text-white">
-                          <Layers className="w-3 h-3 text-blue-400" />
-                          {studentClass?.name || 'Tanpa Kelas'}
-                        </span>
-                      </td>
-
-                      <td className="py-3 px-4 text-center">
-                        <div className="inline-flex items-center gap-1">
-                          <span
-                            className={`font-bold ${
-                              attSummary.percent >= 90
-                                ? 'text-emerald-400'
-                                : attSummary.percent >= 75
-                                ? 'text-amber-400'
-                                : 'text-rose-400'
-                            }`}
-                          >
-                            {attSummary.percent}%
-                          </span>
-                          <span className="text-[10px] text-slate-500">
-                            ({attSummary.H}/{attSummary.totalSessions})
-                          </span>
-                        </div>
-                      </td>
-
-                      <td className="py-3 px-4 text-center">
-                        {gradeSummary.totalAssessments > 0 ? (
-                          <div className="inline-flex items-center gap-1.5">
-                            <span
-                              className={`font-bold text-xs ${
-                                gradeSummary.isPassed ? 'text-emerald-400' : 'text-rose-400'
-                              }`}
-                            >
-                              {gradeSummary.averageScore}
+                        {/* NAMA LENGKAP */}
+                        <td className="py-3.5 px-4">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-slate-800 dark:text-white group-hover:text-blue-500 transition-colors">
+                              {std.name}
                             </span>
                             <span
-                              className={`text-[10px] px-1.5 py-0.2 rounded font-bold ${
-                                gradeSummary.predicate === 'A'
-                                  ? 'bg-emerald-500/20 text-emerald-300'
-                                  : gradeSummary.predicate === 'B'
-                                  ? 'bg-blue-500/20 text-blue-300'
-                                  : gradeSummary.predicate === 'C'
-                                  ? 'bg-amber-500/20 text-amber-300'
-                                  : 'bg-rose-500/20 text-rose-300'
+                              className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${
+                                std.gender === 'L'
+                                  ? 'bg-blue-500/15 text-blue-500'
+                                  : 'bg-pink-500/15 text-pink-500'
                               }`}
                             >
-                              {gradeSummary.predicate}
+                              {std.gender}
                             </span>
                           </div>
-                        ) : (
-                          <span className="text-[11px] text-slate-600">-</span>
-                        )}
-                      </td>
+                        </td>
 
-                      <td className="py-3 px-3 text-center">
-                        {std.active ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30">
-                            <CheckCircle2 className="w-3 h-3" />
-                            Aktif
+                        {/* KELAS */}
+                        <td className="py-3.5 px-4">
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700">
+                            {studentClass?.name || 'Tanpa Kelas'}
                           </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-400 px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/30">
-                            <XCircle className="w-3 h-3" />
-                            Non-Aktif
-                          </span>
-                        )}
-                      </td>
+                        </td>
 
-                      <td className="py-3 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <button
-                            onClick={() => onEditStudent(std)}
-                            className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors cursor-pointer"
-                            title="Edit Siswa"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => {
-                              if (confirm(`Apakah Anda yakin ingin menghapus data siswa "${std.name}"?`)) {
-                                onDeleteStudent(std.id);
-                              }
-                            }}
-                            className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
-                            title="Hapus Siswa"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              ) : (
-                <tr>
-                  <td colSpan={10} className="py-12 text-center text-slate-400">
-                    <Users className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-                    <p className="text-base font-bold text-slate-300">
-                      Tidak ada data siswa ditemukan
-                    </p>
-                    <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-                      {searchQuery
-                        ? 'Coba ubah kata kunci pencarian atau filter kelas yang dipilih.'
-                        : 'Belum ada siswa yang ditambahkan ke dalam kelas ini.'}
-                    </p>
-                    <div className="mt-4 flex items-center justify-center gap-3">
-                      <button
-                        onClick={() => onOpenUploadModal(activeClassId !== 'ALL' ? activeClassId : classes[0]?.id)}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl shadow cursor-pointer"
-                      >
-                        <UploadCloud className="w-4 h-4" />
-                        <span>Unggah Siswa CSV Sekarang</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                        {/* AKSI */}
+                        <td className="py-3.5 px-4 text-center">
+                          <div className="flex items-center justify-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => handleStartEdit(std)}
+                              className="p-1.5 text-slate-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+                              title="Edit Siswa"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (
+                                  confirm(
+                                    `Apakah Anda yakin ingin menghapus data siswa "${std.name}"?`
+                                  )
+                                ) {
+                                  onDeleteStudent(std.id);
+                                }
+                              }}
+                              className="p-1.5 text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
+                              title="Hapus Siswa"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  /* Case 3: Filter / Class selected but 0 students found */
+                  <tr>
+                    <td colSpan={5} className="py-12 text-center text-slate-400">
+                      <Users className="w-10 h-10 mx-auto mb-2.5 text-slate-400 dark:text-slate-600" />
+                      <p className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                        Tidak ada data siswa ditemukan
+                      </p>
+                      <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                        {searchQuery
+                          ? 'Coba ubah kata kunci pencarian.'
+                          : `Belum ada siswa di kelas ${currentClass?.name || ''}. Tambahkan siswa melalui form di atas atau tombol Import Excel.`}
+                      </p>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
   );
 };
+

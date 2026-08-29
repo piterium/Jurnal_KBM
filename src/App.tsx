@@ -688,8 +688,11 @@ export default function App() {
               classes={data.classes}
               attendances={data.attendances}
               assessments={data.assessments}
+              profile={data.profile}
+              onSaveClass={handleSaveClass}
               selectedClassId={selectedStudentClassId}
               onSelectClassId={setSelectedStudentClassId}
+              onSaveStudent={handleSaveStudent}
               onAddStudent={() => {
                 setEditingStudent(null);
                 setIsStudentModalOpen(true);
