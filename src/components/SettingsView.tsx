@@ -22,6 +22,10 @@ import {
   Sun,
   Moon,
   Palette,
+  Search,
+  BookOpen,
+  Calendar,
+  Award,
 } from 'lucide-react';
 import { exportBackup } from '../utils/storage';
 import { useTheme } from '../context/ThemeContext';
@@ -56,10 +60,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const { profile, classes, students } = data;
   const { theme, setTheme } = useTheme();
 
-  const [activeSection, setActiveSection] = useState<'PROFILE' | 'THEME' | 'CLASSES' | 'STUDENTS' | 'BACKUP'>('PROFILE');
+  const [activeSection, setActiveSection] = useState<'PROFILE' | 'CLASSES' | 'THEME' | 'BACKUP'>('PROFILE');
   const [formData, setFormData] = useState<SchoolProfile>({ ...profile });
-  const [selectedClassIdForStudents, setSelectedClassIdForStudents] = useState<string>(classes[0]?.id || '');
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [classSearch, setClassSearch] = useState('');
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteConfirmationText, setDeleteConfirmationText] = useState('');
   const logoInputRef = useRef<HTMLInputElement>(null);
@@ -122,9 +126,20 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     alert('Database aplikasi berhasil dikosongkan.');
   };
 
-  const filteredStudents = students.filter(
-    (s) => (selectedClassIdForStudents ? s.classId === selectedClassIdForStudents : true) && s.active
-  );
+  const filteredClasses = classes.filter((cls) => {
+    if (!classSearch.trim()) return true;
+    const q = classSearch.toLowerCase();
+    return (
+      cls.name.toLowerCase().includes(q) ||
+      (cls.gradeLevel && cls.gradeLevel.toLowerCase().includes(q)) ||
+      (cls.subject && cls.subject.toLowerCase().includes(q))
+    );
+  });
+
+  const totalStudentsInClasses = students.filter((s) => s.active).length;
+  const avgKKM = classes.length
+    ? Math.round(classes.reduce((acc, c) => acc + (c.kkm || 75), 0) / classes.length)
+    : 75;
 
   return (
     <div className="space-y-6">
@@ -140,14 +155,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 Pengaturan Sistem & Data Master
               </h2>
               <p className="text-xs text-slate-400">
-                Kelola identitas sekolah, logo kop surat, profil guru, rombel/kelas, siswa, dan pencadangan database
+                Kelola identitas sekolah, setting kelas/rombel, profil guru, tema tampilan, dan pencadangan database
               </p>
             </div>
           </div>
         </div>
 
         {/* Section Tabs */}
-        <div className="inline-flex p-1 bg-[#0B1120] rounded-xl border border-slate-800 self-start sm:self-auto overflow-x-auto">
+        <div className="inline-flex p-1 bg-[#0B1120] rounded-xl border border-slate-800 self-start sm:self-auto overflow-x-auto gap-1">
           <button
             onClick={() => setActiveSection('PROFILE')}
             className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
@@ -157,6 +172,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             Profil & Logo Sekolah
           </button>
           <button
+            onClick={() => setActiveSection('CLASSES')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+              activeSection === 'CLASSES' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Layers className="w-3.5 h-3.5" />
+            <span>Setting Kelas ({classes.length})</span>
+          </button>
+          <button
             onClick={() => setActiveSection('THEME')}
             className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
               activeSection === 'THEME' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
@@ -164,22 +188,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           >
             <Palette className="w-3.5 h-3.5" />
             <span>Tema Tampilan</span>
-          </button>
-          <button
-            onClick={() => setActiveSection('CLASSES')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-              activeSection === 'CLASSES' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Daftar Kelas ({classes.length})
-          </button>
-          <button
-            onClick={() => setActiveSection('STUDENTS')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-              activeSection === 'STUDENTS' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Data Siswa ({students.length})
           </button>
           <button
             onClick={() => setActiveSection('BACKUP')}
@@ -464,6 +472,200 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </form>
       )}
 
+      {/* SECTION 2: SETTING KELAS / ROMBEL */}
+      {activeSection === 'CLASSES' && (
+        <div className="bg-[#0F172A] p-6 sm:p-8 rounded-2xl border border-slate-800 shadow-xl space-y-6">
+          {/* Header Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                <Layers className="w-5 h-5 text-blue-400" />
+                <span>Pengaturan & Daftar Kelas (Rombel)</span>
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Kelola rombongan belajar, tingkat jenjang, KKM target per kelas, dan alokasi siswa
+              </p>
+            </div>
+
+            <button
+              id="btn-add-class-settings"
+              type="button"
+              onClick={onAddClass}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-semibold shadow-md shadow-blue-600/20 transition-all active:scale-95 cursor-pointer self-start sm:self-auto"
+            >
+              <Plus className="w-4 h-4 text-white" />
+              <span>Tambah Kelas Baru</span>
+            </button>
+          </div>
+
+          {/* Quick Metrics */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="p-4 rounded-xl bg-[#0B1120] border border-slate-800 flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center flex-shrink-0">
+                <Layers className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[11px] font-medium text-slate-400 block">Total Kelas Aktif</span>
+                <span className="text-lg font-bold text-white">{classes.length} Rombel</span>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-[#0B1120] border border-slate-800 flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0">
+                <Users className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[11px] font-medium text-slate-400 block">Total Siswa Terdaftar</span>
+                <span className="text-lg font-bold text-white">{totalStudentsInClasses} Siswa</span>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-[#0B1120] border border-slate-800 flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center flex-shrink-0">
+                <Award className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[11px] font-medium text-slate-400 block">Rata-Rata KKM Kelas</span>
+                <span className="text-lg font-bold text-white">{avgKKM}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Search Filter */}
+          <div className="relative">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={classSearch}
+              onChange={(e) => setClassSearch(e.target.value)}
+              placeholder="Cari nama kelas, tingkat, atau mata pelajaran..."
+              className="w-full pl-10 pr-4 py-2.5 bg-[#0B1120] border border-slate-800 rounded-xl text-xs sm:text-sm text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+            />
+          </div>
+
+          {/* Class List Cards */}
+          {filteredClasses.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredClasses.map((cls) => {
+                const classStudents = students.filter((s) => s.classId === cls.id && s.active);
+                return (
+                  <div
+                    key={cls.id}
+                    className="p-5 bg-[#0B1120] border border-slate-800 hover:border-slate-700 rounded-2xl flex flex-col justify-between transition-all group shadow-sm hover:shadow-md"
+                  >
+                    <div>
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center flex-shrink-0 font-bold text-sm">
+                            {cls.name.replace(/[^0-9A-Za-z]/g, '').substring(0, 3) || 'KL'}
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-bold text-white group-hover:text-blue-400 transition-colors">
+                              {cls.name}
+                            </h4>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                                Tingkat {cls.gradeLevel || 'VII'}
+                              </span>
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                KKM: {cls.kkm || 75}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5 py-3 border-t border-b border-slate-800/80 text-xs text-slate-300">
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-400 flex items-center gap-1.5">
+                            <BookOpen className="w-3.5 h-3.5 text-slate-500" />
+                            Mata Pelajaran:
+                          </span>
+                          <span className="font-semibold text-white">
+                            {cls.subject || profile.subject || 'Informatika'}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-400 flex items-center gap-1.5">
+                            <Calendar className="w-3.5 h-3.5 text-slate-500" />
+                            Tahun Pelajaran:
+                          </span>
+                          <span className="font-semibold text-slate-300">
+                            {cls.academicYear || profile.academicYear || '2025/2026'}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-400 flex items-center gap-1.5">
+                            <Users className="w-3.5 h-3.5 text-slate-500" />
+                            Jumlah Siswa:
+                          </span>
+                          <span className="font-bold text-blue-400">
+                            {classStudents.length} Siswa
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action buttons */}
+                    <div className="flex items-center justify-end gap-2 pt-3 mt-1">
+                      <button
+                        type="button"
+                        onClick={() => onEditClass(cls)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white rounded-lg text-xs font-semibold transition-all cursor-pointer"
+                      >
+                        <Edit2 className="w-3.5 h-3.5 text-blue-400" />
+                        <span>Edit Kelas</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              `Apakah Anda yakin ingin menghapus kelas "${cls.name}"? Siswa di kelas ini tetap tersimpan namun kelasnya akan dihapus.`
+                            )
+                          ) {
+                            onDeleteClass(cls.id);
+                          }
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-lg text-xs font-semibold border border-rose-500/20 transition-all cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                        <span>Hapus</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="p-10 rounded-2xl bg-[#0B1120] border border-slate-800 text-center space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center mx-auto">
+                <Layers className="w-6 h-6" />
+              </div>
+              <h4 className="text-sm font-bold text-white">
+                {classSearch.trim() ? 'Tidak Ada Kelas yang Cocok' : 'Belum Ada Kelas yang Ditambahkan'}
+              </h4>
+              <p className="text-xs text-slate-400 max-w-md mx-auto">
+                {classSearch.trim()
+                  ? `Tidak ditemukan rombel dengan kata kunci "${classSearch}". Silakan periksa kembali kata kunci pencarian Anda.`
+                  : 'Tambahkan rombongan belajar pertama Anda untuk mulai mengisi jurnal mengajar, presensi, dan buku nilai siswa.'}
+              </p>
+              {!classSearch.trim() && (
+                <button
+                  type="button"
+                  onClick={onAddClass}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow-md cursor-pointer transition-all active:scale-95"
+                >
+                  <Plus className="w-4 h-4 text-white" />
+                  <span>Tambah Kelas Pertama</span>
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* SECTION: TEMA TAMPILAN (LIGHT & DARK) */}
       {activeSection === 'THEME' && (
         <div className="bg-[#0F172A] p-6 sm:p-8 rounded-2xl border border-slate-800 shadow-xl space-y-6">
@@ -629,153 +831,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl text-xs text-blue-300 flex items-start gap-2.5">
             <Palette className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
             <p>
-              Pilihan tema Anda akan otomatis tersimpan di peramban ini dan diterapkan langsung di setiap lembar kerja (Dashboard, Jurnal, Presensi, Daftar Penilaian, Siswa, Guru, Laporan Bulanan, dan Pengaturan).
+              Pilihan tema Anda akan otomatis tersimpan di peramban ini dan diterapkan langsung di setiap lembar kerja (Dashboard, Jurnal, Presensi, Daftar Penilaian, Guru, Laporan Bulanan, dan Pengaturan).
             </p>
           </div>
         </div>
       )}
 
-      {/* SECTION 2: KELOLA KELAS */}
-      {activeSection === 'CLASSES' && (
-        <div className="bg-[#0F172A] p-6 rounded-2xl border border-slate-800 shadow-xl space-y-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-base font-bold text-white">Daftar Rombongan Belajar (Kelas)</h3>
-              <p className="text-xs text-slate-400">Kelola daftar rombel tingkat VII, VIII, IX dan alokasi siswa</p>
-            </div>
-            <button
-              onClick={onAddClass}
-              className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl shadow-lg cursor-pointer transition-all active:scale-95"
-            >
-              <Plus className="w-4 h-4 text-white" />
-              <span>Tambah Kelas</span>
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {classes.map((cls) => {
-              const clsStudents = students.filter((s) => s.classId === cls.id && s.active);
-              return (
-                <div key={cls.id} className="p-5 bg-gradient-to-br from-[#0F172A] to-[#1E293B] rounded-xl border border-slate-800 relative group shadow-md">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-base font-bold text-white">{cls.name}</span>
-                    <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/30">
-                      Tingkat {cls.gradeLevel}
-                    </span>
-                  </div>
-                  <div className="text-xs text-slate-300 space-y-1.5">
-                    <div>Jenjang: <strong className="text-white">Kelas {cls.gradeLevel}</strong></div>
-                    <div className="text-emerald-400 font-semibold">{clsStudents.length} Siswa Terdaftar</div>
-                  </div>
-
-                  <div className="mt-4 pt-3 border-t border-slate-800 flex justify-end gap-2">
-                    <button
-                      onClick={() => onEditClass(cls)}
-                      className="p-1.5 text-slate-400 hover:text-blue-400 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
-                      title="Edit Kelas"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (confirm(`Hapus rombel ${cls.name}? Semua data presensi dan nilai kelas ini akan terpengaruh.`)) {
-                          onDeleteClass(cls.id);
-                        }
-                      }}
-                      className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
-                      title="Hapus Kelas"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* SECTION 3: KELOLA SISWA */}
-      {activeSection === 'STUDENTS' && (
-        <div className="bg-[#0F172A] p-6 rounded-2xl border border-slate-800 shadow-xl space-y-5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-semibold text-slate-300">Pilih Kelas:</span>
-              <select
-                value={selectedClassIdForStudents}
-                onChange={(e) => setSelectedClassIdForStudents(e.target.value)}
-                className="text-xs font-semibold px-3 py-1.5 border border-slate-700 rounded-lg bg-[#0B1120] text-white focus:border-blue-500"
-              >
-                {classes.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <button
-              onClick={onAddStudent}
-              className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl shadow-lg cursor-pointer transition-all active:scale-95"
-            >
-              <Plus className="w-4 h-4 text-white" />
-              <span>Tambah Siswa Baru</span>
-            </button>
-          </div>
-
-          <div className="overflow-x-auto border border-slate-800 rounded-xl">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="bg-[#0B1120] text-slate-400 border-b border-slate-800">
-                  <th className="p-3 text-center w-10 text-slate-500">No</th>
-                  <th className="p-3 text-center w-16">No Absen</th>
-                  <th className="p-3">NISN</th>
-                  <th className="p-3">Nama Lengkap Siswa</th>
-                  <th className="p-3 text-center w-12">L/P</th>
-                  <th className="p-3 text-center w-20">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800 text-slate-300">
-                {filteredStudents.map((std, idx) => (
-                  <tr key={std.id} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="p-2.5 text-center font-bold text-slate-500">{idx + 1}</td>
-                    <td className="p-2.5 text-center font-mono font-bold text-blue-400">
-                      {std.attendanceNo !== undefined && std.attendanceNo !== '' ? std.attendanceNo : idx + 1}
-                    </td>
-                    <td className="p-2.5 font-mono text-slate-400">{std.nisn || '-'}</td>
-                    <td className="p-2.5 font-medium text-white">{std.name}</td>
-                    <td className="p-2.5 text-center text-slate-400">{std.gender === 'L' ? 'L' : 'P'}</td>
-                    <td className="p-2.5 text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        <button
-                          onClick={() => onEditStudent(std)}
-                          className="p-1.5 text-slate-400 hover:text-blue-400 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
-                          title="Edit Siswa"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            if (confirm(`Hapus data siswa ${std.name}?`)) {
-                              onDeleteStudent(std.id);
-                            }
-                          }}
-                          className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
-                          title="Hapus Siswa"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* SECTION 4: BACKUP & HAPUS DATABASE */}
+      {/* SECTION: BACKUP & HAPUS DATABASE */}
       {activeSection === 'BACKUP' && (
         <div className="bg-[#0F172A] p-6 rounded-2xl border border-slate-800 shadow-xl space-y-6">
           <div>

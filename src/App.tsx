@@ -31,7 +31,6 @@ import { JournalModal } from './components/modals/JournalModal';
 import { AssessmentModal } from './components/modals/AssessmentModal';
 import { StudentModal } from './components/modals/StudentModal';
 import { ClassModal } from './components/modals/ClassModal';
-import { UploadStudentsModal } from './components/modals/UploadStudentsModal';
 import { TeacherModal } from './components/modals/TeacherModal';
 import { SaveSuccessModal } from './components/SaveSuccessModal';
 
@@ -86,9 +85,6 @@ export default function App() {
 
   const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
-
-  const [isUploadStudentsModalOpen, setIsUploadStudentsModalOpen] = useState(false);
-  const [uploadClassId, setUploadClassId] = useState<string>('');
 
   const [isTeacherModalOpen, setIsTeacherModalOpen] = useState(false);
   const [editingTeacher, setEditingTeacher] = useState<Teacher | null>(null);
@@ -454,40 +450,42 @@ export default function App() {
     );
   };
 
-  // Bulk student import per class
-  const handleImportStudents = (
-    targetClassId: string,
-    newStudentsList: Omit<Student, 'id'>[],
-    mode: 'append' | 'replace'
+  // Bulk student import (directly from uploaded template CSV/file)
+  const handleBatchImportStudents = (
+    newStudents: Student[],
+    newClasses: ClassRoom[] = [],
+    successMessage?: string
   ) => {
-    const formattedWithIds: Student[] = newStudentsList.map((s, idx) => ({
-      ...s,
-      id: `std-${targetClassId}-${Date.now()}-${idx}`,
-      classId: targetClassId,
-      active: true,
-    }));
+    // Add any new classes that don't exist
+    const currentClasses = [...data.classes];
+    newClasses.forEach((nCls) => {
+      if (!currentClasses.some((c) => c.id === nCls.id || c.name.toLowerCase() === nCls.name.toLowerCase())) {
+        currentClasses.push(nCls);
+      }
+    });
 
-    let updatedStudents: Student[] = [];
-    if (mode === 'replace') {
-      // Keep all students from other classes, replace target class
-      updatedStudents = [
-        ...data.students.filter((s) => s.classId !== targetClassId),
-        ...formattedWithIds,
-      ];
-    } else {
-      // Append to existing
-      updatedStudents = [...data.students, ...formattedWithIds];
-    }
+    // Merge students
+    const currentStudents = [...data.students];
+    newStudents.forEach((newStd) => {
+      const existingIdx = currentStudents.findIndex(
+        (s) => s.id === newStd.id || (s.nisn && s.nisn !== '-' && s.nisn === newStd.nisn)
+      );
+      if (existingIdx >= 0) {
+        currentStudents[existingIdx] = newStd;
+      } else {
+        currentStudents.push(newStd);
+      }
+    });
 
     setData((prev) => ({
       ...prev,
-      students: updatedStudents,
+      classes: currentClasses,
+      students: currentStudents,
     }));
 
-    const cls = data.classes.find((c) => c.id === targetClassId);
     triggerSaveNotification(
       'Berhasil Disimpan!',
-      `Sebanyak ${newStudentsList.length} siswa kelas ${cls?.name || ''} tersimpan ke Firebase!`
+      successMessage || `Sebanyak ${newStudents.length} data siswa berhasil diimpor dan tersimpan ke Firebase!`
     );
   };
 
@@ -693,6 +691,7 @@ export default function App() {
               selectedClassId={selectedStudentClassId}
               onSelectClassId={setSelectedStudentClassId}
               onSaveStudent={handleSaveStudent}
+              onBatchImportStudents={handleBatchImportStudents}
               onAddStudent={() => {
                 setEditingStudent(null);
                 setIsStudentModalOpen(true);
@@ -702,10 +701,6 @@ export default function App() {
                 setIsStudentModalOpen(true);
               }}
               onDeleteStudent={handleDeleteStudent}
-              onOpenUploadModal={(clsId) => {
-                setUploadClassId(clsId || data.classes[0]?.id || '');
-                setIsUploadStudentsModalOpen(true);
-              }}
             />
           )}
 
@@ -790,14 +785,6 @@ export default function App() {
             ? selectedStudentClassId
             : selectedGradeClassId || data.classes[0]?.id || ''
         }
-      />
-
-      <UploadStudentsModal
-        isOpen={isUploadStudentsModalOpen}
-        onClose={() => setIsUploadStudentsModalOpen(false)}
-        classes={data.classes}
-        selectedClassId={uploadClassId}
-        onImportStudents={handleImportStudents}
       />
 
       <TeacherModal

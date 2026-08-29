@@ -21,10 +21,15 @@ interface StudentListViewProps {
   profile?: SchoolProfile;
   onSaveClass?: (cls: ClassRoom) => void;
   onSaveStudent?: (student: Student) => void;
+  onBatchImportStudents?: (
+    students: Student[],
+    newClasses: ClassRoom[],
+    message?: string
+  ) => void;
   onAddStudent: () => void;
   onEditStudent: (student: Student) => void;
   onDeleteStudent: (studentId: string) => void;
-  onOpenUploadModal: (classId?: string) => void;
+  onOpenUploadModal?: (classId?: string) => void;
   selectedClassId?: string;
   onSelectClassId?: (classId: string) => void;
 }
@@ -35,10 +40,10 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
   profile,
   onSaveClass,
   onSaveStudent,
+  onBatchImportStudents,
   onAddStudent,
   onEditStudent,
   onDeleteStudent,
-  onOpenUploadModal,
   selectedClassId: controlledClassId,
   onSelectClassId,
 }) => {
@@ -46,6 +51,7 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
   const [internalClassId, setInternalClassId] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const formRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form State for quick inline creation / editing matching the user requirement
   const [editingStudentId, setEditingStudentId] = useState<string | null>(null);
@@ -184,6 +190,178 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
     document.body.removeChild(link);
   };
 
+  const handleDirectFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const text = event.target?.result as string;
+        if (!text) {
+          alert('Berkas kosong atau tidak dapat dibaca.');
+          return;
+        }
+
+        const lines = text
+          .split(/\r?\n/)
+          .map((l) => l.trim())
+          .filter((l) => l.length > 0);
+
+        if (lines.length === 0) {
+          alert('Berkas tidak memuat data siswa.');
+          return;
+        }
+
+        let startIndex = 0;
+        const firstLineLower = lines[0].toLowerCase();
+        if (
+          firstLineLower.includes('nama') ||
+          firstLineLower.includes('nisn') ||
+          firstLineLower.includes('absen') ||
+          firstLineLower.includes('kelas') ||
+          firstLineLower.includes('gender') ||
+          firstLineLower.includes('jk')
+        ) {
+          startIndex = 1;
+        }
+
+        const newStudentsToCreate: Student[] = [];
+        const newClassesToCreate: ClassRoom[] = [];
+        const existingClassMap = new Map<string, ClassRoom>();
+        classes.forEach((c) => {
+          existingClassMap.set(c.name.trim().toLowerCase(), c);
+        });
+
+        let lastDetectedClassId = activeClassId && activeClassId !== 'ALL' ? activeClassId : '';
+
+        for (let i = startIndex; i < lines.length; i++) {
+          const line = lines[i];
+          let parts: string[] = [];
+          if (line.includes('\t')) {
+            parts = line.split('\t');
+          } else if (line.includes(';')) {
+            parts = line.split(';');
+          } else if (line.includes(',')) {
+            parts = line.split(',');
+          } else {
+            parts = line.split(/\s{2,}/);
+          }
+
+          parts = parts.map((p) => p.trim().replace(/^["']|["']$/g, ''));
+          if (parts.length === 0 || !parts.some((p) => p.length > 0)) continue;
+
+          let attendanceNo: number | undefined = undefined;
+          let nisn = '-';
+          let name = '';
+          let gender: 'L' | 'P' = 'L';
+          let className = '';
+
+          const parseGender = (val: string): 'L' | 'P' => {
+            const up = val.toUpperCase().trim();
+            return up.startsWith('P') || up.startsWith('W') || up.includes('PEREMPUAN') || up === 'F' ? 'P' : 'L';
+          };
+
+          if (parts.length >= 5) {
+            // Template: No Absen | NISN | Nama Lengkap | Jenis Kelamin | Kelas
+            if (/^\d+$/.test(parts[0])) {
+              attendanceNo = parseInt(parts[0], 10);
+            }
+            nisn = parts[1] || '-';
+            name = parts[2] || '';
+            gender = parseGender(parts[3] || 'L');
+            className = parts[4] || '';
+          } else if (parts.length === 4) {
+            // NISN | Nama | Gender | Kelas OR No Absen | NISN | Nama | Gender
+            if (/^\d{1,3}$/.test(parts[0])) {
+              attendanceNo = parseInt(parts[0], 10);
+              nisn = parts[1] || '-';
+              name = parts[2] || '';
+              gender = parseGender(parts[3] || 'L');
+            } else {
+              nisn = parts[0] || '-';
+              name = parts[1] || '';
+              gender = parseGender(parts[2] || 'L');
+              className = parts[3] || '';
+            }
+          } else if (parts.length === 3) {
+            nisn = parts[0] || '-';
+            name = parts[1] || '';
+            gender = parseGender(parts[2] || 'L');
+          } else if (parts.length === 2) {
+            nisn = parts[0] || '-';
+            name = parts[1] || '';
+          } else {
+            name = parts[0] || '';
+          }
+
+          if (!name.trim()) continue;
+
+          // Determine target class
+          const targetClassName = (
+            className.trim() ||
+            (currentClass ? currentClass.name : '') ||
+            (classes[0] ? classes[0].name : 'VII A')
+          ).trim();
+
+          let targetClass = existingClassMap.get(targetClassName.toLowerCase());
+          if (!targetClass) {
+            const newClassId = `cls_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+            targetClass = {
+              id: newClassId,
+              name: targetClassName,
+              gradeLevel: targetClassName.replace(/[^0-9]/g, '') || 'VII',
+              subject: profile?.subject || 'Mata Pelajaran',
+              academicYear: profile?.academicYear || '2024/2025',
+              kkm: 75,
+            };
+            existingClassMap.set(targetClassName.toLowerCase(), targetClass);
+            newClassesToCreate.push(targetClass);
+          }
+
+          lastDetectedClassId = targetClass.id;
+
+          const newStudent: Student = {
+            id: `std_${Date.now()}_${Math.random().toString(36).substring(2, 7)}_${i}`,
+            attendanceNo: attendanceNo !== undefined ? attendanceNo : i - startIndex + 1,
+            nisn: nisn.trim() || '-',
+            name: name.trim(),
+            gender,
+            classId: targetClass.id,
+            active: true,
+          };
+
+          newStudentsToCreate.push(newStudent);
+        }
+
+        if (newStudentsToCreate.length === 0) {
+          alert('Tidak ada data siswa yang valid dalam berkas.');
+          return;
+        }
+
+        if (onBatchImportStudents) {
+          onBatchImportStudents(
+            newStudentsToCreate,
+            newClassesToCreate,
+            `Berhasil mengimpor ${newStudentsToCreate.length} siswa dari berkas template "${file.name}"!`
+          );
+        } else {
+          newClassesToCreate.forEach((c) => onSaveClass && onSaveClass(c));
+          newStudentsToCreate.forEach((s) => onSaveStudent && onSaveStudent(s));
+        }
+
+        if (lastDetectedClassId) {
+          handleClassChange(lastDetectedClassId);
+        }
+      } catch (err) {
+        console.error('Error parsing student file:', err);
+        alert('Terjadi kesalahan saat memproses berkas siswa.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
   const filteredStudents = useMemo(() => {
     // If no class is selected and no search query, return empty list (to trigger empty state matching screenshot)
     if (!activeClassId && !searchQuery.trim()) {
@@ -225,7 +403,16 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* 1. Header with Title & Action Buttons (Matching Screenshot) */}
+      {/* Hidden Native File Input for Direct PC File Selection */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept=".csv,.tsv,.txt"
+        onChange={handleDirectFileUpload}
+        className="hidden"
+      />
+
+      {/* 1. Header with Title & Action Buttons */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -233,15 +420,15 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
           </div>
           <div>
             <h2 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white tracking-tight">
-              Kelola Master Data Siswa
+              Daftar Siswa
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-              Kelola daftar seluruh siswa, NISN, dan kelas untuk administrasi guru.
+              Kelola daftar seluruh siswa, nomor absen, NISN, jenis kelamin, kelas, dan upload berkas siswa.
             </p>
           </div>
         </div>
 
-        {/* Action Buttons: Download Template & Import Excel */}
+        {/* Action Buttons: Download Template & Upload Siswa */}
         <div className="flex items-center gap-3">
           <button
             id="btn-download-template-csv"
@@ -254,15 +441,13 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
           </button>
 
           <button
-            id="btn-import-excel-modal"
+            id="btn-upload-direct-file"
             type="button"
-            onClick={() =>
-              onOpenUploadModal(activeClassId && activeClassId !== 'ALL' ? activeClassId : classes[0]?.id)
-            }
+            onClick={() => fileInputRef.current?.click()}
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-semibold shadow-md shadow-blue-600/20 transition-all active:scale-95 cursor-pointer"
           >
             <UploadCloud className="w-4 h-4 text-white" />
-            <span>Import Excel</span>
+            <span>Upload Siswa</span>
           </button>
         </div>
       </div>
@@ -442,6 +627,7 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
                   <th className="py-3 px-4 w-16 text-center">NO</th>
                   <th className="py-3 px-4 w-32">NISN</th>
                   <th className="py-3 px-4">NAMA LENGKAP</th>
+                  <th className="py-3 px-4 w-28 text-center">JENIS KELAMIN</th>
                   <th className="py-3 px-4 w-32">KELAS</th>
                   <th className="py-3 px-4 w-28 text-center">AKSI</th>
                 </tr>
@@ -450,7 +636,7 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
                 {/* Case 1: No Class Selected and No Search Query -> Exact Empty State in Image */}
                 {!activeClassId && !searchQuery.trim() ? (
                   <tr>
-                    <td colSpan={5} className="py-16 text-center">
+                    <td colSpan={6} className="py-16 text-center">
                       <div className="flex flex-col items-center justify-center space-y-3">
                         <div className="w-14 h-14 rounded-2xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
                           <Users className="w-8 h-8" />
@@ -487,20 +673,22 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
 
                         {/* NAMA LENGKAP */}
                         <td className="py-3.5 px-4">
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold text-slate-800 dark:text-white group-hover:text-blue-500 transition-colors">
-                              {std.name}
-                            </span>
-                            <span
-                              className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${
-                                std.gender === 'L'
-                                  ? 'bg-blue-500/15 text-blue-500'
-                                  : 'bg-pink-500/15 text-pink-500'
-                              }`}
-                            >
-                              {std.gender}
-                            </span>
-                          </div>
+                          <span className="font-semibold text-slate-800 dark:text-white group-hover:text-blue-500 transition-colors">
+                            {std.name}
+                          </span>
+                        </td>
+
+                        {/* JENIS KELAMIN */}
+                        <td className="py-3.5 px-4 text-center">
+                          <span
+                            className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full ${
+                              std.gender === 'L'
+                                ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/20'
+                                : 'bg-pink-500/15 text-pink-600 dark:text-pink-400 border border-pink-500/20'
+                            }`}
+                          >
+                            {std.gender === 'L' ? 'L (Laki-laki)' : 'P (Perempuan)'}
+                          </span>
                         </td>
 
                         {/* KELAS */}
@@ -545,7 +733,7 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
                 ) : (
                   /* Case 3: Filter / Class selected but 0 students found */
                   <tr>
-                    <td colSpan={5} className="py-12 text-center text-slate-400">
+                    <td colSpan={6} className="py-12 text-center text-slate-400">
                       <Users className="w-10 h-10 mx-auto mb-2.5 text-slate-400 dark:text-slate-600" />
                       <p className="text-sm font-bold text-slate-700 dark:text-slate-300">
                         Tidak ada data siswa ditemukan
@@ -553,7 +741,7 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
                       <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
                         {searchQuery
                           ? 'Coba ubah kata kunci pencarian.'
-                          : `Belum ada siswa di kelas ${currentClass?.name || ''}. Tambahkan siswa melalui form di atas atau tombol Import Excel.`}
+                          : `Belum ada siswa di kelas ${currentClass?.name || ''}. Tambahkan siswa melalui form di atas atau tombol Upload Siswa.`}
                       </p>
                     </td>
                   </tr>

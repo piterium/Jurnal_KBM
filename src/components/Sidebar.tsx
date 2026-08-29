@@ -74,10 +74,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'students',
-      label: 'Kelola Siswa',
+      label: 'Daftar Siswa',
       icon: Users,
       count: studentsCount,
-      description: 'Data Induk & NISN',
+      description: 'Data Siswa & NISN',
     },
     {
       id: 'teachers',
@@ -96,7 +96,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       id: 'settings',
       label: 'Pengaturan & Profil',
       icon: Settings,
-      description: 'Identitas Sekolah & Backup Data',
+      description: 'Identitas, Setting Kelas & Backup',
     },
   ];
 
