@@ -46,21 +46,33 @@ export default function App() {
   const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isInitialLoadRef = useRef(true);
 
-  // Success Notification state (as requested in user image)
-  const [saveNotification, setSaveNotification] = useState<{
+  // Success and Delete Notification state (as requested in user specifications)
+  const [notification, setNotification] = useState<{
     isOpen: boolean;
+    type: 'success' | 'delete' | 'info' | 'warning';
     title: string;
     message: string;
   }>({
     isOpen: false,
+    type: 'success',
     title: 'Berhasil Disimpan!',
     message: 'Data tersimpan ke Firebase!',
   });
 
   const triggerSaveNotification = useCallback((title: string, message: string) => {
-    setSaveNotification({
+    setNotification({
       isOpen: true,
+      type: 'success',
       title: title || 'Berhasil Disimpan!',
+      message,
+    });
+  }, []);
+
+  const triggerDeleteNotification = useCallback((title: string, message: string) => {
+    setNotification({
+      isOpen: true,
+      type: 'delete',
+      title: title || 'Berhasil Dihapus!',
       message,
     });
   }, []);
@@ -264,11 +276,17 @@ export default function App() {
   };
 
   const handleDeleteJournal = (journalId: string) => {
+    const targetJournal = data.journals.find((j) => j.id === journalId);
+    const cls = data.classes.find((c) => c.id === targetJournal?.classId);
     setData((prev) => ({
       ...prev,
       journals: prev.journals.filter((j) => j.id !== journalId),
       attendances: prev.attendances.filter((a) => a.journalId !== journalId),
     }));
+    triggerDeleteNotification(
+      'Berhasil Dihapus!',
+      `Jurnal mengajar ${cls?.name ? `kelas ${cls.name}` : ''} (Pertemuan ke-${targetJournal?.meetingNumber || ''}) berhasil dihapus.`
+    );
   };
 
   const handleOpenAttendanceForJournal = (classId: string, date: string) => {
@@ -342,10 +360,15 @@ export default function App() {
   };
 
   const handleDeleteAssessment = (assessmentId: string) => {
+    const asm = data.assessments.find((a) => a.id === assessmentId);
     setData((prev) => ({
       ...prev,
       assessments: prev.assessments.filter((a) => a.id !== assessmentId),
     }));
+    triggerDeleteNotification(
+      'Berhasil Dihapus!',
+      `Data penilaian "${asm?.title || ''}" berhasil dihapus.`
+    );
   };
 
   const handleUpdateScore = (assessmentId: string, studentId: string, score: number | null) => {
@@ -391,10 +414,16 @@ export default function App() {
   };
 
   const handleDeleteClass = (id: string) => {
+    const cls = data.classes.find((c) => c.id === id);
     setData((prev) => ({
       ...prev,
       classes: prev.classes.filter((c) => c.id !== id),
+      students: prev.students.filter((s) => s.classId !== id),
     }));
+    triggerDeleteNotification(
+      'Berhasil Dihapus!',
+      `Data kelas ${cls?.name || ''} beserta siswanya berhasil dihapus.`
+    );
   };
 
   const handleSaveStudent = (std: Student) => {
@@ -414,10 +443,15 @@ export default function App() {
   };
 
   const handleDeleteStudent = (id: string) => {
+    const std = data.students.find((s) => s.id === id);
     setData((prev) => ({
       ...prev,
       students: prev.students.filter((s) => s.id !== id),
     }));
+    triggerDeleteNotification(
+      'Berhasil Dihapus!',
+      `Data siswa ${std?.name || ''} berhasil dihapus.`
+    );
   };
 
   // Bulk student import per class
@@ -485,10 +519,15 @@ export default function App() {
   };
 
   const handleDeleteTeacher = (teacherId: string) => {
+    const tch = (data.teachers || []).find((t) => t.id === teacherId);
     setData((prev) => ({
       ...prev,
       teachers: (prev.teachers || []).filter((t) => t.id !== teacherId),
     }));
+    triggerDeleteNotification(
+      'Berhasil Dihapus!',
+      `Data guru ${tch?.name || ''} berhasil dihapus.`
+    );
   };
 
   const handleSetAsActiveProfileTeacher = (teacher: Teacher) => {
@@ -521,7 +560,7 @@ export default function App() {
     const empty = getEmptyAppData();
     setData(empty);
     saveAppData(empty);
-    triggerSaveNotification(
+    triggerDeleteNotification(
       'Database Dikosongkan!',
       'Semua data berhasil dibersihkan dari penyimpanan.'
     );
@@ -775,12 +814,13 @@ export default function App() {
         defaultAcademicYear={data.profile.academicYear}
       />
 
-      {/* Success Save Notification Modal (matching user reference image) */}
+      {/* Success and Delete Notification Modal (matching user reference specification) */}
       <SaveSuccessModal
-        isOpen={saveNotification.isOpen}
-        title={saveNotification.title}
-        message={saveNotification.message}
-        onClose={() => setSaveNotification((prev) => ({ ...prev, isOpen: false }))}
+        isOpen={notification.isOpen}
+        type={notification.type}
+        title={notification.title}
+        message={notification.message}
+        onClose={() => setNotification((prev) => ({ ...prev, isOpen: false }))}
       />
     </div>
   );
