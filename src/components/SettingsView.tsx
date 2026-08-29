@@ -19,8 +19,12 @@ import {
   X,
   Database,
   RefreshCw,
+  Sun,
+  Moon,
+  Palette,
 } from 'lucide-react';
 import { exportBackup } from '../utils/storage';
+import { useTheme } from '../context/ThemeContext';
 
 interface SettingsViewProps {
   data: AppData;
@@ -50,8 +54,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   onImportData,
 }) => {
   const { profile, classes, students } = data;
+  const { theme, setTheme } = useTheme();
 
-  const [activeSection, setActiveSection] = useState<'PROFILE' | 'CLASSES' | 'STUDENTS' | 'BACKUP'>('PROFILE');
+  const [activeSection, setActiveSection] = useState<'PROFILE' | 'THEME' | 'CLASSES' | 'STUDENTS' | 'BACKUP'>('PROFILE');
   const [formData, setFormData] = useState<SchoolProfile>({ ...profile });
   const [selectedClassIdForStudents, setSelectedClassIdForStudents] = useState<string>(classes[0]?.id || '');
   const [savedSuccess, setSavedSuccess] = useState(false);
@@ -150,6 +155,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             }`}
           >
             Profil & Logo Sekolah
+          </button>
+          <button
+            onClick={() => setActiveSection('THEME')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+              activeSection === 'THEME' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Palette className="w-3.5 h-3.5" />
+            <span>Tema Tampilan</span>
           </button>
           <button
             onClick={() => setActiveSection('CLASSES')}
@@ -448,6 +462,177 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             </button>
           </div>
         </form>
+      )}
+
+      {/* SECTION: TEMA TAMPILAN (LIGHT & DARK) */}
+      {activeSection === 'THEME' && (
+        <div className="bg-[#0F172A] p-6 sm:p-8 rounded-2xl border border-slate-800 shadow-xl space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <Palette className="w-4 h-4 text-blue-400" />
+                <span>Pilihan Tema Tampilan Aplikasi</span>
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Sesuaikan kenyamanan visual Anda saat mengelola data administrasi kelas, jurnal mengajar, dan buku nilai.
+              </p>
+            </div>
+
+            <div className="px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-xs font-bold border border-blue-500/20">
+              Tema Saat Ini: {theme === 'light' ? 'Mode Terang' : 'Mode Gelap'}
+            </div>
+          </div>
+
+          {/* Theme Option Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+            {/* Opsi 1: Mode Terang (Light Theme) */}
+            <div
+              onClick={() => setTheme('light')}
+              className={`p-5 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between relative overflow-hidden group ${
+                theme === 'light'
+                  ? 'border-blue-500 bg-slate-900/90 shadow-xl ring-2 ring-blue-500/20'
+                  : 'border-slate-800 bg-[#0B1120] hover:border-slate-700'
+              }`}
+            >
+              {theme === 'light' && (
+                <div className="absolute top-4 right-4 flex items-center gap-1 bg-blue-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>Aktif</span>
+                </div>
+              )}
+
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-500 flex items-center justify-center flex-shrink-0">
+                    <Sun className="w-6 h-6 fill-amber-500/20" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-white">Mode Terang (Light Theme)</h4>
+                    <p className="text-xs text-slate-400">Latar cerah, teks hitam kontras tinggi & nyaman di siang hari</p>
+                  </div>
+                </div>
+
+                {/* Visual Preview Box */}
+                <div className="p-3.5 rounded-xl bg-white border border-slate-200 text-slate-900 shadow-sm space-y-2">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2.5 h-2.5 rounded-full bg-blue-600"></div>
+                      <span className="text-xs font-bold text-slate-900">Jurnal Mengajar Terpadu</span>
+                    </div>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100">
+                      Kelas VII-A
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-[11px]">
+                    <div className="p-2 bg-slate-50 rounded-lg border border-slate-100">
+                      <span className="text-slate-500 block text-[10px]">Tingkat Kehadiran</span>
+                      <strong className="text-emerald-700 text-xs">98% Hadir</strong>
+                    </div>
+                    <div className="p-2 bg-slate-50 rounded-lg border border-slate-100">
+                      <span className="text-slate-500 block text-[10px]">Rata-rata Nilai</span>
+                      <strong className="text-blue-700 text-xs">88.5 / 100</strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-5 pt-3 border-t border-slate-800/80 flex items-center justify-between">
+                <span className="text-xs text-slate-400">Cocok untuk pencetakan dan ruang kelas terang</span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setTheme('light');
+                  }}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    theme === 'light'
+                      ? 'bg-blue-600 text-white shadow-md'
+                      : 'bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700'
+                  }`}
+                >
+                  {theme === 'light' ? 'Sedang Digunakan' : 'Pilih Mode Terang'}
+                </button>
+              </div>
+            </div>
+
+            {/* Opsi 2: Mode Gelap (Dark Theme) */}
+            <div
+              onClick={() => setTheme('dark')}
+              className={`p-5 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between relative overflow-hidden group ${
+                theme === 'dark'
+                  ? 'border-blue-500 bg-slate-900/90 shadow-xl ring-2 ring-blue-500/20'
+                  : 'border-slate-800 bg-[#0B1120] hover:border-slate-700'
+              }`}
+            >
+              {theme === 'dark' && (
+                <div className="absolute top-4 right-4 flex items-center gap-1 bg-blue-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>Aktif</span>
+                </div>
+              )}
+
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-blue-500/15 border border-blue-500/30 text-blue-400 flex items-center justify-center flex-shrink-0">
+                    <Moon className="w-6 h-6 fill-blue-400/20" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-white">Mode Gelap (Dark Theme)</h4>
+                    <p className="text-xs text-slate-400">Latar gelap modern, hemat daya baterai & ramah di mata</p>
+                  </div>
+                </div>
+
+                {/* Visual Preview Box */}
+                <div className="p-3.5 rounded-xl bg-[#0B1120] border border-slate-800 text-white shadow-sm space-y-2">
+                  <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2.5 h-2.5 rounded-full bg-blue-400"></div>
+                      <span className="text-xs font-bold text-white">Jurnal Mengajar Terpadu</span>
+                    </div>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500/15 text-blue-400 border border-blue-500/30">
+                      Kelas VII-A
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-[11px]">
+                    <div className="p-2 bg-slate-900 rounded-lg border border-slate-800">
+                      <span className="text-slate-400 block text-[10px]">Tingkat Kehadiran</span>
+                      <strong className="text-emerald-400 text-xs">98% Hadir</strong>
+                    </div>
+                    <div className="p-2 bg-slate-900 rounded-lg border border-slate-800">
+                      <span className="text-slate-400 block text-[10px]">Rata-rata Nilai</span>
+                      <strong className="text-blue-400 text-xs">88.5 / 100</strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-5 pt-3 border-t border-slate-800/80 flex items-center justify-between">
+                <span className="text-xs text-slate-400">Pilihan elegan untuk penggunaan di malam hari</span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setTheme('dark');
+                  }}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    theme === 'dark'
+                      ? 'bg-blue-600 text-white shadow-md'
+                      : 'bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700'
+                  }`}
+                >
+                  {theme === 'dark' ? 'Sedang Digunakan' : 'Pilih Mode Gelap'}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl text-xs text-blue-300 flex items-start gap-2.5">
+            <Palette className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+            <p>
+              Pilihan tema Anda akan otomatis tersimpan di peramban ini dan diterapkan langsung di setiap lembar kerja (Dashboard, Jurnal, Presensi, Buku Nilai, Siswa, Guru, Laporan Bulanan, dan Pengaturan).
+            </p>
+          </div>
+        </div>
       )}
 
       {/* SECTION 2: KELOLA KELAS */}

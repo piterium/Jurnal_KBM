@@ -17,9 +17,9 @@ import {
   Users,
   UserCheck,
   CloudCheck,
-  CloudOff,
   RefreshCw,
 } from 'lucide-react';
+import { ThemeToggle } from './ThemeToggle';
 
 interface SidebarProps {
   activeTab: string;
@@ -219,35 +219,33 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Quick Action & Stats Footer */}
       <div className="p-4 border-t border-slate-800 bg-[#0B1120]/90 space-y-3">
-        {/* Persistence Indicator */}
-        <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="w-6 h-6 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center flex-shrink-0">
-              <CloudCheck className="w-3.5 h-3.5" />
-            </div>
-            <div className="min-w-0">
-              <div className="text-[11px] font-bold text-white truncate">
-                Penyimpanan Data
+        {/* Persistence & Theme Row */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex-1 p-2 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between min-w-0">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-6 h-6 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center flex-shrink-0">
+                <CloudCheck className="w-3.5 h-3.5" />
               </div>
-              <div className="flex items-center gap-1 text-[10px] text-emerald-400">
-                {syncStatus === 'syncing' ? (
-                  <span className="text-blue-400 flex items-center gap-1">
-                    <RefreshCw className="w-2.5 h-2.5 animate-spin" /> Menyimpan...
-                  </span>
-                ) : (
-                  <span>Otomatis Tersimpan</span>
-                )}
+              <div className="min-w-0">
+                <div className="text-[11px] font-bold text-white truncate">
+                  Penyimpanan
+                </div>
+                <div className="text-[10px] text-emerald-400 truncate">
+                  {syncStatus === 'syncing' ? 'Menyimpan...' : 'Otomatis'}
+                </div>
               </div>
             </div>
+            <button
+              onClick={onManualSync}
+              title="Simpan & Sinkronkan"
+              className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+            >
+              <RefreshCw className="w-3 h-3" />
+            </button>
           </div>
 
-          <button
-            onClick={onManualSync}
-            title="Simpan & Sinkronkan"
-            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-          </button>
+          {/* Compact Theme Switcher for Sidebar */}
+          <ThemeToggle variant="compact" />
         </div>
 
         <div className="grid grid-cols-2 gap-2 text-center">
@@ -283,7 +281,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <>
-      {/* Mobile Top App Bar with Hamburger */}
+      {/* Mobile Top App Bar with Hamburger & Theme Switcher */}
       <div className="md:hidden flex items-center justify-between p-3.5 bg-[#0F172A] border-b border-slate-800 sticky top-0 z-40">
         <div className="flex items-center gap-3 min-w-0">
           <button
@@ -296,7 +294,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
           <div className="min-w-0">
             <h1 className="text-sm font-bold text-white truncate">
-              {profile.schoolName}
+              {profile.schoolName || 'Administrasi Guru'}
             </h1>
             <p className="text-[11px] text-blue-400 font-medium truncate">
               {profile.teacherName} • {profile.subject}
@@ -304,13 +302,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </div>
 
-        <button
-          onClick={onQuickDownloadPdf}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow-md cursor-pointer flex-shrink-0"
-        >
-          <FileDown className="w-3.5 h-3.5 text-white" />
-          <span>PDF</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <ThemeToggle variant="icon" />
+          <button
+            onClick={onQuickDownloadPdf}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow-md cursor-pointer flex-shrink-0"
+          >
+            <FileDown className="w-3.5 h-3.5 text-white" />
+            <span>PDF</span>
+          </button>
+        </div>
       </div>
 
       {/* Desktop Persistent Left Sidebar */}

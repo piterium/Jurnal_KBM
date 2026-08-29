@@ -1,10 +1,30 @@
 @import "tailwindcss";
 
+:root {
+  --color-canvas: #0B1120;
+  --color-surface: #0F172A;
+  --color-elevated: #1E293B;
+  --color-border: #1E293B;
+  --color-text-main: #F8FAFC;
+  --color-text-muted: #94A3B8;
+}
+
+[data-theme="light"],
+.theme-light {
+  --color-canvas: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-elevated: #F1F5F9;
+  --color-border: #E2E8F0;
+  --color-text-main: #0F172A;
+  --color-text-muted: #475569;
+}
+
 @layer base {
   body {
     font-family: Arial, Helvetica, sans-serif;
-    background-color: #0B1120;
-    color: #E2E8F0;
+    background-color: var(--color-canvas);
+    color: var(--color-text-main);
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 }
 
@@ -12,21 +32,217 @@
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Custom dark blue scrollbar */
+/* Custom scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0F172A;
+  background: var(--color-surface);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1E293B;
+  background: #334155;
   border-radius: 4px;
+}
+
+.theme-light ::-webkit-scrollbar-thumb,
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #3B82F6;
+}
+
+/* =========================================================================
+   LIGHT THEME OVERRIDES FOR RICH EXISTING COMPONENTS
+   ========================================================================= */
+
+[data-theme="light"] body,
+.theme-light body {
+  background-color: #F8FAFC !important;
+  color: #0F172A !important;
+}
+
+/* Surface backgrounds */
+[data-theme="light"] .bg-\[\#0B1120\],
+.theme-light .bg-\[\#0B1120\] {
+  background-color: #F1F5F9 !important;
+}
+
+[data-theme="light"] .bg-\[\#0F172A\],
+.theme-light .bg-\[\#0F172A\] {
+  background-color: #FFFFFF !important;
+}
+
+[data-theme="light"] .bg-\[\#0F172A\]\/80,
+.theme-light .bg-\[\#0F172A\]\/80 {
+  background-color: rgba(255, 255, 255, 0.88) !important;
+}
+
+[data-theme="light"] .bg-\[\#0B1120\]\/90,
+.theme-light .bg-\[\#0B1120\]\/90 {
+  background-color: rgba(248, 250, 252, 0.95) !important;
+}
+
+[data-theme="light"] .bg-slate-900,
+.theme-light .bg-slate-900 {
+  background-color: #FFFFFF !important;
+}
+
+[data-theme="light"] .bg-slate-900\/40,
+[data-theme="light"] .bg-slate-900\/50,
+[data-theme="light"] .bg-slate-900\/60,
+[data-theme="light"] .bg-slate-900\/80,
+[data-theme="light"] .bg-slate-900\/90,
+.theme-light .bg-slate-900\/40,
+.theme-light .bg-slate-900\/50,
+.theme-light .bg-slate-900\/60,
+.theme-light .bg-slate-900\/80,
+.theme-light .bg-slate-900\/90 {
+  background-color: #F8FAFC !important;
+}
+
+[data-theme="light"] .bg-slate-950,
+[data-theme="light"] .bg-slate-950\/80,
+.theme-light .bg-slate-950,
+.theme-light .bg-slate-950\/80 {
+  background-color: #FFFFFF !important;
+}
+
+[data-theme="light"] .bg-slate-800,
+.theme-light .bg-slate-800 {
+  background-color: #F1F5F9 !important;
+}
+
+[data-theme="light"] .bg-slate-800\/40,
+[data-theme="light"] .bg-slate-800\/50,
+[data-theme="light"] .bg-slate-800\/60,
+[data-theme="light"] .bg-slate-800\/70,
+[data-theme="light"] .bg-slate-800\/80,
+.theme-light .bg-slate-800\/40,
+.theme-light .bg-slate-800\/50,
+.theme-light .bg-slate-800\/60,
+.theme-light .bg-slate-800\/70,
+.theme-light .bg-slate-800\/80 {
+  background-color: #F8FAFC !important;
+}
+
+/* Border overrides */
+[data-theme="light"] .border-slate-800,
+[data-theme="light"] .border-slate-800\/60,
+[data-theme="light"] .border-slate-800\/80,
+[data-theme="light"] .border-slate-700,
+[data-theme="light"] .border-slate-700\/60,
+[data-theme="light"] .border-slate-700\/80,
+.theme-light .border-slate-800,
+.theme-light .border-slate-800\/60,
+.theme-light .border-slate-800\/80,
+.theme-light .border-slate-700,
+.theme-light .border-slate-700\/60,
+.theme-light .border-slate-700\/80 {
+  border-color: #E2E8F0 !important;
+}
+
+[data-theme="light"] .divide-slate-800,
+[data-theme="light"] .divide-slate-700,
+.theme-light .divide-slate-800,
+.theme-light .divide-slate-700 {
+  border-color: #E2E8F0 !important;
+}
+
+/* Typography in Light Mode */
+[data-theme="light"] .text-white,
+.theme-light .text-white {
+  color: #0F172A !important;
+}
+
+[data-theme="light"] .text-slate-100,
+[data-theme="light"] .text-slate-200,
+.theme-light .text-slate-100,
+.theme-light .text-slate-200 {
+  color: #1E293B !important;
+}
+
+[data-theme="light"] .text-slate-300,
+.theme-light .text-slate-300 {
+  color: #334155 !important;
+}
+
+[data-theme="light"] .text-slate-400,
+.theme-light .text-slate-400 {
+  color: #64748B !important;
+}
+
+/* Ensure Form Inputs are Crisp in Light Mode */
+[data-theme="light"] input:not([type="checkbox"]):not([type="radio"]):not([type="color"]),
+[data-theme="light"] select,
+[data-theme="light"] textarea,
+.theme-light input:not([type="checkbox"]):not([type="radio"]):not([type="color"]),
+.theme-light select,
+.theme-light textarea {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  border-color: #CBD5E1 !important;
+}
+
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder,
+.theme-light input::placeholder,
+.theme-light textarea::placeholder {
+  color: #94A3B8 !important;
+}
+
+/* Buttons with specific colored backgrounds preserve white text */
+[data-theme="light"] .bg-blue-600,
+[data-theme="light"] .bg-blue-700,
+[data-theme="light"] .bg-indigo-600,
+[data-theme="light"] .bg-emerald-600,
+[data-theme="light"] .bg-rose-600,
+[data-theme="light"] .bg-amber-600,
+[data-theme="light"] .bg-purple-600,
+[data-theme="light"] .bg-sky-600,
+.theme-light .bg-blue-600,
+.theme-light .bg-blue-700,
+.theme-light .bg-indigo-600,
+.theme-light .bg-emerald-600,
+.theme-light .bg-rose-600,
+.theme-light .bg-amber-600,
+.theme-light .bg-purple-600,
+.theme-light .bg-sky-600 {
+  color: #FFFFFF !important;
+}
+
+[data-theme="light"] .bg-blue-600 *,
+[data-theme="light"] .bg-indigo-600 *,
+[data-theme="light"] .bg-emerald-600 *,
+[data-theme="light"] .bg-rose-600 *,
+.theme-light .bg-blue-600 *,
+.theme-light .bg-indigo-600 *,
+.theme-light .bg-emerald-600 *,
+.theme-light .bg-rose-600 * {
+  color: #FFFFFF !important;
+}
+
+/* Gradients in Hero / Banners */
+[data-theme="light"] .bg-gradient-to-br.from-\[\#0F172A\],
+.theme-light .bg-gradient-to-br.from-\[\#0F172A\] {
+  background-image: linear-gradient(to bottom right, #FFFFFF, #F1F5F9, #FFFFFF) !important;
+}
+
+/* Table Hover */
+[data-theme="light"] tr:hover,
+.theme-light tr:hover {
+  background-color: #F8FAFC !important;
+}
+
+/* Modal Card Backgrounds */
+[data-theme="light"] .relative.w-full.bg-slate-900,
+[data-theme="light"] .relative.w-full.bg-\[\#0F172A\],
+.theme-light .relative.w-full.bg-slate-900,
+.theme-light .relative.w-full.bg-\[\#0F172A\] {
+  background-color: #FFFFFF !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15) !important;
 }

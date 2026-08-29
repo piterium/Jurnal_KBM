@@ -1,5 +1,6 @@
 import React from 'react';
 import { CloudCheck, CloudOff, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { ThemeToggle } from './ThemeToggle';
 
 interface FirebaseAuthHeaderProps {
   syncStatus: 'synced' | 'syncing' | 'offline' | 'error';
@@ -10,10 +11,12 @@ interface FirebaseAuthHeaderProps {
 export const FirebaseAuthHeader: React.FC<FirebaseAuthHeaderProps> = ({
   syncStatus,
   onManualSync,
-  lastSyncTime,
 }) => {
   return (
-    <div className="flex items-center gap-2.5">
+    <div className="flex items-center gap-3">
+      {/* Theme Switcher Toggle (Terang / Gelap) */}
+      <ThemeToggle variant="pill" />
+
       {/* Cloud & Local Persistence Status Indicator */}
       <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs">
         {syncStatus === 'syncing' && (
