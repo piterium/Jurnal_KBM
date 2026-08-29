@@ -296,8 +296,9 @@ export const MonthlyReportView: React.FC<MonthlyReportViewProps> = ({ data }) =>
                       <th className="p-1.5 border-r border-slate-300 w-12 text-center">Pert.</th>
                       <th className="p-1.5 border-r border-slate-300 w-20 text-center">Jam Ke-</th>
                       <th className="p-1.5 border-r border-slate-300">Materi Pokok / Bahasan</th>
-                      <th className="p-1.5 border-r border-slate-300 w-24 text-center">Presensi / Ketidakhadiran</th>
-                      <th className="p-1.5 w-18 text-center">Status</th>
+                      <th className="p-1.5 border-r border-slate-300 w-24 text-center">Presensi</th>
+                      <th className="p-1.5 border-r border-slate-300 w-18 text-center">Status</th>
+                      <th className="p-1.5 w-24">Ket.</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200">
@@ -324,13 +325,14 @@ export const MonthlyReportView: React.FC<MonthlyReportViewProps> = ({ data }) =>
                                 </span>
                               )}
                             </td>
-                            <td className="p-1.5 text-center font-medium text-slate-700">{j.status || 'Terlaksana'}</td>
+                            <td className="p-1.5 border-r border-slate-200 text-center font-medium text-slate-700">{j.status || 'Terlaksana'}</td>
+                            <td className="p-1.5 text-[10px] text-slate-600 italic">{j.keterangan || j.notes || '-'}</td>
                           </tr>
                         );
                       })
                     ) : (
                       <tr>
-                        <td colSpan={8} className="p-3 text-center text-slate-400 italic">
+                        <td colSpan={9} className="p-3 text-center text-slate-400 italic">
                           Tidak ada catatan jurnal mengajar pada periode bulan ini.
                         </td>
                       </tr>

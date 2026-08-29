@@ -26,6 +26,7 @@ export const JournalModal: React.FC<JournalModalProps> = ({
   const [hoursCount, setHoursCount] = useState(2);
   const [subject, setSubject] = useState(defaultSubject);
   const [topic, setTopic] = useState('');
+  const [keterangan, setKeterangan] = useState('');
   const [status, setStatus] = useState<'Terlaksana' | 'Tertunda' | 'Diganti'>('Terlaksana');
   const [autoCreateAttendance, setAutoCreateAttendance] = useState(true);
 
@@ -38,6 +39,7 @@ export const JournalModal: React.FC<JournalModalProps> = ({
       setHoursCount(initialData.hoursCount || 2);
       setSubject(initialData.subject || defaultSubject);
       setTopic(initialData.topic || '');
+      setKeterangan(initialData.keterangan || initialData.notes || '');
       setStatus(initialData.status || 'Terlaksana');
       setAutoCreateAttendance(false); // existing journal
     } else {
@@ -49,6 +51,7 @@ export const JournalModal: React.FC<JournalModalProps> = ({
       setHoursCount(2);
       setSubject(defaultSubject);
       setTopic('');
+      setKeterangan('');
       setStatus('Terlaksana');
       setAutoCreateAttendance(true);
     }
@@ -72,6 +75,8 @@ export const JournalModal: React.FC<JournalModalProps> = ({
       hoursCount: Number(hoursCount) || 2,
       subject,
       topic: topic.trim(),
+      keterangan: keterangan.trim(),
+      notes: keterangan.trim(),
       status,
       attendanceSessionId: initialData?.attendanceSessionId,
       studentsPresentCount: initialData?.studentsPresentCount,
@@ -201,6 +206,52 @@ export const JournalModal: React.FC<JournalModalProps> = ({
               className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-[#0B1120] text-white font-medium"
               required
             />
+          </div>
+
+          {/* KETERANGAN / KET FORM FIELD */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-semibold text-slate-300">
+                Keterangan (Ket.) / Catatan KBM
+              </label>
+              <span className="text-[11px] text-slate-400">Opsional</span>
+            </div>
+            <textarea
+              rows={2}
+              placeholder="Contoh: Praktik di Lab Komputer, diskusi kelompok berjalan lancar, remedial 2 siswa, atau KBM selesai tepat waktu"
+              value={keterangan}
+              onChange={(e) => setKeterangan(e.target.value)}
+              className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-[#0B1120] text-white font-medium resize-none"
+            />
+            {/* Quick Suggestions Chips */}
+            <div className="flex flex-wrap items-center gap-1.5 mt-2">
+              <span className="text-[10px] text-slate-400 font-semibold">Rekomendasi Cepat:</span>
+              {[
+                'Tuntas Sesuai Jadwal',
+                'Praktik di Lab',
+                'Diskusi & Presentasi',
+                'Penilaian Harian',
+                'Remedial & Pengayaan',
+                'Tugas Kelompok',
+              ].map((suggestion) => (
+                <button
+                  key={suggestion}
+                  type="button"
+                  onClick={() => {
+                    if (keterangan) {
+                      if (!keterangan.includes(suggestion)) {
+                        setKeterangan(`${keterangan}, ${suggestion}`);
+                      }
+                    } else {
+                      setKeterangan(suggestion);
+                    }
+                  }}
+                  className="px-2 py-0.5 text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-md border border-slate-700/80 transition-colors cursor-pointer"
+                >
+                  + {suggestion}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div>

@@ -191,14 +191,15 @@ export function generateMonthlyReportPdf(data: AppData, options: GeneratePdfOpti
         j.topic,
         attendanceStr,
         j.status || 'Terlaksana',
+        j.keterangan || j.notes || '-',
       ];
     }) : [[
-      '-', '-', '-', '-', '-', 'Tidak ada data jurnal mengajar pada periode bulan ini.', '-', '-'
+      '-', '-', '-', '-', '-', 'Tidak ada data jurnal mengajar pada periode bulan ini.', '-', '-', '-'
     ]];
 
     autoTable(doc, {
       startY: currentY,
-      head: [['No', 'Tanggal', 'Kelas', 'Pert.', 'Jam Ke- (JP)', 'Materi Pokok / Bahasan Pembelajaran', 'Presensi', 'Status']],
+      head: [['No', 'Tanggal', 'Kelas', 'Pert.', 'Jam Ke- (JP)', 'Materi Pokok / Bahasan Pembelajaran', 'Presensi', 'Status', 'Ket.']],
       body: journalTableRows,
       theme: 'grid',
       headStyles: {
@@ -217,13 +218,14 @@ export function generateMonthlyReportPdf(data: AppData, options: GeneratePdfOpti
       },
       columnStyles: {
         0: { halign: 'center', cellWidth: 8 },
-        1: { halign: 'center', cellWidth: 22 },
-        2: { halign: 'center', cellWidth: 18 },
-        3: { halign: 'center', cellWidth: 14 },
-        4: { halign: 'center', cellWidth: 24 },
-        5: { cellWidth: 54 },
-        6: { halign: 'center', cellWidth: 20 },
-        7: { halign: 'center', cellWidth: 22 },
+        1: { halign: 'center', cellWidth: 20 },
+        2: { halign: 'center', cellWidth: 16 },
+        3: { halign: 'center', cellWidth: 12 },
+        4: { halign: 'center', cellWidth: 20 },
+        5: { cellWidth: 46 },
+        6: { halign: 'center', cellWidth: 18 },
+        7: { halign: 'center', cellWidth: 18 },
+        8: { cellWidth: 24 },
       },
       margin: { left: 14, right: 14 },
     });

@@ -108,56 +108,78 @@ export const UploadStudentsModal: React.FC<UploadStudentsModalProps> = ({
       let name = '';
       let gender: 'L' | 'P' = 'L';
 
-      // Check if first column is simple index or absen (e.g. 1 to 50)
+      const isGender = (val: string) => {
+        const up = val.toUpperCase().trim();
+        return up === 'L' || up === 'P' || up === 'LAKI-LAKI' || up === 'PEREMPUAN' || up === 'M' || up === 'F' || up.startsWith('L') || up.startsWith('P');
+      };
+
+      const parseGender = (val: string): 'L' | 'P' => {
+        const up = val.toUpperCase().trim();
+        return up.startsWith('P') || up.startsWith('W') || up.includes('PEREMPUAN') || up === 'F' ? 'P' : 'L';
+      };
+
       if (parts.length >= 5) {
-        // Format: No/Absen | NISN | NIS | Nama | JK
+        // Legacy format: No/Absen | NISN | NIS | Nama | JK
         if (/^\d{1,3}$/.test(parts[0])) {
           attendanceNo = parseInt(parts[0], 10);
           nisn = parts[1];
           nis = parts[2];
           name = parts[3];
-          const gRaw = parts[4].toUpperCase();
-          gender = gRaw.startsWith('P') || gRaw.startsWith('W') || gRaw.includes('PEREMPUAN') ? 'P' : 'L';
+          gender = parseGender(parts[4]);
         } else {
           nisn = parts[0];
           nis = parts[1];
           name = parts[2];
-          const gRaw = parts[3].toUpperCase();
-          gender = gRaw.startsWith('P') || gRaw.startsWith('W') || gRaw.includes('PEREMPUAN') ? 'P' : 'L';
+          gender = parseGender(parts[3]);
           if (/^\d+$/.test(parts[4])) {
             attendanceNo = parseInt(parts[4], 10);
           }
         }
       } else if (parts.length === 4) {
-        // Could be: No | NISN | Nama | JK  OR  NISN | NIS | Nama | JK
-        if (/^\d{1,3}$/.test(parts[0]) && parts[1].length >= 8) {
+        // Standard Template (Tanpa NIS): No Absen | NISN | Nama Lengkap | JK
+        if (/^\d{1,3}$/.test(parts[0]) && isGender(parts[3])) {
           attendanceNo = parseInt(parts[0], 10);
           nisn = parts[1];
           name = parts[2];
-          const gRaw = parts[3].toUpperCase();
-          gender = gRaw.startsWith('P') || gRaw.startsWith('W') || gRaw.includes('PEREMPUAN') ? 'P' : 'L';
-          nis = nisn ? nisn.slice(-6) : '';
-        } else {
+          gender = parseGender(parts[3]);
+        } else if (isGender(parts[3])) {
+          // NISN | NIS | Nama | JK
           nisn = parts[0];
           nis = parts[1];
           name = parts[2];
-          const gRaw = parts[3].toUpperCase();
-          gender = gRaw.startsWith('P') || gRaw.startsWith('W') || gRaw.includes('PEREMPUAN') ? 'P' : 'L';
+          gender = parseGender(parts[3]);
+        } else {
+          attendanceNo = /^\d+$/.test(parts[0]) ? parseInt(parts[0], 10) : undefined;
+          nisn = parts[1];
+          name = parts[2];
+          gender = parseGender(parts[3]);
         }
       } else if (parts.length === 3) {
-        nisn = parts[0];
-        name = parts[1];
-        const gRaw = parts[2].toUpperCase();
-        gender = gRaw.startsWith('P') || gRaw.startsWith('W') || gRaw.includes('PEREMPUAN') ? 'P' : 'L';
-        nis = nisn ? nisn.slice(-6) : '';
-      } else if (parts.length === 2) {
-        if (/^\d+$/.test(parts[0])) {
+        if (/^\d{1,3}$/.test(parts[0]) && isGender(parts[2])) {
+          // No Absen | Nama | JK
+          attendanceNo = parseInt(parts[0], 10);
+          name = parts[1];
+          gender = parseGender(parts[2]);
+        } else if (isGender(parts[2])) {
+          // NISN | Nama | JK
           nisn = parts[0];
           name = parts[1];
+          gender = parseGender(parts[2]);
         } else {
+          nisn = parts[0];
+          name = parts[1];
+          gender = parseGender(parts[2]);
+        }
+      } else if (parts.length === 2) {
+        if (/^\d+$/.test(parts[0])) {
+          attendanceNo = parseInt(parts[0], 10);
+          name = parts[1];
+        } else if (isGender(parts[1])) {
           name = parts[0];
-          const gRaw = parts[1].toUpperCase();
-          gender = gRaw.startsWith('P') ? 'P' : 'L';
+          gender = parseGender(parts[1]);
+        } else {
+          nisn = parts[0];
+          name = parts[1];
         }
       } else if (parts.length === 1) {
         name = parts[0];
@@ -238,12 +260,12 @@ export const UploadStudentsModal: React.FC<UploadStudentsModalProps> = ({
   const handleDownloadTemplate = () => {
     const csvContent =
       'data:text/csv;charset=utf-8,' +
-      'No Absen,NISN,NIS,Nama Lengkap,Jenis Kelamin (L/P)\n' +
-      '1,0098765401,25260701,Ahmad Rizky Pratama,L\n' +
-      '2,0098765402,25260702,Annisa Rahmawati,P\n' +
-      '3,0098765403,25260703,Bagas Dwi Santoso,L\n' +
-      '4,0098765404,25260704,Cantika Putri Permata,P\n' +
-      '5,0098765405,25260705,Daffa Arya Maulana,L';
+      'No Absen,NISN,Nama Lengkap,Jenis Kelamin (L/P)\n' +
+      '1,0098765401,Ahmad Rizky Pratama,L\n' +
+      '2,0098765402,Annisa Rahmawati,P\n' +
+      '3,0098765403,Bagas Dwi Santoso,L\n' +
+      '4,0098765404,Cantika Putri Permata,P\n' +
+      '5,0098765405,Daffa Arya Maulana,L';
 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
@@ -257,14 +279,14 @@ export const UploadStudentsModal: React.FC<UploadStudentsModalProps> = ({
 
   const handleLoadSampleData = () => {
     const sample =
-      '1\t0098765501\t25260751\tFikri Firmansyah\tL\n' +
-      '2\t0098765502\t25260752\tGendis Ayuningtyas\tP\n' +
-      '3\t0098765503\t25260753\tHaekal Ramadhan\tL\n' +
-      '4\t0098765504\t25260754\tIntan Nuraini\tP\n' +
-      '5\t0098765505\t25260755\tJoko Susilo\tL\n' +
-      '6\t0098765506\t25260756\tKhansa Salsabila\tP\n' +
-      '7\t0098765507\t25260757\tLuqman Hakim\tL\n' +
-      '8\t0098765508\t25260758\tMeutia Zahra\tP';
+      '1\t0098765501\tFikri Firmansyah\tL\n' +
+      '2\t0098765502\tGendis Ayuningtyas\tP\n' +
+      '3\t0098765503\tHaekal Ramadhan\tL\n' +
+      '4\t0098765504\tIntan Nuraini\tP\n' +
+      '5\t0098765505\tJoko Susilo\tL\n' +
+      '6\t0098765506\tKhansa Salsabila\tP\n' +
+      '7\t0098765507\tLuqman Hakim\tL\n' +
+      '8\t0098765508\tMeutia Zahra\tP';
     setInputTab('paste');
     handlePasteChange(sample);
   };
@@ -449,7 +471,7 @@ export const UploadStudentsModal: React.FC<UploadStudentsModalProps> = ({
                 {fileName ? fileName : 'Pilih atau Tarik Berkas CSV / Excel ke Sini'}
               </h4>
               <p className="text-xs text-slate-400 max-w-md mx-auto mb-3">
-                Format kolom: <span className="text-slate-200 font-mono">No Absen, NISN, NIS, Nama Lengkap, Jenis Kelamin (L/P)</span>
+                Format kolom: <span className="text-slate-200 font-mono">No Absen, NISN, Nama Lengkap, Jenis Kelamin (L/P)</span>
               </p>
               <span className="inline-block text-xs font-semibold px-4 py-1.5 rounded-lg bg-blue-600/20 text-blue-400 border border-blue-500/30 hover:bg-blue-600/30 transition-colors">
                 Jelajahi Berkas Komputer
@@ -479,7 +501,7 @@ export const UploadStudentsModal: React.FC<UploadStudentsModalProps> = ({
                 rows={6}
                 value={rawText}
                 onChange={(e) => handlePasteChange(e.target.value)}
-                placeholder={`Contoh:\n1\t0098765401\t25260701\tAditya Pratama\tL\n2\t0098765402\t25260702\tAnisa Rahma Putri\tP\n3\t0098765403\t25260703\tBagus Tri Handoko\tL`}
+                placeholder={`Contoh:\n1\t0098765401\tAditya Pratama\tL\n2\t0098765402\tAnisa Rahma Putri\tP\n3\t0098765403\tBagus Tri Handoko\tL`}
                 className="w-full text-xs font-mono px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-[#0B1120] text-slate-200"
               />
             </div>
@@ -521,7 +543,7 @@ export const UploadStudentsModal: React.FC<UploadStudentsModalProps> = ({
                       <div className="min-w-0">
                         <div className="font-medium text-white truncate">{row.name}</div>
                         <div className="text-[10px] text-slate-500 font-mono">
-                          NISN: {row.nisn} | NIS: {row.nis}
+                          NISN: {row.nisn || '-'}
                         </div>
                       </div>
                     </div>
@@ -557,7 +579,7 @@ export const UploadStudentsModal: React.FC<UploadStudentsModalProps> = ({
             <div className="space-y-1">
               <span className="font-bold text-white">Petunjuk Impor Siswa:</span>
               <p className="text-slate-400">
-                Sistem secara cerdas membaca kolom: No Absen, NISN, NIS, Nama Lengkap, dan Jenis Kelamin (L/P). Jika No Absen atau NISN tidak diisi, sistem akan membuatkan nomor urut otomatis.
+                Sistem secara cerdas membaca kolom: <b>No Absen</b>, <b>NISN</b>, <b>Nama Lengkap</b>, dan <b>Jenis Kelamin (L/P)</b>. Jika No Absen atau NISN tidak diisi, sistem akan membuatkan nomor urut otomatis.
               </p>
             </div>
           </div>

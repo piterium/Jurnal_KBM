@@ -44,6 +44,8 @@ export interface TeachingJournal {
   activities?: string; // Optional (legacy)
   assessmentNotes?: string; // Optional (legacy)
   reflection?: string; // Optional (legacy)
+  keterangan?: string; // Keterangan / Catatan KBM (Ket.)
+  notes?: string; // Catatan tambahan
   attendanceSessionId?: string; // ID sesi absensi terkait
   studentsPresentCount?: number;
   studentsTotalCount?: number;

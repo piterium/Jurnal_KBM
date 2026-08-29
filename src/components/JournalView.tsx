@@ -54,7 +54,8 @@ export const JournalView: React.FC<JournalViewProps> = ({
       const q = searchQuery.toLowerCase();
       const matchTopic = j.topic?.toLowerCase().includes(q);
       const matchJam = j.jamKe?.toLowerCase().includes(q);
-      if (!matchTopic && !matchJam) return false;
+      const matchKet = (j.keterangan || j.notes)?.toLowerCase().includes(q);
+      if (!matchTopic && !matchJam && !matchKet) return false;
     }
     return true;
   }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -207,6 +208,18 @@ export const JournalView: React.FC<JournalViewProps> = ({
                       {j.topic}
                     </h3>
                   </div>
+
+                  {/* Keterangan / Ket Badge/Note */}
+                  {(j.keterangan || j.notes) && (
+                    <div className="mt-2.5 flex items-start gap-2 bg-[#0B1120] px-3 py-2 rounded-xl border border-slate-800 text-xs">
+                      <span className="px-1.5 py-0.5 text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded flex-shrink-0">
+                        Ket.
+                      </span>
+                      <p className="text-slate-300 font-medium">
+                        {j.keterangan || j.notes}
+                      </p>
+                    </div>
+                  )}
 
                   {/* Optional legacy objective or activities if existing */}
                   {(j.learningObjective || j.activities || j.assessmentNotes || j.reflection) && isExpanded && (

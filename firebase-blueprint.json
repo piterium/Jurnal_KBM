@@ -335,6 +335,16 @@
           "description": "Lesson topic or learning material",
           "maxLength": 512
         },
+        "keterangan": {
+          "type": "string",
+          "description": "Additional notes or description (Ket.)",
+          "maxLength": 1024
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional notes or remarks",
+          "maxLength": 1024
+        },
         "attendanceSessionId": {
           "type": "string",
           "description": "Linked attendance session ID",
