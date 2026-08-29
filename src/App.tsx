@@ -11,7 +11,7 @@ import {
 } from './types';
 import { loadAppData, saveAppData, getInitialAppData, getEmptyAppData } from './utils/storage';
 import { generateMonthlyReportPdf } from './utils/pdfGenerator';
-import { auth, onAuthStateChanged, type User } from './firebase/firebase';
+import { auth, onAuthStateChanged, signInAnonymously, type User } from './firebase/firebase';
 import {
   loadUserAppDataFromFirestore,
   saveUserAppDataToFirestore,
@@ -74,8 +74,19 @@ export default function App() {
     date?: string;
   }>({});
 
-  // Listen to Firebase Auth state
+  // Listen to Firebase Auth state (background auto-connection)
   useEffect(() => {
+    const initAuth = async () => {
+      try {
+        if (!auth.currentUser) {
+          await signInAnonymously(auth);
+        }
+      } catch (e) {
+        console.warn('Background Firebase auth notice:', e);
+      }
+    };
+    initAuth();
+
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       setIsAuthLoading(false);
@@ -96,7 +107,7 @@ export default function App() {
           setSyncStatus('synced');
         } catch (err) {
           console.error('Initial cloud sync error:', err);
-          setSyncStatus('error');
+          setSyncStatus('offline');
         }
       } else {
         setSyncStatus('offline');
@@ -452,8 +463,6 @@ export default function App() {
         classesCount={data.classes.length}
         studentsCount={data.students.filter((s) => s.active).length}
         teachersCount={data.teachers?.length || 0}
-        user={user}
-        isAuthLoading={isAuthLoading}
         syncStatus={syncStatus}
         onManualSync={handleManualSync}
         onQuickDownloadPdf={handleQuickDownloadPdf}
@@ -461,7 +470,7 @@ export default function App() {
 
       {/* Main Content Area */}
       <div className="flex-1 min-w-0 flex flex-col min-h-screen">
-        {/* Top Header Bar with Firebase Auth controls */}
+        {/* Top Header Bar with Status controls */}
         <header className="hidden md:flex items-center justify-between px-6 lg:px-8 py-3.5 bg-[#0F172A]/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-20">
           <div className="flex items-center gap-3">
             <span className="text-xs font-semibold text-slate-400">
@@ -474,8 +483,6 @@ export default function App() {
           </div>
 
           <FirebaseAuthHeader
-            user={user}
-            isAuthLoading={isAuthLoading}
             syncStatus={syncStatus}
             onManualSync={handleManualSync}
           />
