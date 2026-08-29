@@ -1,0 +1,482 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Information about an authenticated user account",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The unique Firebase Auth UID of the user",
+          "maxLength": 128
+        },
+        "email": {
+          "type": "string",
+          "description": "User email address",
+          "maxLength": 256
+        },
+        "displayName": {
+          "type": "string",
+          "description": "User display name",
+          "maxLength": 256
+        },
+        "photoURL": {
+          "type": "string",
+          "description": "User profile avatar photo URL",
+          "maxLength": 1024
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp or server timestamp when account was registered",
+          "maxLength": 64
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "ISO timestamp or server timestamp of last update",
+          "maxLength": 64
+        }
+      },
+      "required": ["id", "email"]
+    },
+    "SchoolProfile": {
+      "title": "SchoolProfile",
+      "description": "Administrative profile of the school, headmaster, and subject defaults",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The owner Firebase Auth UID",
+          "maxLength": 128
+        },
+        "schoolName": {
+          "type": "string",
+          "description": "Official name of the school or madrasah",
+          "maxLength": 256
+        },
+        "npsn": {
+          "type": "string",
+          "description": "Nomor Pokok Sekolah Nasional",
+          "maxLength": 32
+        },
+        "logoUrl": {
+          "type": "string",
+          "description": "School logo URL or data string",
+          "maxLength": 500000
+        },
+        "schoolAddress": {
+          "type": "string",
+          "description": "Full school street address",
+          "maxLength": 512
+        },
+        "districtCity": {
+          "type": "string",
+          "description": "District and city / regency name",
+          "maxLength": 128
+        },
+        "province": {
+          "type": "string",
+          "description": "Province name",
+          "maxLength": 128
+        },
+        "postalCode": {
+          "type": "string",
+          "description": "Postal code",
+          "maxLength": 16
+        },
+        "headmasterName": {
+          "type": "string",
+          "description": "Name of the school headmaster",
+          "maxLength": 256
+        },
+        "headmasterNip": {
+          "type": "string",
+          "description": "NIP of the school headmaster",
+          "maxLength": 64
+        },
+        "teacherName": {
+          "type": "string",
+          "description": "Name of the teacher / administrator",
+          "maxLength": 256
+        },
+        "teacherNip": {
+          "type": "string",
+          "description": "NIP of the teacher",
+          "maxLength": 64
+        },
+        "subject": {
+          "type": "string",
+          "description": "Subject taught",
+          "maxLength": 128
+        },
+        "academicYear": {
+          "type": "string",
+          "description": "Current academic year e.g. 2025/2026",
+          "maxLength": 32
+        },
+        "semester": {
+          "type": "string",
+          "description": "Current semester",
+          "enum": ["Ganjil", "Genap"]
+        },
+        "letterHeaderOffice": {
+          "type": "string",
+          "description": "Kop surat dinas instansi pembina",
+          "maxLength": 512
+        }
+      },
+      "required": ["userId"]
+    },
+    "ClassRoom": {
+      "title": "ClassRoom",
+      "description": "Classroom or study group (Rombongan Belajar)",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier of the class",
+          "maxLength": 128
+        },
+        "userId": {
+          "type": "string",
+          "description": "Owner teacher/admin UID",
+          "maxLength": 128
+        },
+        "name": {
+          "type": "string",
+          "description": "Class display name e.g. VII-A",
+          "maxLength": 64
+        },
+        "gradeLevel": {
+          "type": "string",
+          "description": "Grade level e.g. VII, VIII, IX",
+          "maxLength": 32
+        },
+        "academicYear": {
+          "type": "string",
+          "description": "Academic year",
+          "maxLength": 32
+        },
+        "subject": {
+          "type": "string",
+          "description": "Subject for this class",
+          "maxLength": 128
+        },
+        "kkm": {
+          "type": "number",
+          "description": "KKM or KKTP standard minimum passing score"
+        }
+      },
+      "required": ["id", "userId", "name", "gradeLevel"]
+    },
+    "Student": {
+      "title": "Student",
+      "description": "Student record in a class",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique student identifier",
+          "maxLength": 128
+        },
+        "userId": {
+          "type": "string",
+          "description": "Owner teacher/admin UID",
+          "maxLength": 128
+        },
+        "classId": {
+          "type": "string",
+          "description": "Reference to the class ID",
+          "maxLength": 128
+        },
+        "attendanceNo": {
+          "type": "string",
+          "description": "Attendance list number",
+          "maxLength": 16
+        },
+        "nisn": {
+          "type": "string",
+          "description": "Nomor Induk Siswa Nasional (10 digit)",
+          "maxLength": 32
+        },
+        "nis": {
+          "type": "string",
+          "description": "Nomor Induk Siswa Sekolah",
+          "maxLength": 32
+        },
+        "name": {
+          "type": "string",
+          "description": "Student full name",
+          "maxLength": 256
+        },
+        "gender": {
+          "type": "string",
+          "description": "Gender Laki-laki (L) or Perempuan (P)",
+          "enum": ["L", "P"]
+        },
+        "active": {
+          "type": "boolean",
+          "description": "Active status of student"
+        }
+      },
+      "required": ["id", "userId", "classId", "name", "gender"]
+    },
+    "Teacher": {
+      "title": "Teacher",
+      "description": "Teacher/Educator directory record",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Teacher unique identifier",
+          "maxLength": 128
+        },
+        "userId": {
+          "type": "string",
+          "description": "Owner teacher/admin UID",
+          "maxLength": 128
+        },
+        "name": {
+          "type": "string",
+          "description": "Teacher full name with titles",
+          "maxLength": 256
+        },
+        "nip": {
+          "type": "string",
+          "description": "Teacher NIP or NUPTK",
+          "maxLength": 64
+        },
+        "subject": {
+          "type": "string",
+          "description": "Subjects taught",
+          "maxLength": 256
+        },
+        "phone": {
+          "type": "string",
+          "description": "Phone or WhatsApp contact",
+          "maxLength": 64
+        },
+        "email": {
+          "type": "string",
+          "description": "Teacher email",
+          "maxLength": 256
+        },
+        "employmentStatus": {
+          "type": "string",
+          "description": "Employment status e.g. PNS, PPPK, GTT",
+          "maxLength": 64
+        },
+        "gender": {
+          "type": "string",
+          "description": "Gender",
+          "enum": ["L", "P"]
+        },
+        "education": {
+          "type": "string",
+          "description": "Highest education",
+          "maxLength": 128
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional notes",
+          "maxLength": 512
+        },
+        "isHeadmaster": {
+          "type": "boolean",
+          "description": "Whether this teacher is the headmaster"
+        }
+      },
+      "required": ["id", "userId", "name"]
+    },
+    "TeachingJournal": {
+      "title": "TeachingJournal",
+      "description": "Class teaching journal entry",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique journal entry ID",
+          "maxLength": 128
+        },
+        "userId": {
+          "type": "string",
+          "description": "Owner teacher/admin UID",
+          "maxLength": 128
+        },
+        "date": {
+          "type": "string",
+          "description": "Date of teaching session YYYY-MM-DD",
+          "maxLength": 32
+        },
+        "classId": {
+          "type": "string",
+          "description": "Target class ID",
+          "maxLength": 128
+        },
+        "subject": {
+          "type": "string",
+          "description": "Subject taught",
+          "maxLength": 128
+        },
+        "meetingNumber": {
+          "type": "number",
+          "description": "Meeting number sequence"
+        },
+        "jamKe": {
+          "type": "string",
+          "description": "Lesson period e.g. 1, 2",
+          "maxLength": 64
+        },
+        "hoursCount": {
+          "type": "number",
+          "description": "Lesson hours count (JP)"
+        },
+        "topic": {
+          "type": "string",
+          "description": "Lesson topic or learning material",
+          "maxLength": 512
+        },
+        "attendanceSessionId": {
+          "type": "string",
+          "description": "Linked attendance session ID",
+          "maxLength": 128
+        },
+        "studentsPresentCount": {
+          "type": "number",
+          "description": "Number of present students"
+        },
+        "studentsTotalCount": {
+          "type": "number",
+          "description": "Total number of students"
+        },
+        "status": {
+          "type": "string",
+          "description": "Execution status",
+          "enum": ["Terlaksana", "Tertunda", "Diganti"]
+        }
+      },
+      "required": ["id", "userId", "date", "classId", "meetingNumber", "topic", "status"]
+    },
+    "AttendanceRecord": {
+      "title": "AttendanceRecord",
+      "description": "Daily attendance record for a class",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Attendance record unique ID",
+          "maxLength": 128
+        },
+        "userId": {
+          "type": "string",
+          "description": "Owner teacher/admin UID",
+          "maxLength": 128
+        },
+        "date": {
+          "type": "string",
+          "description": "Date YYYY-MM-DD",
+          "maxLength": 32
+        },
+        "classId": {
+          "type": "string",
+          "description": "Class ID",
+          "maxLength": 128
+        },
+        "journalId": {
+          "type": "string",
+          "description": "Linked journal entry ID",
+          "maxLength": 128
+        }
+      },
+      "required": ["id", "userId", "date", "classId"]
+    },
+    "AssessmentItem": {
+      "title": "AssessmentItem",
+      "description": "Student grade assessment component and score collection",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique assessment ID",
+          "maxLength": 128
+        },
+        "userId": {
+          "type": "string",
+          "description": "Owner teacher/admin UID",
+          "maxLength": 128
+        },
+        "title": {
+          "type": "string",
+          "description": "Assessment title",
+          "maxLength": 256
+        },
+        "type": {
+          "type": "string",
+          "description": "Assessment type category",
+          "maxLength": 64
+        },
+        "classId": {
+          "type": "string",
+          "description": "Target class ID",
+          "maxLength": 128
+        },
+        "subject": {
+          "type": "string",
+          "description": "Subject name",
+          "maxLength": 128
+        },
+        "date": {
+          "type": "string",
+          "description": "Date of assessment YYYY-MM-DD",
+          "maxLength": 32
+        },
+        "maxScore": {
+          "type": "number",
+          "description": "Maximum reachable score e.g. 100"
+        },
+        "kkm": {
+          "type": "number",
+          "description": "KKM passing score e.g. 75"
+        },
+        "weight": {
+          "type": "number",
+          "description": "Weight factor for calculating final average"
+        }
+      },
+      "required": ["id", "userId", "title", "type", "classId"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile information"
+    },
+    "/users/{userId}/schoolData/profile": {
+      "schema": "SchoolProfile",
+      "description": "School administrative settings and profile"
+    },
+    "/users/{userId}/classes/{classId}": {
+      "schema": "ClassRoom",
+      "description": "Classroom groups belonging to the user"
+    },
+    "/users/{userId}/students/{studentId}": {
+      "schema": "Student",
+      "description": "Student lists belonging to the user"
+    },
+    "/users/{userId}/teachers/{teacherId}": {
+      "schema": "Teacher",
+      "description": "Teacher directory entries"
+    },
+    "/users/{userId}/journals/{journalId}": {
+      "schema": "TeachingJournal",
+      "description": "Teaching journal records"
+    },
+    "/users/{userId}/attendances/{attendanceId}": {
+      "schema": "AttendanceRecord",
+      "description": "Class attendance records"
+    },
+    "/users/{userId}/assessments/{assessmentId}": {
+      "schema": "AssessmentItem",
+      "description": "Assessment entries and student scores"
+    }
+  }
+}

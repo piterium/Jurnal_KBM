@@ -1,0 +1,127 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default Deny All Catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // User Profile
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create, update: if isOwner(userId)
+        && isValidId(userId)
+        && incoming().id == userId
+        && incoming().email is string
+        && incoming().email.size() <= 256;
+      allow delete: if isOwner(userId);
+
+      // School Profile Settings
+      match /schoolData/{docId} {
+        allow read: if isOwner(userId);
+        allow write: if isOwner(userId)
+          && isValidId(docId)
+          && (request.resource == null || incoming().userId == userId);
+      }
+
+      // Classrooms
+      match /classes/{classId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId)
+          && isValidId(classId)
+          && incoming().id == classId
+          && incoming().userId == userId
+          && incoming().name is string
+          && incoming().name.size() <= 64;
+        allow delete: if isOwner(userId) && isValidId(classId);
+      }
+
+      // Students
+      match /students/{studentId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId)
+          && isValidId(studentId)
+          && incoming().id == studentId
+          && incoming().userId == userId
+          && incoming().name is string
+          && incoming().name.size() <= 256
+          && incoming().classId is string;
+        allow delete: if isOwner(userId) && isValidId(studentId);
+      }
+
+      // Teachers
+      match /teachers/{teacherId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId)
+          && isValidId(teacherId)
+          && incoming().id == teacherId
+          && incoming().userId == userId
+          && incoming().name is string
+          && incoming().name.size() <= 256;
+        allow delete: if isOwner(userId) && isValidId(teacherId);
+      }
+
+      // Teaching Journals
+      match /journals/{journalId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId)
+          && isValidId(journalId)
+          && incoming().id == journalId
+          && incoming().userId == userId
+          && incoming().date is string
+          && incoming().classId is string
+          && incoming().topic is string
+          && incoming().topic.size() <= 1000;
+        allow delete: if isOwner(userId) && isValidId(journalId);
+      }
+
+      // Attendance Records
+      match /attendances/{attendanceId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId)
+          && isValidId(attendanceId)
+          && incoming().id == attendanceId
+          && incoming().userId == userId
+          && incoming().date is string
+          && incoming().classId is string;
+        allow delete: if isOwner(userId) && isValidId(attendanceId);
+      }
+
+      // Assessment Items & Scores
+      match /assessments/{assessmentId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId)
+          && isValidId(assessmentId)
+          && incoming().id == assessmentId
+          && incoming().userId == userId
+          && incoming().title is string
+          && incoming().title.size() <= 256
+          && incoming().classId is string;
+        allow delete: if isOwner(userId) && isValidId(assessmentId);
+      }
+    }
+  }
+}
