@@ -13,6 +13,9 @@ import {
   Users,
   CheckCircle2,
   FileDown,
+  Flame,
+  Activity,
+  Database,
 } from 'lucide-react';
 import {
   formatShortDateIndonesian,
@@ -29,6 +32,8 @@ interface DashboardViewProps {
   onOpenNewAttendance: (classId?: string) => void;
   onOpenNewAssessmentModal: () => void;
   onQuickDownloadPdf: () => void;
+  onOpenFirebaseLiveModal?: () => void;
+  syncStatus?: 'synced' | 'syncing' | 'offline' | 'error';
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
@@ -38,6 +43,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onOpenNewAttendance,
   onOpenNewAssessmentModal,
   onQuickDownloadPdf,
+  onOpenFirebaseLiveModal,
+  syncStatus = 'synced',
 }) => {
   const { profile, classes, students, journals, attendances, assessments } = data;
 
@@ -134,6 +141,45 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <span>Laporan PDF</span>
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* FIREBASE LIVE REAL-TIME STATUS BAR */}
+      <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#0F172A] via-[#111C30] to-[#0F172A] border border-amber-500/25 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5 min-w-0">
+          <div className="relative w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 flex-shrink-0">
+            <Flame className="w-6 h-6 animate-pulse text-amber-400" />
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
+                <span className="text-amber-400 font-extrabold">Firebase</span>
+                <span className="text-emerald-400">Live</span>
+                <span>Basis Data Cloud Firestore</span>
+              </h3>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                LIVE & REALTIME
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 truncate mt-0.5">
+              Basis data cloud aktif: Seluruh jurnal, presensi, data kelas, dan buku nilai tersinkronisasi otomatis secara live.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2.5 self-start sm:self-auto flex-shrink-0">
+          <button
+            id="btn-dashboard-firebase-live-monitor"
+            type="button"
+            onClick={onOpenFirebaseLiveModal}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500/15 to-orange-500/15 hover:from-amber-500/25 hover:to-orange-500/25 text-amber-300 hover:text-amber-200 border border-amber-500/30 rounded-xl text-xs font-bold transition-all active:scale-95 cursor-pointer shadow-sm"
+          >
+            <Activity className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Lihat Telemetri Live</span>
+          </button>
         </div>
       </div>
 

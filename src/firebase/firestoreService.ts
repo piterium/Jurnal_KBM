@@ -7,6 +7,7 @@ import {
   setDoc,
   deleteDoc,
   writeBatch,
+  onSnapshot,
   handleFirestoreError,
   OperationType,
   User,
@@ -22,6 +23,49 @@ import {
   AssessmentItem,
 } from '../types';
 import { defaultProfile } from '../utils/initialData';
+import firebaseConfig from '../../firebase-applet-config.json';
+
+export interface FirebaseLiveStats {
+  projectId: string;
+  databaseId: string;
+  authDomain: string;
+  isConnected: boolean;
+  latencyMs: number;
+  lastChecked: string;
+  counts: {
+    classes: number;
+    students: number;
+    teachers: number;
+    journals: number;
+    attendances: number;
+    assessments: number;
+  };
+}
+
+export function getFirebaseConfigSummary() {
+  return {
+    projectId: firebaseConfig.projectId,
+    databaseId: firebaseConfig.firestoreDatabaseId,
+    authDomain: firebaseConfig.authDomain,
+  };
+}
+
+export async function testFirebaseLiveConnection(userId?: string): Promise<{ isConnected: boolean; latencyMs: number }> {
+  const start = performance.now();
+  try {
+    if (userId) {
+      const path = `users/${userId}/schoolData`;
+      await getDocs(collection(db, path));
+    } else {
+      await getDocs(collection(db, 'users'));
+    }
+    const latency = Math.round(performance.now() - start);
+    return { isConnected: true, latencyMs: latency };
+  } catch (err) {
+    const latency = Math.round(performance.now() - start);
+    return { isConnected: false, latencyMs: latency };
+  }
+}
 
 export async function syncUserProfile(user: User): Promise<void> {
   const path = `users/${user.uid}`;
@@ -164,7 +208,6 @@ export async function saveUserAppDataToFirestore(userId: string, data: AppData):
       updatedAt: new Date().toISOString(),
     });
 
-    // We can use batch for atomic updates or sync collections
     // Classes
     for (const cls of data.classes) {
       const ref = doc(db, `users/${userId}/classes`, cls.id);
@@ -178,9 +221,11 @@ export async function saveUserAppDataToFirestore(userId: string, data: AppData):
     }
 
     // Teachers
-    for (const tch of data.teachers) {
-      const ref = doc(db, `users/${userId}/teachers`, tch.id);
-      await setDoc(ref, { ...tch, userId });
+    if (data.teachers && data.teachers.length > 0) {
+      for (const tch of data.teachers) {
+        const ref = doc(db, `users/${userId}/teachers`, tch.id);
+        await setDoc(ref, { ...tch, userId });
+      }
     }
 
     // Journals
@@ -217,4 +262,27 @@ export async function deleteFirestoreDocument(
   } catch (err) {
     handleFirestoreError(err, OperationType.DELETE, path);
   }
+}
+
+/**
+ * Subscribe to real-time live changes in Firestore
+ */
+export function subscribeToUserJournals(
+  userId: string,
+  onUpdate: (journals: TeachingJournal[]) => void
+): () => void {
+  const path = `users/${userId}/journals`;
+  return onSnapshot(
+    collection(db, path),
+    (snap) => {
+      const journals: TeachingJournal[] = [];
+      snap.forEach((d) => {
+        journals.push({ ...(d.data() as TeachingJournal), id: d.id });
+      });
+      onUpdate(journals);
+    },
+    (error) => {
+      handleFirestoreError(error, OperationType.GET, path);
+    }
+  );
 }
