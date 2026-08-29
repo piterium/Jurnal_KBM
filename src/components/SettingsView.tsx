@@ -629,7 +629,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl text-xs text-blue-300 flex items-start gap-2.5">
             <Palette className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
             <p>
-              Pilihan tema Anda akan otomatis tersimpan di peramban ini dan diterapkan langsung di setiap lembar kerja (Dashboard, Jurnal, Presensi, Buku Nilai, Siswa, Guru, Laporan Bulanan, dan Pengaturan).
+              Pilihan tema Anda akan otomatis tersimpan di peramban ini dan diterapkan langsung di setiap lembar kerja (Dashboard, Jurnal, Presensi, Daftar Penilaian, Siswa, Guru, Laporan Bulanan, dan Pengaturan).
             </p>
           </div>
         </div>

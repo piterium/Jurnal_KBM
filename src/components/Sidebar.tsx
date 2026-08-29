@@ -67,8 +67,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       description: 'H / S / I / A Harian',
     },
     {
-      id: 'gradebook',
-      label: 'Buku Nilai',
+      id: 'grades',
+      label: 'Daftar Penilaian',
       icon: GraduationCap,
       description: 'TP, STS, SAS & KKM',
     },

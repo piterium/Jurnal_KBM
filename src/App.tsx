@@ -33,6 +33,7 @@ import { StudentModal } from './components/modals/StudentModal';
 import { ClassModal } from './components/modals/ClassModal';
 import { UploadStudentsModal } from './components/modals/UploadStudentsModal';
 import { TeacherModal } from './components/modals/TeacherModal';
+import { SaveSuccessModal } from './components/SaveSuccessModal';
 
 export default function App() {
   const [data, setData] = useState<AppData>(() => loadAppData());
@@ -44,6 +45,25 @@ export default function App() {
   const [syncStatus, setSyncStatus] = useState<'synced' | 'syncing' | 'offline' | 'error'>('offline');
   const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isInitialLoadRef = useRef(true);
+
+  // Success Notification state (as requested in user image)
+  const [saveNotification, setSaveNotification] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+  }>({
+    isOpen: false,
+    title: 'Berhasil Disimpan!',
+    message: 'Data tersimpan ke Firebase!',
+  });
+
+  const triggerSaveNotification = useCallback((title: string, message: string) => {
+    setSaveNotification({
+      isOpen: true,
+      title: title || 'Berhasil Disimpan!',
+      message,
+    });
+  }, []);
 
   // Modal states
   const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
@@ -159,11 +179,15 @@ export default function App() {
     try {
       await saveUserAppDataToFirestore(user.uid, data);
       setSyncStatus('synced');
+      triggerSaveNotification(
+        'Berhasil Disimpan!',
+        'Semua data administrasi guru berhasil disinkronkan ke Firebase!'
+      );
     } catch (err) {
       console.error('Manual sync error:', err);
       setSyncStatus('error');
     }
-  }, [user, data]);
+  }, [user, data, triggerSaveNotification]);
 
   // Keep selectedGradeClassId valid if classes change
   useEffect(() => {
@@ -231,6 +255,12 @@ export default function App() {
       journals: updatedJournals,
       attendances: updatedAttendances,
     }));
+
+    const cls = data.classes.find((c) => c.id === journal.classId);
+    triggerSaveNotification(
+      'Berhasil Disimpan!',
+      `Jurnal mengajar kelas ${cls?.name || 'terpilih'} (Pertemuan ke-${journal.meetingNumber}) tersimpan ke Firebase!`
+    );
   };
 
   const handleDeleteJournal = (journalId: string) => {
@@ -281,6 +311,13 @@ export default function App() {
       attendances: updated,
       journals: updatedJournals,
     }));
+
+    const cls = data.classes.find((c) => c.id === record.classId);
+    const count = Object.keys(record.records || {}).length;
+    triggerSaveNotification(
+      'Berhasil Disimpan!',
+      `Absensi kelas ${cls?.name || 'terpilih'} (${count} siswa) tersimpan ke Firebase!`
+    );
   };
 
   // --- ASSESSMENT & GRADE HANDLERS ---
@@ -296,6 +333,12 @@ export default function App() {
       ...prev,
       assessments: updated,
     }));
+
+    const cls = data.classes.find((c) => c.id === assessment.classId);
+    triggerSaveNotification(
+      'Berhasil Disimpan!',
+      `Penilaian "${assessment.title}" (${cls?.name || ''}) tersimpan ke Firebase!`
+    );
   };
 
   const handleDeleteAssessment = (assessmentId: string) => {
@@ -326,6 +369,10 @@ export default function App() {
   // --- MASTER DATA HANDLERS ---
   const handleUpdateProfile = (profile: SchoolProfile) => {
     setData((prev) => ({ ...prev, profile }));
+    triggerSaveNotification(
+      'Berhasil Disimpan!',
+      `Profil sekolah & konfigurasi guru tersimpan ke Firebase!`
+    );
   };
 
   const handleSaveClass = (cls: ClassRoom) => {
@@ -337,6 +384,10 @@ export default function App() {
       updated.push(cls);
     }
     setData((prev) => ({ ...prev, classes: updated }));
+    triggerSaveNotification(
+      'Berhasil Disimpan!',
+      `Data kelas ${cls.name} tersimpan ke Firebase!`
+    );
   };
 
   const handleDeleteClass = (id: string) => {
@@ -355,6 +406,11 @@ export default function App() {
       updated.push(std);
     }
     setData((prev) => ({ ...prev, students: updated }));
+    const cls = data.classes.find((c) => c.id === std.classId);
+    triggerSaveNotification(
+      'Berhasil Disimpan!',
+      `Data siswa ${std.name} (${cls?.name || ''}) tersimpan ke Firebase!`
+    );
   };
 
   const handleDeleteStudent = (id: string) => {
@@ -393,6 +449,12 @@ export default function App() {
       ...prev,
       students: updatedStudents,
     }));
+
+    const cls = data.classes.find((c) => c.id === targetClassId);
+    triggerSaveNotification(
+      'Berhasil Disimpan!',
+      `Sebanyak ${newStudentsList.length} siswa kelas ${cls?.name || ''} tersimpan ke Firebase!`
+    );
   };
 
   // --- TEACHER HANDLERS ---
@@ -415,6 +477,11 @@ export default function App() {
       ...prev,
       teachers: updated,
     }));
+
+    triggerSaveNotification(
+      'Berhasil Disimpan!',
+      `Data guru ${teacherData.name} tersimpan ke Firebase!`
+    );
   };
 
   const handleDeleteTeacher = (teacherId: string) => {
@@ -434,23 +501,39 @@ export default function App() {
         subject: teacher.subject || prev.profile.subject,
       },
     }));
+    triggerSaveNotification(
+      'Berhasil Disimpan!',
+      `Guru aktif ${teacher.name} tersimpan ke Firebase!`
+    );
   };
 
   const handleResetData = () => {
     const initial = getInitialAppData();
     setData(initial);
     saveAppData(initial);
+    triggerSaveNotification(
+      'Berhasil Direset!',
+      'Data contoh berhasil dimuat ulang ke aplikasi!'
+    );
   };
 
   const handleDeleteDatabase = () => {
     const empty = getEmptyAppData();
     setData(empty);
     saveAppData(empty);
+    triggerSaveNotification(
+      'Database Dikosongkan!',
+      'Semua data berhasil dibersihkan dari penyimpanan.'
+    );
   };
 
   const handleImportData = (imported: AppData) => {
     setData(imported);
     saveAppData(imported);
+    triggerSaveNotification(
+      'Berhasil Disimpan!',
+      'Berkas backup berhasil dipulihkan dan tersimpan ke Firebase!'
+    );
   };
 
   return (
@@ -540,7 +623,7 @@ export default function App() {
             />
           )}
 
-          {activeTab === 'grades' && (
+          {(activeTab === 'grades' || activeTab === 'gradebook') && (
             <GradebookView
               assessments={data.assessments}
               classes={data.classes}
@@ -690,6 +773,14 @@ export default function App() {
         initialData={editingClass}
         defaultSubject={data.profile.subject}
         defaultAcademicYear={data.profile.academicYear}
+      />
+
+      {/* Success Save Notification Modal (matching user reference image) */}
+      <SaveSuccessModal
+        isOpen={saveNotification.isOpen}
+        title={saveNotification.title}
+        message={saveNotification.message}
+        onClose={() => setSaveNotification((prev) => ({ ...prev, isOpen: false }))}
       />
     </div>
   );

@@ -30,7 +30,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'journal', label: 'Jurnal Mengajar', icon: BookOpen },
     { id: 'attendance', label: 'Presensi Siswa', icon: CalendarCheck },
-    { id: 'grades', label: 'Daftar Nilai', icon: GraduationCap },
+    { id: 'grades', label: 'Daftar Penilaian', icon: GraduationCap },
     { id: 'students', label: 'Daftar Siswa', icon: Users },
     { id: 'teachers', label: 'Daftar Guru', icon: UserCheck },
     { id: 'report', label: 'Laporan Bulanan & PDF', icon: FileText },

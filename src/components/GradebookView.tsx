@@ -77,7 +77,7 @@ export const GradebookView: React.FC<GradebookViewProps> = ({
             </div>
             <div>
               <h2 className="text-lg sm:text-xl font-bold text-white tracking-wide">
-                Daftar Nilai & Leger Asesmen Siswa
+                Daftar Penilaian & Leger Asesmen Siswa
               </h2>
               <p className="text-xs text-slate-400">
                 Perhitungan otomatis Nilai Akhir (NA), Predikat, dan Ketercapaian KKM/KKTP
