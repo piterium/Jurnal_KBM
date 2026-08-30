@@ -5,6 +5,11 @@ export type AssessmentType =
   | 'FORMATIF_KUIS'
   | 'FORMATIF_PRAKTEK'
   | 'SUMATIF_UH'
+  | 'SUMATIF_UH1'
+  | 'SUMATIF_UH2'
+  | 'SUMATIF_UH3'
+  | 'SUMATIF_UH4'
+  | 'SUMATIF_UH5'
   | 'SUMATIF_STS'
   | 'SUMATIF_SAS'
   | 'LAINNYA';

@@ -178,6 +178,23 @@ export const GradebookView: React.FC<GradebookViewProps> = ({
                   let badgeColor = 'bg-sky-500/10 text-sky-400 border border-sky-500/20';
                   if (asm.type.startsWith('SUMATIF')) badgeColor = 'bg-purple-500/10 text-purple-400 border border-purple-500/20';
 
+                  const getBadgeLabel = (t: string) => {
+                    switch (t) {
+                      case 'SUMATIF_UH1': return 'UH 1';
+                      case 'SUMATIF_UH2': return 'UH 2';
+                      case 'SUMATIF_UH3': return 'UH 3';
+                      case 'SUMATIF_UH4': return 'UH 4';
+                      case 'SUMATIF_UH5': return 'UH 5';
+                      case 'SUMATIF_UH': return 'UH';
+                      case 'SUMATIF_STS': return 'STS';
+                      case 'SUMATIF_SAS': return 'SAS';
+                      case 'FORMATIF_TUGAS': return 'TUGAS';
+                      case 'FORMATIF_KUIS': return 'KUIS';
+                      case 'FORMATIF_PRAKTEK': return 'PRAKTIK';
+                      default: return t.replace('FORMATIF_', '').replace('SUMATIF_', '');
+                    }
+                  };
+
                   return (
                     <th
                       key={asm.id}
@@ -185,7 +202,7 @@ export const GradebookView: React.FC<GradebookViewProps> = ({
                     >
                       <div className="flex items-center justify-between gap-1 mb-1">
                         <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded ${badgeColor}`}>
-                          {asm.type.replace('FORMATIF_', '').replace('SUMATIF_', '')}
+                          {getBadgeLabel(asm.type)}
                         </span>
                         <div className="flex items-center gap-0.5">
                           <button

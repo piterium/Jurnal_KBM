@@ -157,16 +157,38 @@ export const AssessmentModal: React.FC<AssessmentModalProps> = ({
               </label>
               <select
                 value={type}
-                onChange={(e) => setType(e.target.value as AssessmentType)}
+                onChange={(e) => {
+                  const newType = e.target.value as AssessmentType;
+                  setType(newType);
+                  // Optional auto-title suggestion if title is empty
+                  if (!title.trim() || title.startsWith('Ulangan Harian') || title.startsWith('UH')) {
+                    if (newType === 'SUMATIF_UH1') setTitle('Ulangan Harian 1 (UH1)');
+                    else if (newType === 'SUMATIF_UH2') setTitle('Ulangan Harian 2 (UH2)');
+                    else if (newType === 'SUMATIF_UH3') setTitle('Ulangan Harian 3 (UH3)');
+                    else if (newType === 'SUMATIF_UH4') setTitle('Ulangan Harian 4 (UH4)');
+                    else if (newType === 'SUMATIF_UH5') setTitle('Ulangan Harian 5 (UH5)');
+                  }
+                }}
                 className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-[#0B1120] text-white font-medium"
               >
-                <option value="FORMATIF_TUGAS">Formatif: Tugas / PR</option>
-                <option value="FORMATIF_KUIS">Formatif: Kuis Singkat</option>
-                <option value="FORMATIF_PRAKTEK">Formatif: Praktik / Portofolio</option>
-                <option value="SUMATIF_UH">Sumatif: Ulangan Harian (UH)</option>
-                <option value="SUMATIF_STS">Sumatif: Tengah Semester (STS/UTS)</option>
-                <option value="SUMATIF_SAS">Sumatif: Akhir Semester (SAS/UAS)</option>
-                <option value="LAINNYA">Lainnya / Ekstra</option>
+                <optgroup label="Asesmen Sumatif Ulangan Harian">
+                  <option value="SUMATIF_UH1">Sumatif: Ulangan Harian 1 (UH1)</option>
+                  <option value="SUMATIF_UH2">Sumatif: Ulangan Harian 2 (UH2)</option>
+                  <option value="SUMATIF_UH3">Sumatif: Ulangan Harian 3 (UH3)</option>
+                  <option value="SUMATIF_UH4">Sumatif: Ulangan Harian 4 (UH4)</option>
+                  <option value="SUMATIF_UH5">Sumatif: Ulangan Harian 5 (UH5)</option>
+                  <option value="SUMATIF_UH">Sumatif: Ulangan Harian (UH Umum)</option>
+                </optgroup>
+                <optgroup label="Asesmen Formatif">
+                  <option value="FORMATIF_TUGAS">Formatif: Tugas / PR</option>
+                  <option value="FORMATIF_KUIS">Formatif: Kuis Singkat</option>
+                  <option value="FORMATIF_PRAKTEK">Formatif: Praktik / Portofolio</option>
+                </optgroup>
+                <optgroup label="Sumatif Semester & Lainnya">
+                  <option value="SUMATIF_STS">Sumatif: Tengah Semester (STS/UTS)</option>
+                  <option value="SUMATIF_SAS">Sumatif: Akhir Semester (SAS/UAS)</option>
+                  <option value="LAINNYA">Lainnya / Ekstra</option>
+                </optgroup>
               </select>
             </div>
           </div>

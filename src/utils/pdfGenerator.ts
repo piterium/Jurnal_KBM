@@ -42,46 +42,85 @@ export function generateMonthlyReportPdf(data: AppData, options: GeneratePdfOpti
 
   // Helper to draw formal Indonesian KOP Surat
   const drawKopSurat = (currentDoc: jsPDF) => {
-    const startY = 12;
-
-    // Draw school logo if available
-    if (profile.logoUrl && profile.logoUrl.startsWith('data:image')) {
-      try {
-        currentDoc.addImage(profile.logoUrl, 14, 10, 20, 20);
-      } catch (e) {
-        console.warn('Could not add logo image to PDF:', e);
-      }
-    }
+    const startY = 11;
+    const leftMargin = 14;
+    const rightMargin = pageWidth - 14;
 
     currentDoc.setFont('helvetica', 'bold');
-    currentDoc.setFontSize(11);
+    currentDoc.setFontSize(10.5);
     currentDoc.setTextColor(30, 41, 59);
 
-    const headerOfficeLines = profile.letterHeaderOffice ? profile.letterHeaderOffice.split('\n') : ['PEMERINTAH KOTA / KABUPATEN', 'DINAS PENDIDIKAN DAN KEBUDAYAAN'];
-    let curY = startY;
+    const headerOfficeLines = profile.letterHeaderOffice
+      ? profile.letterHeaderOffice.split('\n').map(l => l.trim()).filter(Boolean)
+      : ['PEMERINTAH DAERAH / KOTA', 'DINAS PENDIDIKAN DAN KEBUDAYAAN'];
+
+    let curY = startY + 2.5;
     headerOfficeLines.forEach(line => {
       currentDoc.text(line.toUpperCase(), pageWidth / 2, curY, { align: 'center' });
       curY += 4.5;
     });
 
-    currentDoc.setFontSize(14);
+    currentDoc.setFontSize(13.5);
     currentDoc.setTextColor(15, 23, 42);
     currentDoc.text(profile.schoolName.toUpperCase(), pageWidth / 2, curY, { align: 'center' });
     curY += 4.5;
 
     currentDoc.setFont('helvetica', 'normal');
-    currentDoc.setFontSize(8.5);
+    currentDoc.setFontSize(8);
     currentDoc.setTextColor(71, 85, 105);
-    const addressStr = `${profile.schoolAddress} | NPSN: ${profile.npsn} | ${profile.districtCity}, ${profile.province}`;
+    const addressParts = [
+      profile.schoolAddress,
+      profile.npsn ? `NPSN: ${profile.npsn}` : '',
+      profile.districtCity && profile.province ? `${profile.districtCity}, ${profile.province}` : (profile.districtCity || profile.province || ''),
+    ].filter(Boolean);
+    const addressStr = addressParts.join(' | ');
     currentDoc.text(addressStr, pageWidth / 2, curY, { align: 'center' });
-    curY += 3.5;
+    curY += 3.8;
 
-    // Double lines for Kop Surat
+    // Calculate vertical midpoint of the kop text block for exact logo centering
+    const textCenterY = (startY + curY) / 2;
+
+    // Draw school logo with exact aspect ratio preservation and bounding box alignment
+    if (profile.logoUrl && (profile.logoUrl.startsWith('data:image') || profile.logoUrl.startsWith('http') || profile.logoUrl.startsWith('blob:'))) {
+      try {
+        const maxBoxW = 21;
+        const maxBoxH = 21;
+        let logoW = maxBoxW;
+        let logoH = maxBoxH;
+        let logoX = leftMargin;
+        let logoY = Math.max(9, textCenterY - maxBoxH / 2);
+
+        try {
+          // @ts-ignore
+          const imgProps = currentDoc.getImageProperties(profile.logoUrl);
+          if (imgProps && imgProps.width && imgProps.height) {
+            const aspect = imgProps.width / imgProps.height;
+            if (aspect >= 1) {
+              logoW = maxBoxW;
+              logoH = maxBoxW / aspect;
+            } else {
+              logoH = maxBoxH;
+              logoW = maxBoxH * aspect;
+            }
+            logoX = leftMargin + (maxBoxW - logoW) / 2;
+            logoY = textCenterY - logoH / 2;
+          }
+        } catch {
+          // Fallback if dimensions cannot be inspected
+        }
+
+        currentDoc.addImage(profile.logoUrl, logoX, logoY, logoW, logoH);
+      } catch (e) {
+        console.warn('Could not add logo image to PDF:', e);
+      }
+    }
+
+    // Double lines for Kop Surat (Official Indonesian standard)
     currentDoc.setDrawColor(30, 41, 59);
-    currentDoc.setLineWidth(0.8);
-    currentDoc.line(14, curY, pageWidth - 14, curY);
-    currentDoc.setLineWidth(0.3);
-    currentDoc.line(14, curY + 1.2, pageWidth - 14, curY + 1.2);
+    currentDoc.setLineWidth(0.85);
+    currentDoc.line(leftMargin, curY, rightMargin, curY);
+    currentDoc.setLineWidth(0.35);
+    currentDoc.line(leftMargin, curY + 1.1, rightMargin, curY + 1.1);
 
     return curY + 5;
   };

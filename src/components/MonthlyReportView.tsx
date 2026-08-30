@@ -248,23 +248,35 @@ export const MonthlyReportView: React.FC<MonthlyReportViewProps> = ({ data }) =>
         {/* Paper Container (White Sheet) */}
         <div className="bg-white text-slate-900 shadow-2xl rounded-sm p-6 sm:p-10 w-full max-w-4xl border border-slate-300 space-y-6 text-xs leading-relaxed">
           {/* KOP SURAT */}
-          <div className="text-center border-b-2 border-double border-slate-800 pb-3">
-            <div className="font-bold text-xs sm:text-sm uppercase tracking-wider text-slate-800">
-              {profile.letterHeaderOffice ? (
-                profile.letterHeaderOffice.split('\n').map((l, i) => <div key={i}>{l}</div>)
-              ) : (
-                <>
-                  <div>PEMERINTAH KOTA / KABUPATEN</div>
-                  <div>DINAS PENDIDIKAN DAN KEBUDAYAAN</div>
-                </>
-              )}
+          <div className="relative flex items-center justify-between border-b-2 border-double border-slate-800 pb-3 gap-4">
+            {profile.logoUrl && (
+              <div className="w-16 h-16 flex-shrink-0 flex items-center justify-center">
+                <img
+                  src={profile.logoUrl}
+                  alt="Logo Sekolah"
+                  className="max-h-16 max-w-16 object-contain"
+                />
+              </div>
+            )}
+            <div className="flex-1 text-center">
+              <div className="font-bold text-xs sm:text-sm uppercase tracking-wider text-slate-800">
+                {profile.letterHeaderOffice ? (
+                  profile.letterHeaderOffice.split('\n').map((l, i) => <div key={i}>{l}</div>)
+                ) : (
+                  <>
+                    <div>PEMERINTAH KOTA / KABUPATEN</div>
+                    <div>DINAS PENDIDIKAN DAN KEBUDAYAAN</div>
+                  </>
+                )}
+              </div>
+              <h1 className="text-base sm:text-lg font-black uppercase text-slate-950 mt-0.5">
+                {profile.schoolName}
+              </h1>
+              <p className="text-[11px] text-slate-600 mt-0.5">
+                {profile.schoolAddress} | NPSN: {profile.npsn} | {profile.districtCity}, {profile.province}
+              </p>
             </div>
-            <h1 className="text-base sm:text-lg font-black uppercase text-slate-950 mt-1">
-              {profile.schoolName}
-            </h1>
-            <p className="text-[11px] text-slate-600 mt-0.5">
-              {profile.schoolAddress} | NPSN: {profile.npsn} | {profile.districtCity}, {profile.province}
-            </p>
+            {profile.logoUrl && <div className="w-16 flex-shrink-0 hidden sm:block"></div>}
           </div>
 
           {/* DOCUMENT TITLE */}
