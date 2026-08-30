@@ -37,6 +37,7 @@ export const MonthlyReportView: React.FC<MonthlyReportViewProps> = ({ data }) =>
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [selectedClassId, setSelectedClassId] = useState<string>('ALL');
   const [reportType, setReportType] = useState<'FULL' | 'JOURNAL' | 'ATTENDANCE' | 'GRADES'>('FULL');
+  const [attendanceMatrixMode, setAttendanceMatrixMode] = useState<'CALENDAR' | 'SESSIONS'>('CALENDAR');
   const [signatureCity, setSignatureCity] = useState<string>(profile.districtCity || 'Kota Nusantara');
   const [signatureDate, setSignatureDate] = useState<string>(
     formatShortDateIndonesian(new Date().toISOString().split('T')[0])
@@ -66,11 +67,13 @@ export const MonthlyReportView: React.FC<MonthlyReportViewProps> = ({ data }) =>
         reportType,
         signatureCity,
         signatureDate,
+        attendanceMatrixMode,
       };
 
       const doc = generateMonthlyReportPdf(data, options);
       const safeClassName = targetClass ? `_${targetClass.name.replace(/\s+/g, '_')}` : '_Semua_Kelas';
-      const fileName = `Laporan_${reportType}_${monthName}_${selectedYear}${safeClassName}.pdf`;
+      const modeSuffix = reportType === 'ATTENDANCE' ? (attendanceMatrixMode === 'SESSIONS' ? '_Sesi' : '_Kalender') : '';
+      const fileName = `Laporan_${reportType}${modeSuffix}_${monthName}_${selectedYear}${safeClassName}.pdf`;
       doc.save(fileName);
     } catch (err) {
       console.error('Error generating PDF', err);
@@ -90,6 +93,7 @@ export const MonthlyReportView: React.FC<MonthlyReportViewProps> = ({ data }) =>
         reportType,
         signatureCity,
         signatureDate,
+        attendanceMatrixMode,
       };
       const doc = generateMonthlyReportPdf(data, options);
       const blob = doc.output('blob');
@@ -165,6 +169,32 @@ export const MonthlyReportView: React.FC<MonthlyReportViewProps> = ({ data }) =>
               <option value="ATTENDANCE">3. Rekapitulasi Presensi / Kehadiran Siswa</option>
               <option value="GRADES">4. Leger Daftar Nilai & Ketuntasan Siswa</option>
             </select>
+            {reportType === 'ATTENDANCE' && (
+              <div className="mt-2 flex items-center gap-1.5 p-1 bg-[#080E1A] rounded-lg border border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setAttendanceMatrixMode('CALENDAR')}
+                  className={`flex-1 py-1 px-2 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
+                    attendanceMatrixMode === 'CALENDAR'
+                      ? 'bg-blue-600 text-white'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Kalender (1-31)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAttendanceMatrixMode('SESSIONS')}
+                  className={`flex-1 py-1 px-2 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
+                    attendanceMatrixMode === 'SESSIONS'
+                      ? 'bg-emerald-600 text-white'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Sesi Terlaksana
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Month & Year */}

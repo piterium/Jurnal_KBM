@@ -24,6 +24,7 @@ import {
   CalendarDays,
   PlusCircle,
   Table as TableIcon,
+  FileText,
 } from 'lucide-react';
 import {
   formatDateIndonesian,
@@ -342,7 +343,8 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
   };
 
   // Export PDF Handler
-  const handleExportPdf = () => {
+  const handleExportPdf = (modeOverride?: 'CALENDAR' | 'SESSIONS') => {
+    const targetMode = modeOverride || tableModel;
     setIsExportingPdf(true);
     try {
       const fullData = appData || loadAppData();
@@ -351,11 +353,12 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
         year: recapYear,
         classId: selectedClassId,
         reportType: 'ATTENDANCE',
-        attendanceMatrixMode: tableModel,
+        attendanceMatrixMode: targetMode,
       });
       const monthName = MONTH_NAMES_ID[recapMonth - 1];
       const className = currentClass ? currentClass.name.replace(/\s+/g, '_') : 'Semua';
-      doc.save(`Rekap_Presensi_Bulanan_${className}_${monthName}_${recapYear}.pdf`);
+      const suffix = targetMode === 'SESSIONS' ? 'Sesi_Terlaksana' : 'Kalender_Bulanan';
+      doc.save(`Rekap_Presensi_${className}_${monthName}_${recapYear}_${suffix}.pdf`);
     } catch (e) {
       console.error('Error generating PDF:', e);
     } finally {
@@ -779,6 +782,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                     }`}
                     title="Menampilkan hanya tanggal yang ada sesi presensi KBM"
                   >
+                    <Layers className="w-3.5 h-3.5" />
                     <span>Sesi Terlaksana ({monthlyAttendances.length})</span>
                   </button>
                 </div>
@@ -794,16 +798,31 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                   <span className="hidden sm:inline">Excel/CSV</span>
                 </button>
 
-                {/* PDF Export */}
+                {/* PDF Export Sesi Terlaksana Button */}
                 <button
                   type="button"
-                  onClick={handleExportPdf}
+                  onClick={() => handleExportPdf('SESSIONS')}
+                  disabled={isExportingPdf || monthlyAttendances.length === 0}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-emerald-300 bg-emerald-950/60 hover:bg-emerald-900/80 border border-emerald-500/40 rounded-xl shadow-lg shadow-emerald-950/30 transition-all cursor-pointer active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                  title="Cetak khusus Rekap Sesi KBM Terlaksana (format matriks sesi terlaksana)"
+                >
+                  <FileText className="w-4 h-4 text-emerald-400" />
+                  <span>Cetak PDF Sesi Terlaksana</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-extrabold border border-emerald-500/30">
+                    {monthlyAttendances.length}
+                  </span>
+                </button>
+
+                {/* PDF Export Kalender (1-31) Button */}
+                <button
+                  type="button"
+                  onClick={() => handleExportPdf('CALENDAR')}
                   disabled={isExportingPdf}
                   className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-lg shadow-blue-600/20 transition-all cursor-pointer active:scale-95 disabled:opacity-50"
-                  title="Cetak atau unduh dokumen PDF resmi landscape"
+                  title="Cetak Rekap Presensi Format Kalender Lengkap (1 s/d akhir bulan)"
                 >
                   <Printer className="w-4 h-4" />
-                  <span>{isExportingPdf ? 'Membuat PDF...' : 'Cetak PDF'}</span>
+                  <span>{isExportingPdf ? 'Membuat PDF...' : 'Cetak PDF Kalender'}</span>
                 </button>
               </div>
             </div>

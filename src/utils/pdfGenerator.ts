@@ -303,15 +303,18 @@ export function generateMonthlyReportPdf(data: AppData, options: GeneratePdfOpti
         currentY = 20;
       }
 
+      const useCalendarMode = options.attendanceMatrixMode
+        ? options.attendanceMatrixMode === 'CALENDAR'
+        : (options.reportType === 'ATTENDANCE' && orientation === 'landscape');
+      const daysInMonth = new Date(year, month, 0).getDate();
+
+      const modeTitle = useCalendarMode ? 'FORMAT KALENDER BULANAN' : 'SESI PERTEMUAN TERLAKSANA';
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(9.5);
       doc.setTextColor(30, 41, 59);
       const sectionNum = reportType === 'FULL' ? 'II.' : 'I.';
-      doc.text(`${sectionNum} REKAPITULASI PRESENSI SISWA BULAN ${monthName.toUpperCase()} ${year} - ${cls.name.toUpperCase()}`, 14, currentY + 3);
+      doc.text(`${sectionNum} REKAPITULASI PRESENSI SISWA (${modeTitle}) BULAN ${monthName.toUpperCase()} ${year} - ${cls.name.toUpperCase()}`, 14, currentY + 3);
       currentY += 5;
-
-      const useCalendarMode = options.attendanceMatrixMode === 'CALENDAR' || (options.reportType === 'ATTENDANCE' && orientation === 'landscape');
-      const daysInMonth = new Date(year, month, 0).getDate();
 
       let dateCols: { dateStr: string; label: string; isSunday: boolean }[] = [];
 
@@ -329,7 +332,7 @@ export function generateMonthlyReportPdf(data: AppData, options: GeneratePdfOpti
         }
       } else {
         // Use recorded session dates
-        dateCols = clsAttendances.map(a => {
+        dateCols = clsAttendances.map((a, idx) => {
           const p = a.date.split('-');
           return {
             dateStr: a.date,
