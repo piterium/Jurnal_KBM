@@ -248,13 +248,13 @@ export const MonthlyReportView: React.FC<MonthlyReportViewProps> = ({ data }) =>
         {/* Paper Container (White Sheet) */}
         <div className="bg-white text-slate-900 shadow-2xl rounded-sm p-6 sm:p-10 w-full max-w-4xl border border-slate-300 space-y-6 text-xs leading-relaxed">
           {/* KOP SURAT */}
-          <div className="relative flex items-center justify-between border-b-2 border-double border-slate-800 pb-3 gap-4">
+          <div className="relative flex items-center justify-between border-b-[3px] border-double border-slate-900 pb-3.5 gap-4">
             {profile.logoUrl && (
-              <div className="w-16 h-16 flex-shrink-0 flex items-center justify-center">
+              <div className="w-20 h-20 flex-shrink-0 flex items-center justify-center">
                 <img
                   src={profile.logoUrl}
                   alt="Logo Sekolah"
-                  className="max-h-16 max-w-16 object-contain"
+                  className="max-h-20 max-w-20 object-contain"
                 />
               </div>
             )}
@@ -269,14 +269,14 @@ export const MonthlyReportView: React.FC<MonthlyReportViewProps> = ({ data }) =>
                   </>
                 )}
               </div>
-              <h1 className="text-base sm:text-lg font-black uppercase text-slate-950 mt-0.5">
+              <h1 className="text-base sm:text-lg font-black uppercase text-slate-950 mt-1 leading-snug">
                 {profile.schoolName}
               </h1>
-              <p className="text-[11px] text-slate-600 mt-0.5">
+              <p className="text-[11px] text-slate-600 mt-1">
                 {profile.schoolAddress} | NPSN: {profile.npsn} | {profile.districtCity}, {profile.province}
               </p>
             </div>
-            {profile.logoUrl && <div className="w-16 flex-shrink-0 hidden sm:block"></div>}
+            {profile.logoUrl && <div className="w-20 flex-shrink-0 hidden sm:block"></div>}
           </div>
 
           {/* DOCUMENT TITLE */}

@@ -42,28 +42,82 @@ export function generateMonthlyReportPdf(data: AppData, options: GeneratePdfOpti
 
   // Helper to draw formal Indonesian KOP Surat
   const drawKopSurat = (currentDoc: jsPDF) => {
-    const startY = 11;
+    const topY = 10;
     const leftMargin = 14;
     const rightMargin = pageWidth - 14;
-
-    currentDoc.setFont('helvetica', 'bold');
-    currentDoc.setFontSize(10.5);
-    currentDoc.setTextColor(30, 41, 59);
 
     const headerOfficeLines = profile.letterHeaderOffice
       ? profile.letterHeaderOffice.split('\n').map(l => l.trim()).filter(Boolean)
       : ['PEMERINTAH DAERAH / KOTA', 'DINAS PENDIDIKAN DAN KEBUDAYAAN'];
 
-    let curY = startY + 2.5;
+    // Calculate text measurements
+    const officeLineHeight = 4.2;
+    const schoolNameHeight = 5.2;
+    const addressHeight = 3.8;
+    const totalOfficeHeight = headerOfficeLines.length * officeLineHeight;
+    const totalTextHeight = totalOfficeHeight + schoolNameHeight + addressHeight;
+
+    // Define Logo bounding limits
+    const maxLogoBox = 21; // 21mm x 21mm bounding box
+    let logoW = maxLogoBox;
+    let logoH = maxLogoBox;
+    let hasLogo = false;
+
+    if (profile.logoUrl && (profile.logoUrl.startsWith('data:image') || profile.logoUrl.startsWith('http') || profile.logoUrl.startsWith('blob:'))) {
+      hasLogo = true;
+      try {
+        // @ts-ignore
+        const imgProps = currentDoc.getImageProperties(profile.logoUrl);
+        if (imgProps && imgProps.width && imgProps.height) {
+          const aspect = imgProps.width / imgProps.height;
+          if (aspect >= 1) {
+            logoW = maxLogoBox;
+            logoH = maxLogoBox / aspect;
+          } else {
+            logoH = maxLogoBox;
+            logoW = maxLogoBox * aspect;
+          }
+        }
+      } catch {
+        logoW = maxLogoBox;
+        logoH = maxLogoBox;
+      }
+    }
+
+    // Determine total Kop content height ensuring both text and logo have clear vertical breathing room
+    const effectiveContentH = hasLogo ? Math.max(totalTextHeight, logoH) : totalTextHeight;
+    const kopHeight = Math.max(effectiveContentH + 5, 23);
+    const doubleLineY = topY + kopHeight;
+
+    // Calculate vertical start positions to perfectly center both logo and text
+    const textStartY = topY + (kopHeight - totalTextHeight) / 2 + 3.2;
+    const logoY = topY + (kopHeight - logoH) / 2;
+    const logoX = leftMargin + (maxLogoBox - logoW) / 2;
+
+    // 1. Draw School Logo (cleanly centered on the left, strictly above the double line)
+    if (hasLogo && profile.logoUrl) {
+      try {
+        currentDoc.addImage(profile.logoUrl, logoX, logoY, logoW, logoH);
+      } catch (e) {
+        console.warn('Could not add logo image to PDF:', e);
+      }
+    }
+
+    // 2. Draw Office & School Header Text
+    let curY = textStartY;
+    currentDoc.setFont('helvetica', 'bold');
+    currentDoc.setFontSize(10);
+    currentDoc.setTextColor(30, 41, 59);
+
     headerOfficeLines.forEach(line => {
       currentDoc.text(line.toUpperCase(), pageWidth / 2, curY, { align: 'center' });
-      curY += 4.5;
+      curY += officeLineHeight;
     });
 
-    currentDoc.setFontSize(13.5);
+    currentDoc.setFontSize(13);
     currentDoc.setTextColor(15, 23, 42);
     currentDoc.text(profile.schoolName.toUpperCase(), pageWidth / 2, curY, { align: 'center' });
-    curY += 4.5;
+    curY += schoolNameHeight;
 
     currentDoc.setFont('helvetica', 'normal');
     currentDoc.setFontSize(8);
@@ -75,54 +129,15 @@ export function generateMonthlyReportPdf(data: AppData, options: GeneratePdfOpti
     ].filter(Boolean);
     const addressStr = addressParts.join(' | ');
     currentDoc.text(addressStr, pageWidth / 2, curY, { align: 'center' });
-    curY += 3.8;
 
-    // Calculate vertical midpoint of the kop text block for exact logo centering
-    const textCenterY = (startY + curY) / 2;
-
-    // Draw school logo with exact aspect ratio preservation and bounding box alignment
-    if (profile.logoUrl && (profile.logoUrl.startsWith('data:image') || profile.logoUrl.startsWith('http') || profile.logoUrl.startsWith('blob:'))) {
-      try {
-        const maxBoxW = 21;
-        const maxBoxH = 21;
-        let logoW = maxBoxW;
-        let logoH = maxBoxH;
-        let logoX = leftMargin;
-        let logoY = Math.max(9, textCenterY - maxBoxH / 2);
-
-        try {
-          // @ts-ignore
-          const imgProps = currentDoc.getImageProperties(profile.logoUrl);
-          if (imgProps && imgProps.width && imgProps.height) {
-            const aspect = imgProps.width / imgProps.height;
-            if (aspect >= 1) {
-              logoW = maxBoxW;
-              logoH = maxBoxW / aspect;
-            } else {
-              logoH = maxBoxH;
-              logoW = maxBoxH * aspect;
-            }
-            logoX = leftMargin + (maxBoxW - logoW) / 2;
-            logoY = textCenterY - logoH / 2;
-          }
-        } catch {
-          // Fallback if dimensions cannot be inspected
-        }
-
-        currentDoc.addImage(profile.logoUrl, logoX, logoY, logoW, logoH);
-      } catch (e) {
-        console.warn('Could not add logo image to PDF:', e);
-      }
-    }
-
-    // Double lines for Kop Surat (Official Indonesian standard)
-    currentDoc.setDrawColor(30, 41, 59);
+    // 3. Draw Formal Indonesian Double Lines (Solid primary line + thin secondary line)
+    currentDoc.setDrawColor(15, 23, 42);
     currentDoc.setLineWidth(0.85);
-    currentDoc.line(leftMargin, curY, rightMargin, curY);
+    currentDoc.line(leftMargin, doubleLineY, rightMargin, doubleLineY);
     currentDoc.setLineWidth(0.35);
-    currentDoc.line(leftMargin, curY + 1.1, rightMargin, curY + 1.1);
+    currentDoc.line(leftMargin, doubleLineY + 1.2, rightMargin, doubleLineY + 1.2);
 
-    return curY + 5;
+    return doubleLineY + 6;
   };
 
   // Helper to draw signatures

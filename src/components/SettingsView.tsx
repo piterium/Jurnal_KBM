@@ -28,7 +28,7 @@ import {
   Award,
 } from 'lucide-react';
 import { exportBackup } from '../utils/storage';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme, THEME_OPTIONS } from '../context/ThemeContext';
 
 interface SettingsViewProps {
   data: AppData;
@@ -669,169 +669,127 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       {/* SECTION: TEMA TAMPILAN (LIGHT & DARK) */}
       {activeSection === 'THEME' && (
         <div className="bg-[#0F172A] p-6 sm:p-8 rounded-2xl border border-slate-800 shadow-xl space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h3 className="text-base font-bold text-white flex items-center gap-2">
                 <Palette className="w-4 h-4 text-blue-400" />
-                <span>Pilihan Tema Tampilan Aplikasi</span>
+                <span>Pilihan Tema & Nuansa Visual Aplikasi</span>
               </h3>
               <p className="text-xs text-slate-400 mt-0.5">
-                Sesuaikan kenyamanan visual Anda saat mengelola data administrasi kelas, jurnal mengajar, dan buku nilai.
+                Pilih palet warna yang paling nyaman di mata Anda saat mengelola data presensi, jurnal mengajar, dan buku nilai.
               </p>
             </div>
 
-            <div className="px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-xs font-bold border border-blue-500/20">
-              Tema Saat Ini: {theme === 'light' ? 'Mode Terang' : 'Mode Gelap'}
+            <div className="px-3.5 py-1.5 rounded-xl bg-blue-500/10 text-blue-400 text-xs font-bold border border-blue-500/20 flex items-center gap-2 self-start sm:self-auto">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-400 animate-pulse" />
+              <span>Tema Aktif: {THEME_OPTIONS.find((t) => t.id === theme)?.name || theme}</span>
             </div>
           </div>
 
-          {/* Theme Option Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
-            {/* Opsi 1: Mode Terang (Light Theme) */}
-            <div
-              onClick={() => setTheme('light')}
-              className={`p-5 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between relative overflow-hidden group ${
-                theme === 'light'
-                  ? 'border-blue-500 bg-slate-900/90 shadow-xl ring-2 ring-blue-500/20'
-                  : 'border-slate-800 bg-[#0B1120] hover:border-slate-700'
-              }`}
-            >
-              {theme === 'light' && (
-                <div className="absolute top-4 right-4 flex items-center gap-1 bg-blue-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Aktif</span>
-                </div>
-              )}
-
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-500 flex items-center justify-center flex-shrink-0">
-                    <Sun className="w-6 h-6 fill-amber-500/20" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-white">Mode Terang (Light Theme)</h4>
-                    <p className="text-xs text-slate-400">Latar cerah, teks hitam kontras tinggi & nyaman di siang hari</p>
-                  </div>
-                </div>
-
-                {/* Visual Preview Box */}
-                <div className="p-3.5 rounded-xl bg-white border border-slate-200 text-slate-900 shadow-sm space-y-2">
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2.5 h-2.5 rounded-full bg-blue-600"></div>
-                      <span className="text-xs font-bold text-slate-900">Jurnal Mengajar Terpadu</span>
-                    </div>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100">
-                      Kelas VII-A
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 text-[11px]">
-                    <div className="p-2 bg-slate-50 rounded-lg border border-slate-100">
-                      <span className="text-slate-500 block text-[10px]">Tingkat Kehadiran</span>
-                      <strong className="text-emerald-700 text-xs">98% Hadir</strong>
-                    </div>
-                    <div className="p-2 bg-slate-50 rounded-lg border border-slate-100">
-                      <span className="text-slate-500 block text-[10px]">Rata-rata Nilai</span>
-                      <strong className="text-blue-700 text-xs">88.5 / 100</strong>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-5 pt-3 border-t border-slate-800/80 flex items-center justify-between">
-                <span className="text-xs text-slate-400">Cocok untuk pencetakan dan ruang kelas terang</span>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setTheme('light');
-                  }}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                    theme === 'light'
-                      ? 'bg-blue-600 text-white shadow-md'
-                      : 'bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700'
+          {/* All 6 Theme Option Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+            {THEME_OPTIONS.map((opt) => {
+              const isActive = theme === opt.id;
+              return (
+                <div
+                  key={opt.id}
+                  onClick={() => setTheme(opt.id)}
+                  className={`p-5 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between relative overflow-hidden group hover:shadow-lg ${
+                    isActive
+                      ? 'border-blue-500 bg-[#0B1120] shadow-xl ring-2 ring-blue-500/20'
+                      : 'border-slate-800 bg-[#0B1120]/60 hover:border-slate-700'
                   }`}
                 >
-                  {theme === 'light' ? 'Sedang Digunakan' : 'Pilih Mode Terang'}
-                </button>
-              </div>
-            </div>
-
-            {/* Opsi 2: Mode Gelap (Dark Theme) */}
-            <div
-              onClick={() => setTheme('dark')}
-              className={`p-5 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between relative overflow-hidden group ${
-                theme === 'dark'
-                  ? 'border-blue-500 bg-slate-900/90 shadow-xl ring-2 ring-blue-500/20'
-                  : 'border-slate-800 bg-[#0B1120] hover:border-slate-700'
-              }`}
-            >
-              {theme === 'dark' && (
-                <div className="absolute top-4 right-4 flex items-center gap-1 bg-blue-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Aktif</span>
-                </div>
-              )}
-
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-blue-500/15 border border-blue-500/30 text-blue-400 flex items-center justify-center flex-shrink-0">
-                    <Moon className="w-6 h-6 fill-blue-400/20" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-white">Mode Gelap (Dark Theme)</h4>
-                    <p className="text-xs text-slate-400">Latar gelap modern, hemat daya baterai & ramah di mata</p>
-                  </div>
-                </div>
-
-                {/* Visual Preview Box */}
-                <div className="p-3.5 rounded-xl bg-[#0B1120] border border-slate-800 text-white shadow-sm space-y-2">
-                  <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2.5 h-2.5 rounded-full bg-blue-400"></div>
-                      <span className="text-xs font-bold text-white">Jurnal Mengajar Terpadu</span>
+                  {isActive && (
+                    <div className="absolute top-3.5 right-3.5 flex items-center gap-1 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">
+                      <CheckCircle2 className="w-3 h-3" />
+                      <span>Aktif</span>
                     </div>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500/15 text-blue-400 border border-blue-500/30">
-                      Kelas VII-A
-                    </span>
+                  )}
+
+                  <div className="space-y-3.5">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-10 h-10 rounded-xl border flex items-center justify-center flex-shrink-0 shadow-sm"
+                        style={{
+                          backgroundColor: `${opt.primaryColor}20`,
+                          borderColor: `${opt.primaryColor}40`,
+                          color: opt.primaryColor,
+                        }}
+                      >
+                        {opt.category === 'light' ? (
+                          <Sun className="w-5 h-5" />
+                        ) : (
+                          <Moon className="w-5 h-5" />
+                        )}
+                      </div>
+                      <div className="pr-12">
+                        <h4 className="text-sm font-bold text-white leading-snug">{opt.name}</h4>
+                        <span className="text-[10px] font-semibold text-slate-400 block">{opt.tagline}</span>
+                      </div>
+                    </div>
+
+                    <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">
+                      {opt.description}
+                    </p>
+
+                    {/* Visual Mini Preview Box */}
+                    <div
+                      className="p-3 rounded-xl border space-y-1.5 transition-all shadow-inner"
+                      style={{
+                        backgroundColor: opt.previewBg,
+                        borderColor: opt.previewBorder,
+                        color: opt.previewText,
+                      }}
+                    >
+                      <div className="flex items-center justify-between border-b pb-1.5" style={{ borderColor: opt.previewBorder }}>
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: opt.primaryColor }} />
+                          <span className="text-[10px] font-bold">Jurnal Guru Terpadu</span>
+                        </div>
+                        <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded ${opt.badgeBg} ${opt.badgeText}`}>
+                          Kelas VII-A
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-1.5 text-[9px]">
+                        <div className="p-1.5 rounded border opacity-90" style={{ borderColor: opt.previewBorder }}>
+                          <span className="opacity-70 block text-[8px]">Kehadiran</span>
+                          <strong>98% Hadir</strong>
+                        </div>
+                        <div className="p-1.5 rounded border opacity-90" style={{ borderColor: opt.previewBorder }}>
+                          <span className="opacity-70 block text-[8px]">Rata-Rata</span>
+                          <strong>88.5 / 100</strong>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 text-[11px]">
-                    <div className="p-2 bg-slate-900 rounded-lg border border-slate-800">
-                      <span className="text-slate-400 block text-[10px]">Tingkat Kehadiran</span>
-                      <strong className="text-emerald-400 text-xs">98% Hadir</strong>
-                    </div>
-                    <div className="p-2 bg-slate-900 rounded-lg border border-slate-800">
-                      <span className="text-slate-400 block text-[10px]">Rata-rata Nilai</span>
-                      <strong className="text-blue-400 text-xs">88.5 / 100</strong>
-                    </div>
+
+                  <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
+                    <span className="text-[10px] text-slate-400 capitalize">Kategori: {opt.category === 'light' ? 'Mode Terang' : 'Mode Gelap'}</span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setTheme(opt.id);
+                      }}
+                      className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer ${
+                        isActive
+                          ? 'bg-blue-600 text-white shadow-md'
+                          : 'bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700'
+                      }`}
+                    >
+                      {isActive ? 'Sedang Digunakan' : 'Terapkan Tema'}
+                    </button>
                   </div>
                 </div>
-              </div>
-
-              <div className="mt-5 pt-3 border-t border-slate-800/80 flex items-center justify-between">
-                <span className="text-xs text-slate-400">Pilihan elegan untuk penggunaan di malam hari</span>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setTheme('dark');
-                  }}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                    theme === 'dark'
-                      ? 'bg-blue-600 text-white shadow-md'
-                      : 'bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700'
-                  }`}
-                >
-                  {theme === 'dark' ? 'Sedang Digunakan' : 'Pilih Mode Gelap'}
-                </button>
-              </div>
-            </div>
+              );
+            })}
           </div>
 
           <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl text-xs text-blue-300 flex items-start gap-2.5">
             <Palette className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
             <p>
-              Pilihan tema Anda akan otomatis tersimpan di peramban ini dan diterapkan langsung di setiap lembar kerja (Dashboard, Jurnal, Presensi, Daftar Penilaian, Guru, Laporan Bulanan, dan Pengaturan).
+              Pilihan tema Anda akan otomatis tersimpan di peramban ini dan diterapkan secara menyeluruh ke seluruh modul (Dashboard, Jurnal Mengajar, Presensi Siswa, Rekap Nilai, Guru, dan Laporan Bulanan).
             </p>
           </div>
         </div>
