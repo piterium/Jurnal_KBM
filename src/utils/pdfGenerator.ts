@@ -14,6 +14,7 @@ export interface GeneratePdfOptions {
   year: number; // e.g. 2026
   classId?: string; // specific class or all
   reportType: 'FULL' | 'JOURNAL' | 'ATTENDANCE' | 'GRADES';
+  attendanceMatrixMode?: 'CALENDAR' | 'SESSIONS';
   signatureCity?: string;
   signatureDate?: string;
 }
@@ -306,34 +307,59 @@ export function generateMonthlyReportPdf(data: AppData, options: GeneratePdfOpti
       doc.setFontSize(9.5);
       doc.setTextColor(30, 41, 59);
       const sectionNum = reportType === 'FULL' ? 'II.' : 'I.';
-      doc.text(`${sectionNum} REKAPITULASI PRESENSI SISWA - ${cls.name.toUpperCase()}`, 14, currentY + 3);
+      doc.text(`${sectionNum} REKAPITULASI PRESENSI SISWA BULAN ${monthName.toUpperCase()} ${year} - ${cls.name.toUpperCase()}`, 14, currentY + 3);
       currentY += 5;
 
-      // Build attendance table columns
-      // If ATTENDANCE matrix mode, show dates as columns if there are <= 10 dates
-      const dateHeaders = clsAttendances.map(a => {
-        const p = a.date.split('-');
-        return `${p[2]}/${p[1]}`;
-      });
+      const useCalendarMode = options.attendanceMatrixMode === 'CALENDAR' || (options.reportType === 'ATTENDANCE' && orientation === 'landscape');
+      const daysInMonth = new Date(year, month, 0).getDate();
+
+      let dateCols: { dateStr: string; label: string; isSunday: boolean }[] = [];
+
+      if (useCalendarMode) {
+        // Generate 1 to daysInMonth columns
+        for (let day = 1; day <= daysInMonth; day++) {
+          const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+          const dObj = new Date(year, month - 1, day);
+          const isSunday = dObj.getDay() === 0;
+          dateCols.push({
+            dateStr,
+            label: `${day}`,
+            isSunday,
+          });
+        }
+      } else {
+        // Use recorded session dates
+        dateCols = clsAttendances.map(a => {
+          const p = a.date.split('-');
+          return {
+            dateStr: a.date,
+            label: `${p[2]}/${p[1]}`,
+            isSunday: false,
+          };
+        });
+      }
 
       const tableHead = [
         'No',
         'NISN',
         'Nama Lengkap Siswa',
         'L/P',
-        ...dateHeaders,
+        ...dateCols.map(c => c.label),
         'H',
         'S',
         'I',
         'A',
-        '% Hadir',
+        '%',
       ];
 
+      // Map each student
       const tableBody = clsStudents.map((std, idx) => {
         const summary = calculateStudentAttendanceSummary(std.id, clsAttendances);
-        const dateStatuses = clsAttendances.map(a => {
-          const st = a.records[std.id]?.status || '-';
-          return st;
+        const dateStatuses = dateCols.map(col => {
+          if (col.isSunday) return 'L';
+          const att = clsAttendances.find(a => a.date === col.dateStr);
+          if (!att) return '-';
+          return att.records[std.id]?.status || '-';
         });
 
         return [
@@ -350,6 +376,66 @@ export function generateMonthlyReportPdf(data: AppData, options: GeneratePdfOpti
         ];
       });
 
+      // Add summary row for daily presence
+      if (dateCols.length > 0) {
+        const rowTotalH: string[] = ['-', '', 'Jumlah Hadir (H)', '-'];
+        const rowTotalS: string[] = ['-', '', 'Jumlah Sakit (S)', '-'];
+        const rowTotalI: string[] = ['-', '', 'Jumlah Izin (I)', '-'];
+        const rowTotalA: string[] = ['-', '', 'Jumlah Alpa (A)', '-'];
+
+        let sumAllH = 0;
+        let sumAllS = 0;
+        let sumAllI = 0;
+        let sumAllA = 0;
+
+        dateCols.forEach(col => {
+          if (col.isSunday) {
+            rowTotalH.push('L');
+            rowTotalS.push('-');
+            rowTotalI.push('-');
+            rowTotalA.push('-');
+            return;
+          }
+          const att = clsAttendances.find(a => a.date === col.dateStr);
+          if (!att) {
+            rowTotalH.push('-');
+            rowTotalS.push('-');
+            rowTotalI.push('-');
+            rowTotalA.push('-');
+            return;
+          }
+          let h = 0;
+          let s = 0;
+          let i = 0;
+          let a = 0;
+          clsStudents.forEach(std => {
+            const st = att.records[std.id]?.status;
+            if (st === 'H') h++;
+            else if (st === 'S') s++;
+            else if (st === 'I') i++;
+            else if (st === 'A') a++;
+          });
+          sumAllH += h;
+          sumAllS += s;
+          sumAllI += i;
+          sumAllA += a;
+          rowTotalH.push(h > 0 ? h.toString() : '0');
+          rowTotalS.push(s > 0 ? s.toString() : '0');
+          rowTotalI.push(i > 0 ? i.toString() : '0');
+          rowTotalA.push(a > 0 ? a.toString() : '0');
+        });
+
+        rowTotalH.push(sumAllH.toString(), '', '', '', '');
+        rowTotalS.push('', sumAllS.toString(), '', '', '');
+        rowTotalI.push('', '', sumAllI.toString(), '', '');
+        rowTotalA.push('', '', '', sumAllA.toString(), '');
+
+        tableBody.push(rowTotalH);
+        tableBody.push(rowTotalS);
+        tableBody.push(rowTotalI);
+        tableBody.push(rowTotalA);
+      }
+
       autoTable(doc, {
         startY: currentY,
         head: [tableHead],
@@ -358,23 +444,24 @@ export function generateMonthlyReportPdf(data: AppData, options: GeneratePdfOpti
         headStyles: {
           fillColor: [30, 58, 138],
           textColor: [255, 255, 255],
-          fontSize: 7.5,
+          fontSize: useCalendarMode ? 5.5 : 7,
           fontStyle: 'bold',
           halign: 'center',
           valign: 'middle',
         },
         styles: {
-          fontSize: 7,
-          cellPadding: 1.8,
+          fontSize: useCalendarMode ? 5.5 : 7,
+          cellPadding: useCalendarMode ? 1.2 : 1.8,
           textColor: [30, 41, 59],
+          halign: 'center',
         },
         columnStyles: {
-          0: { halign: 'center', cellWidth: 7 },
-          1: { halign: 'center', cellWidth: 18 },
-          2: { cellWidth: 40 },
-          3: { halign: 'center', cellWidth: 8 },
+          0: { halign: 'center', cellWidth: useCalendarMode ? 5 : 7 },
+          1: { halign: 'center', cellWidth: useCalendarMode ? 14 : 18 },
+          2: { halign: 'left', cellWidth: useCalendarMode ? 28 : 40 },
+          3: { halign: 'center', cellWidth: useCalendarMode ? 5 : 8 },
         },
-        margin: { left: 14, right: 14 },
+        margin: { left: 10, right: 10 },
       });
 
       // @ts-ignore

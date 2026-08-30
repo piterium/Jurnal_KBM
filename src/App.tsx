@@ -657,6 +657,7 @@ export default function App() {
               onSaveAttendance={handleSaveAttendance}
               initialClassId={attendanceContext.classId}
               initialDate={attendanceContext.date}
+              appData={data}
             />
           )}
 
