@@ -32,7 +32,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'attendance', label: 'Presensi Siswa', icon: CalendarCheck },
     { id: 'grades', label: 'Daftar Penilaian', icon: GraduationCap },
     { id: 'students', label: 'Daftar Siswa', icon: Users },
-    { id: 'teachers', label: 'Daftar Guru', icon: UserCheck },
     { id: 'report', label: 'Laporan Bulanan & PDF', icon: FileText },
     { id: 'settings', label: 'Data Master & Profil', icon: Settings },
   ];

@@ -84,13 +84,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       description: 'Data Siswa & NISN',
     },
     {
-      id: 'teachers',
-      label: 'Data Guru',
-      icon: UserCheck,
-      count: teachersCount,
-      description: 'Pendidik & Tenaga Kependidikan',
-    },
-    {
       id: 'report',
       label: 'Laporan Bulanan',
       icon: FileText,
