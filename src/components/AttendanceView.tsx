@@ -614,46 +614,50 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                         <button
                           type="button"
                           onClick={() => handleStatusChange(std.id, 'H')}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          title="Hadir (H)"
+                          className={`w-8 h-8 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center justify-center ${
                             rec.status === 'H'
                               ? 'bg-emerald-500 text-white shadow-sm ring-2 ring-emerald-400'
                               : 'bg-slate-800 text-slate-400 hover:bg-emerald-500/20 hover:text-emerald-400'
                           }`}
                         >
-                          H (Hadir)
+                          H
                         </button>
                         <button
                           type="button"
                           onClick={() => handleStatusChange(std.id, 'S')}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          title="Sakit (S)"
+                          className={`w-8 h-8 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center justify-center ${
                             rec.status === 'S'
                               ? 'bg-amber-500 text-white shadow-sm ring-2 ring-amber-400'
                               : 'bg-slate-800 text-slate-400 hover:bg-amber-500/20 hover:text-amber-400'
                           }`}
                         >
-                          S (Sakit)
+                          S
                         </button>
                         <button
                           type="button"
                           onClick={() => handleStatusChange(std.id, 'I')}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          title="Izin (I)"
+                          className={`w-8 h-8 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center justify-center ${
                             rec.status === 'I'
                               ? 'bg-sky-500 text-white shadow-sm ring-2 ring-sky-400'
                               : 'bg-slate-800 text-slate-400 hover:bg-sky-500/20 hover:text-sky-400'
                           }`}
                         >
-                          I (Izin)
+                          I
                         </button>
                         <button
                           type="button"
                           onClick={() => handleStatusChange(std.id, 'A')}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          title="Alpa (A)"
+                          className={`w-8 h-8 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center justify-center ${
                             rec.status === 'A'
                               ? 'bg-rose-500 text-white shadow-sm ring-2 ring-rose-400'
                               : 'bg-slate-800 text-slate-400 hover:bg-rose-500/20 hover:text-rose-400'
                           }`}
                         >
-                          A (Alpa)
+                          A
                         </button>
                       </div>
 
