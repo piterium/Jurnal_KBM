@@ -338,7 +338,7 @@ export const MonthlyReportView: React.FC<MonthlyReportViewProps> = ({ data }) =>
                       <th className="p-1.5 border-r border-slate-300 w-12 text-center">Pert.</th>
                       <th className="p-1.5 border-r border-slate-300 w-20 text-center">Jam Ke-</th>
                       <th className="p-1.5 border-r border-slate-300">Materi Pokok / Bahasan</th>
-                      <th className="p-1.5 border-r border-slate-300 w-24 text-center">Presensi</th>
+                      <th className="p-1.5 border-r border-slate-300 min-w-[120px] text-center">Presensi</th>
                       <th className="p-1.5 border-r border-slate-300 w-18 text-center">Status</th>
                       <th className="p-1.5 w-24">Ket.</th>
                     </tr>
@@ -358,13 +358,21 @@ export const MonthlyReportView: React.FC<MonthlyReportViewProps> = ({ data }) =>
                             <td className="p-1.5 border-r border-slate-200 font-semibold text-slate-900">{j.topic}</td>
                             <td className="p-1.5 border-r border-slate-200 text-center font-bold">
                               {attInfo.isNihil ? (
-                                <span className="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 text-[10px]">
+                                <span className="inline-block text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 text-[10px]">
                                   Nihil
                                 </span>
                               ) : (
-                                <span className="text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 text-[10px]">
-                                  {attInfo.summaryText}
-                                </span>
+                                <div className="inline-flex flex-col gap-0.5 text-[10px] text-amber-900 bg-amber-50 px-1.5 py-1 rounded border border-amber-200 font-semibold">
+                                  {attInfo.sakitDetails.length > 0 && (
+                                    <span>S: {attInfo.sakitDetails.length} (No. {attInfo.sakitDetails.map(s => s.attendanceNo).join(', ')})</span>
+                                  )}
+                                  {attInfo.izinDetails.length > 0 && (
+                                    <span>I: {attInfo.izinDetails.length} (No. {attInfo.izinDetails.map(s => s.attendanceNo).join(', ')})</span>
+                                  )}
+                                  {attInfo.alpaDetails.length > 0 && (
+                                    <span>A: {attInfo.alpaDetails.length} (No. {attInfo.alpaDetails.map(s => s.attendanceNo).join(', ')})</span>
+                                  )}
+                                </div>
                               )}
                             </td>
                             <td className="p-1.5 border-r border-slate-200 text-center font-medium text-slate-700">{j.status || 'Terlaksana'}</td>

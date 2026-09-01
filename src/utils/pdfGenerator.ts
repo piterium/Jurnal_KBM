@@ -234,7 +234,7 @@ export function generateMonthlyReportPdf(data: AppData, options: GeneratePdfOpti
       const clsName = classes.find(c => c.id === j.classId)?.name || j.classId;
       const attInfo = getJournalAttendanceInfo(j, attendances, students);
       const attendanceStr = attInfo.hasRecord
-        ? (attInfo.isNihil ? 'Nihil' : attInfo.summaryText)
+        ? (attInfo.isNihil ? 'Nihil' : attInfo.pdfSummaryText)
         : '-';
 
       return [
@@ -266,21 +266,21 @@ export function generateMonthlyReportPdf(data: AppData, options: GeneratePdfOpti
         valign: 'middle',
       },
       styles: {
-        fontSize: 8,
-        cellPadding: 2.5,
+        fontSize: 7.5,
+        cellPadding: 2,
         overflow: 'linebreak',
         textColor: [30, 41, 59],
       },
       columnStyles: {
-        0: { halign: 'center', cellWidth: 8 },
+        0: { halign: 'center', cellWidth: 7 },
         1: { halign: 'center', cellWidth: 20 },
-        2: { halign: 'center', cellWidth: 16 },
-        3: { halign: 'center', cellWidth: 12 },
-        4: { halign: 'center', cellWidth: 20 },
+        2: { halign: 'center', cellWidth: 15 },
+        3: { halign: 'center', cellWidth: 11 },
+        4: { halign: 'center', cellWidth: 19 },
         5: { cellWidth: 46 },
-        6: { halign: 'center', cellWidth: 18 },
-        7: { halign: 'center', cellWidth: 18 },
-        8: { cellWidth: 24 },
+        6: { halign: 'center', cellWidth: 26 },
+        7: { halign: 'center', cellWidth: 16 },
+        8: { cellWidth: 22 },
       },
       margin: { left: 14, right: 14 },
     });

@@ -103,6 +103,14 @@ export function exportBackup(data: AppData): void {
   downloadAnchor.remove();
 }
 
+export interface AbsentStudentDetail {
+  studentId: string;
+  name: string;
+  attendanceNo: string | number;
+  status: 'S' | 'I' | 'A';
+  note?: string;
+}
+
 export interface JournalAttendanceInfo {
   hasRecord: boolean;
   isNihil: boolean;
@@ -111,8 +119,12 @@ export interface JournalAttendanceInfo {
   izin: number;
   alpa: number;
   total: number;
-  summaryText: string; // "Nihil" or e.g. "S: 1, I: 2, A: 1"
+  summaryText: string; // e.g. "Nihil" or "S: 1 (No. 4), I: 2 (No. 7, 12)"
+  pdfSummaryText: string; // e.g. "Nihil" or "S: 1 (No. 4)\nI: 2 (No. 7, 12)"
   badgeText: string;
+  sakitDetails: AbsentStudentDetail[];
+  izinDetails: AbsentStudentDetail[];
+  alpaDetails: AbsentStudentDetail[];
 }
 
 export function getJournalAttendanceInfo(
@@ -127,18 +139,53 @@ export function getJournalAttendanceInfo(
   if (!linkedAtt) {
     const total = journal.studentsTotalCount || (students ? students.filter(s => s.classId === journal.classId && s.active).length : 0);
     const hadir = journal.studentsPresentCount !== undefined ? journal.studentsPresentCount : total;
+    const isNihil = total > 0 && hadir === total;
     return {
       hasRecord: false,
-      isNihil: total > 0 && hadir === total,
+      isNihil,
       hadir,
       sakit: 0,
       izin: 0,
       alpa: 0,
       total,
-      summaryText: hadir === total && total > 0 ? 'Nihil' : '-',
+      summaryText: isNihil ? 'Nihil' : '-',
+      pdfSummaryText: isNihil ? 'Nihil' : '-',
       badgeText: 'Presensi Belum Diinput',
+      sakitDetails: [],
+      izinDetails: [],
+      alpaDetails: [],
     };
   }
+
+  // Pre-calculate student roster mapping with roll numbers
+  const classStudents = (students || [])
+    .filter((s) => s.classId === journal.classId && s.active)
+    .sort((a, b) => {
+      const noA = (a.attendanceNo !== undefined && a.attendanceNo !== null && a.attendanceNo !== '') ? Number(a.attendanceNo) : 999;
+      const noB = (b.attendanceNo !== undefined && b.attendanceNo !== null && b.attendanceNo !== '') ? Number(b.attendanceNo) : 999;
+      if (noA !== noB) return noA - noB;
+      return a.name.localeCompare(b.name);
+    });
+
+  const studentMap = new Map<string, { name: string; rollNo: string | number }>();
+  classStudents.forEach((st, idx) => {
+    const rollNo = (st.attendanceNo !== undefined && st.attendanceNo !== null && st.attendanceNo !== '')
+      ? st.attendanceNo
+      : (idx + 1);
+    studentMap.set(st.id, { name: st.name, rollNo });
+  });
+
+  const getStudentInfo = (sId: string) => {
+    if (studentMap.has(sId)) return studentMap.get(sId)!;
+    const fallback = students?.find(s => s.id === sId);
+    if (fallback) {
+      return {
+        name: fallback.name,
+        rollNo: (fallback.attendanceNo !== undefined && fallback.attendanceNo !== null && fallback.attendanceNo !== '') ? fallback.attendanceNo : '-',
+      };
+    }
+    return { name: 'Siswa', rollNo: '-' };
+  };
 
   let hadir = 0;
   let sakit = 0;
@@ -146,24 +193,73 @@ export function getJournalAttendanceInfo(
   let alpa = 0;
   let total = 0;
 
-  Object.values(linkedAtt.records).forEach((r) => {
+  const sakitDetails: AbsentStudentDetail[] = [];
+  const izinDetails: AbsentStudentDetail[] = [];
+  const alpaDetails: AbsentStudentDetail[] = [];
+
+  Object.entries(linkedAtt.records).forEach(([studentId, r]) => {
     total++;
-    if (r.status === 'H') hadir++;
-    else if (r.status === 'S') sakit++;
-    else if (r.status === 'I') izin++;
-    else if (r.status === 'A') alpa++;
+    const sInfo = getStudentInfo(studentId);
+
+    if (r.status === 'H') {
+      hadir++;
+    } else if (r.status === 'S') {
+      sakit++;
+      sakitDetails.push({
+        studentId,
+        name: sInfo.name,
+        attendanceNo: sInfo.rollNo,
+        status: 'S',
+        note: r.note,
+      });
+    } else if (r.status === 'I') {
+      izin++;
+      izinDetails.push({
+        studentId,
+        name: sInfo.name,
+        attendanceNo: sInfo.rollNo,
+        status: 'I',
+        note: r.note,
+      });
+    } else if (r.status === 'A') {
+      alpa++;
+      alpaDetails.push({
+        studentId,
+        name: sInfo.name,
+        attendanceNo: sInfo.rollNo,
+        status: 'A',
+        note: r.note,
+      });
+    }
   });
+
+  // Sort absent details by roll number
+  const sortByRoll = (a: AbsentStudentDetail, b: AbsentStudentDetail) => {
+    const numA = Number(a.attendanceNo);
+    const numB = Number(b.attendanceNo);
+    if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+    return String(a.attendanceNo).localeCompare(String(b.attendanceNo));
+  };
+
+  sakitDetails.sort(sortByRoll);
+  izinDetails.sort(sortByRoll);
+  alpaDetails.sort(sortByRoll);
 
   const isNihil = sakit === 0 && izin === 0 && alpa === 0;
 
-  let summaryText = 'Nihil';
-  if (!isNihil) {
-    const parts: string[] = [];
-    if (sakit > 0) parts.push(`S: ${sakit}`);
-    if (izin > 0) parts.push(`I: ${izin}`);
-    if (alpa > 0) parts.push(`A: ${alpa}`);
-    summaryText = parts.length > 0 ? parts.join(', ') : 'Nihil';
-  }
+  const formatGroup = (prefix: 'S' | 'I' | 'A', list: AbsentStudentDetail[]) => {
+    if (list.length === 0) return '';
+    const rollNos = list.map((item) => item.attendanceNo).join(', ');
+    return `${prefix}: ${list.length} (No. ${rollNos})`;
+  };
+
+  const parts: string[] = [];
+  if (sakitDetails.length > 0) parts.push(formatGroup('S', sakitDetails));
+  if (izinDetails.length > 0) parts.push(formatGroup('I', izinDetails));
+  if (alpaDetails.length > 0) parts.push(formatGroup('A', alpaDetails));
+
+  const summaryText = isNihil ? 'Nihil' : (parts.length > 0 ? parts.join(', ') : 'Nihil');
+  const pdfSummaryText = isNihil ? 'Nihil' : (parts.length > 0 ? parts.join('\n') : 'Nihil');
 
   const badgeText = isNihil
     ? `Presensi: Nihil (Hadir Semua ${total} Siswa)`
@@ -178,7 +274,11 @@ export function getJournalAttendanceInfo(
     alpa,
     total,
     summaryText,
+    pdfSummaryText,
     badgeText,
+    sakitDetails,
+    izinDetails,
+    alpaDetails,
   };
 }
 

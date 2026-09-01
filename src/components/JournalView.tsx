@@ -254,10 +254,11 @@ export const JournalView: React.FC<JournalViewProps> = ({
                   {/* Footer Actions & Integrated Attendance Link */}
                   <div className="mt-4 pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
                     {/* Attendance Info */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 flex-wrap">
                       {attInfo.hasRecord ? (
                         attInfo.isNihil ? (
                           <button
+                            type="button"
                             onClick={() => onOpenAttendanceForJournal(j)}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-semibold rounded-lg border border-emerald-500/20 transition-colors cursor-pointer"
                             title="Klik untuk melihat atau mengedit presensi siswa"
@@ -266,17 +267,55 @@ export const JournalView: React.FC<JournalViewProps> = ({
                             <span>Presensi: <strong className="text-emerald-300 font-bold">Nihil</strong> (Hadir Lengkap {attInfo.total} Siswa)</span>
                           </button>
                         ) : (
-                          <button
-                            onClick={() => onOpenAttendanceForJournal(j)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 text-xs font-semibold rounded-lg border border-amber-500/20 transition-colors cursor-pointer"
-                            title="Klik untuk melihat atau mengedit presensi siswa"
-                          >
-                            <UserCheck className="w-3.5 h-3.5 text-amber-400" />
-                            <span>Ketidakhadiran: <strong className="text-amber-300 font-bold bg-amber-500/20 px-1.5 py-0.5 rounded">{attInfo.summaryText}</strong> • Hadir: {attInfo.hadir}/{attInfo.total}</span>
-                          </button>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => onOpenAttendanceForJournal(j)}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 text-xs font-semibold rounded-lg border border-amber-500/20 transition-colors cursor-pointer"
+                              title="Klik untuk melihat atau mengedit presensi siswa"
+                            >
+                              <UserCheck className="w-3.5 h-3.5 text-amber-400" />
+                              <span>Presensi: <strong className="text-amber-300 font-bold bg-amber-500/20 px-1.5 py-0.5 rounded">{attInfo.summaryText}</strong> • Hadir: {attInfo.hadir}/{attInfo.total}</span>
+                            </button>
+
+                            {/* Pill detail absent students */}
+                            <div className="flex flex-wrap items-center gap-1">
+                              {attInfo.sakitDetails.map((s) => (
+                                <span
+                                  key={s.studentId}
+                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-amber-500/15 text-amber-300 border border-amber-500/30"
+                                  title={`Sakit: No. Absen ${s.attendanceNo} - ${s.name}`}
+                                >
+                                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                                  S: No. {s.attendanceNo} ({s.name})
+                                </span>
+                              ))}
+                              {attInfo.izinDetails.map((s) => (
+                                <span
+                                  key={s.studentId}
+                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-blue-500/15 text-blue-300 border border-blue-500/30"
+                                  title={`Izin: No. Absen ${s.attendanceNo} - ${s.name}`}
+                                >
+                                  <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                                  I: No. {s.attendanceNo} ({s.name})
+                                </span>
+                              ))}
+                              {attInfo.alpaDetails.map((s) => (
+                                <span
+                                  key={s.studentId}
+                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-rose-500/15 text-rose-300 border border-rose-500/30"
+                                  title={`Alpa: No. Absen ${s.attendanceNo} - ${s.name}`}
+                                >
+                                  <span className="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+                                  A: No. {s.attendanceNo} ({s.name})
+                                </span>
+                              ))}
+                            </div>
+                          </div>
                         )
                       ) : (
                         <button
+                          type="button"
                           onClick={() => onOpenAttendanceForJournal(j)}
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium rounded-lg border border-slate-700 transition-colors cursor-pointer"
                         >
