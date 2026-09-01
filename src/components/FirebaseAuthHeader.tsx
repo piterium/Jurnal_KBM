@@ -57,9 +57,9 @@ export const FirebaseAuthHeader: React.FC<FirebaseAuthHeaderProps> = ({
           </div>
         )}
         {syncStatus === 'offline' && (
-          <div className="flex items-center gap-1.5 text-slate-400">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="font-medium">Tersimpan di Perangkat</span>
+          <div className="flex items-center gap-1.5 text-emerald-400">
+            <CloudCheck className="w-3.5 h-3.5" />
+            <span className="font-medium">Tersimpan di Cloud</span>
           </div>
         )}
         {syncStatus === 'error' && (
