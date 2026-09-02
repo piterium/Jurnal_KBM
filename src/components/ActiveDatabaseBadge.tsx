@@ -31,8 +31,7 @@ export const ActiveDatabaseBadge: React.FC<ActiveDatabaseBadgeProps> = ({
     (data.attendances?.length || 0) +
     (data.assessments?.length || 0) +
     (data.students?.length || 0) +
-    (data.classes?.length || 0) +
-    (data.teachers?.length || 0);
+    (data.classes?.length || 0);
 
   // Close dropdown when clicking outside
   useEffect(() => {

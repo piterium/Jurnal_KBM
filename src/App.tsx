@@ -7,7 +7,6 @@ import {
   SchoolProfile,
   ClassRoom,
   Student,
-  Teacher,
 } from './types';
 import { loadAppData, saveAppData, getInitialAppData, getEmptyAppData } from './utils/storage';
 import { generateMonthlyReportPdf } from './utils/pdfGenerator';
@@ -19,14 +18,12 @@ import { JournalView } from './components/JournalView';
 import { AttendanceView } from './components/AttendanceView';
 import { GradebookView } from './components/GradebookView';
 import { StudentListView } from './components/StudentListView';
-import { TeacherListView } from './components/TeacherListView';
 import { MonthlyReportView } from './components/MonthlyReportView';
 import { SettingsView } from './components/SettingsView';
 import { JournalModal } from './components/modals/JournalModal';
 import { AssessmentModal } from './components/modals/AssessmentModal';
 import { StudentModal } from './components/modals/StudentModal';
 import { ClassModal } from './components/modals/ClassModal';
-import { TeacherModal } from './components/modals/TeacherModal';
 import { SaveSuccessModal } from './components/SaveSuccessModal';
 import {
   DEFAULT_SCHOOL_ID,
@@ -103,9 +100,6 @@ export default function App() {
 
   const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
-
-  const [isTeacherModalOpen, setIsTeacherModalOpen] = useState(false);
-  const [editingTeacher, setEditingTeacher] = useState<Teacher | null>(null);
 
   const [isClassModalOpen, setIsClassModalOpen] = useState(false);
   const [editingClass, setEditingClass] = useState<ClassRoom | null>(null);
@@ -546,61 +540,6 @@ export default function App() {
     );
   };
 
-  // --- TEACHER HANDLERS ---
-  const handleSaveTeacher = (teacherData: Omit<Teacher, 'id'>, teacherId?: string) => {
-    const updated = [...(data.teachers || [])];
-    if (teacherId) {
-      const idx = updated.findIndex((t) => t.id === teacherId);
-      if (idx >= 0) {
-        updated[idx] = { ...teacherData, id: teacherId };
-      }
-    } else {
-      const newTeacher: Teacher = {
-        ...teacherData,
-        id: `tch-${Date.now()}`,
-      };
-      updated.push(newTeacher);
-    }
-
-    setData((prev) => ({
-      ...prev,
-      teachers: updated,
-    }));
-
-    triggerSaveNotification(
-      'Berhasil Disimpan!',
-      `Data guru ${teacherData.name} tersimpan!`
-    );
-  };
-
-  const handleDeleteTeacher = (teacherId: string) => {
-    const tch = (data.teachers || []).find((t) => t.id === teacherId);
-    setData((prev) => ({
-      ...prev,
-      teachers: (prev.teachers || []).filter((t) => t.id !== teacherId),
-    }));
-    triggerDeleteNotification(
-      'Berhasil Dihapus!',
-      `Data guru ${tch?.name || ''} berhasil dihapus.`
-    );
-  };
-
-  const handleSetAsActiveProfileTeacher = (teacher: Teacher) => {
-    setData((prev) => ({
-      ...prev,
-      profile: {
-        ...prev.profile,
-        teacherName: teacher.name,
-        teacherNip: teacher.nip || prev.profile.teacherNip,
-        subject: teacher.subject || prev.profile.subject,
-      },
-    }));
-    triggerSaveNotification(
-      'Berhasil Disimpan!',
-      `Guru aktif ${teacher.name} tersimpan!`
-    );
-  };
-
   const handleResetData = async () => {
     const empty = getEmptyAppData();
     setData(empty);
@@ -649,7 +588,6 @@ export default function App() {
         profile={data.profile}
         classesCount={data.classes.length}
         studentsCount={data.students.filter((s) => s.active).length}
-        teachersCount={data.teachers?.length || 0}
         onQuickDownloadPdf={handleQuickDownloadPdf}
       />
 
@@ -774,24 +712,6 @@ export default function App() {
             />
           )}
 
-          {activeTab === 'teachers' && (
-            <TeacherListView
-              teachers={data.teachers || []}
-              classes={data.classes}
-              profile={data.profile}
-              onAddTeacher={() => {
-                setEditingTeacher(null);
-                setIsTeacherModalOpen(true);
-              }}
-              onEditTeacher={(tch) => {
-                setEditingTeacher(tch);
-                setIsTeacherModalOpen(true);
-              }}
-              onDeleteTeacher={handleDeleteTeacher}
-              onSetAsActiveProfileTeacher={handleSetAsActiveProfileTeacher}
-            />
-          )}
-
           {activeTab === 'report' && <MonthlyReportView data={data} />}
 
           {activeTab === 'settings' && (
@@ -854,14 +774,6 @@ export default function App() {
             ? selectedStudentClassId
             : selectedGradeClassId || data.classes[0]?.id || ''
         }
-      />
-
-      <TeacherModal
-        isOpen={isTeacherModalOpen}
-        onClose={() => setIsTeacherModalOpen(false)}
-        classes={data.classes}
-        initialData={editingTeacher}
-        onSave={handleSaveTeacher}
       />
 
       <ClassModal

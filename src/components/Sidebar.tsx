@@ -15,7 +15,6 @@ import {
   ChevronRight,
   ShieldCheck,
   Users,
-  UserCheck,
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 
@@ -25,7 +24,6 @@ interface SidebarProps {
   profile: SchoolProfile;
   classesCount: number;
   studentsCount: number;
-  teachersCount?: number;
   onQuickDownloadPdf: () => void;
 }
 
@@ -35,7 +33,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   profile,
   classesCount,
   studentsCount,
-  teachersCount = 0,
   onQuickDownloadPdf,
 }) => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -72,13 +69,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: Users,
       count: studentsCount,
       description: 'Daftar & Status Siswa',
-    },
-    {
-      id: 'teachers',
-      label: 'Data Guru Pengajar',
-      icon: UserCheck,
-      count: teachersCount,
-      description: 'Direktori Pendidik & Mapel',
     },
     {
       id: 'report',
