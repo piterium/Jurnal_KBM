@@ -250,24 +250,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="flex items-center justify-between gap-2">
           <div className="flex-1 p-2 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between min-w-0">
             <div className="flex items-center gap-2 min-w-0">
-              <div className="w-6 h-6 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center flex-shrink-0">
-                <CloudCheck className="w-3.5 h-3.5" />
+              <div className="w-6 h-6 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center flex-shrink-0">
+                <Flame className="w-3.5 h-3.5" />
               </div>
               <div className="min-w-0">
                 <div className="text-[11px] font-bold text-white truncate">
-                  Penyimpanan
+                  Database
                 </div>
-                <div className="text-[10px] text-emerald-400 truncate">
-                  {syncStatus === 'syncing' ? 'Menyimpan...' : 'Auto-Save'}
+                <div className="text-[10px] text-amber-400 truncate">
+                  {syncStatus === 'syncing' ? 'Menyimpan...' : 'Firebase Firestore'}
                 </div>
               </div>
             </div>
             <button
               onClick={onManualSync}
-              title="Simpan & Sinkronkan"
+              title="Simpan & Sinkronkan Langsung ke Firebase"
               className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
             >
-              <RefreshCw className="w-3 h-3" />
+              <RefreshCw className={`w-3 h-3 ${syncStatus === 'syncing' ? 'animate-spin text-amber-400' : ''}`} />
             </button>
           </div>
 

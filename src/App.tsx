@@ -173,7 +173,7 @@ export default function App() {
         console.error('Error auto-syncing to Firestore:', err);
         setSyncStatus('error');
       }
-    }, 1200);
+    }, 400);
 
     return () => {
       if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
