@@ -1,8 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
-  Database,
-  CheckCircle2,
-  ChevronDown,
   BookOpen,
   CalendarCheck,
   GraduationCap,
@@ -10,26 +7,19 @@ import {
   School,
   ArrowRight,
   HardDrive,
-  Flame,
-  RefreshCw,
-  Share2,
+  Database,
+  ChevronDown,
 } from 'lucide-react';
 import { AppData } from '../types';
 
 interface ActiveDatabaseBadgeProps {
   data: AppData;
-  syncStatus?: 'synced' | 'syncing' | 'offline' | 'error';
-  onManualSync?: () => void;
-  onOpenFirebaseModal?: () => void;
   onNavigateToSettings?: () => void;
   currentSchoolId?: string;
 }
 
 export const ActiveDatabaseBadge: React.FC<ActiveDatabaseBadgeProps> = ({
   data,
-  syncStatus = 'synced',
-  onManualSync,
-  onOpenFirebaseModal,
   onNavigateToSettings,
   currentSchoolId = 'main',
 }) => {
@@ -67,20 +57,19 @@ export const ActiveDatabaseBadge: React.FC<ActiveDatabaseBadgeProps> = ({
         id="btn-active-database-badge"
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-emerald-500/30 hover:border-amber-400/50 text-slate-200 text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer group"
-        title="Klik untuk melihat status Firebase Cloud & Database"
+        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-emerald-500/30 hover:border-emerald-500/50 text-slate-200 text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer group"
+        title="Klik untuk melihat ringkasan database"
       >
-        {/* Pulsing indicator */}
+        {/* Active indicator dot */}
         <span className="relative flex h-2 w-2">
-          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${syncStatus === 'syncing' ? 'bg-amber-400' : 'bg-emerald-400'} opacity-75`}></span>
-          <span className={`relative inline-flex rounded-full h-2 w-2 ${syncStatus === 'syncing' ? 'bg-amber-500' : 'bg-emerald-500'}`}></span>
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
         </span>
 
         <div className="flex items-center gap-1.5">
-          <Flame className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform fill-amber-400/20" />
-          <span className="text-slate-100 font-medium">Firebase</span>
+          <Database className="w-3.5 h-3.5 text-emerald-400 group-hover:scale-105 transition-transform" />
+          <span className="text-slate-100 font-medium">Database</span>
           <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-            {syncStatus === 'syncing' ? 'Sync...' : 'Aktif'}
+            Aktif
           </span>
         </div>
 
@@ -90,7 +79,7 @@ export const ActiveDatabaseBadge: React.FC<ActiveDatabaseBadgeProps> = ({
 
         <ChevronDown
           className={`w-3 h-3 text-slate-400 transition-transform duration-200 ${
-            isOpen ? 'rotate-180 text-amber-400' : ''
+            isOpen ? 'rotate-180 text-emerald-400' : ''
           }`}
         />
       </button>
@@ -101,41 +90,28 @@ export const ActiveDatabaseBadge: React.FC<ActiveDatabaseBadgeProps> = ({
           {/* Header */}
           <div className="flex items-center justify-between pb-3 border-b border-slate-800">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                <Flame className="w-4 h-4 fill-amber-400/20" />
+              <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                <Database className="w-4 h-4" />
               </div>
               <div>
                 <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
-                  Firebase Cloud Firestore
+                  Database Cloud Firestore
                   <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                     ONLINE
                   </span>
                 </h4>
                 <p className="text-[10px] text-slate-400">
-                  Sinkronisasi real-time multi-perangkat aktif
+                  Penyimpanan data cloud aktif
                 </p>
               </div>
             </div>
-            {onManualSync && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onManualSync();
-                }}
-                title="Sinkronkan data sekarang"
-                className="p-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-400 transition-colors cursor-pointer"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${syncStatus === 'syncing' ? 'animate-spin' : ''}`} />
-              </button>
-            )}
           </div>
 
           {/* Database Content Grid Stats */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 tracking-wider uppercase">
-              <span>Rincian Rekaman Tersinkron</span>
-              <span className="text-amber-400 font-mono lowercase">ruang: {currentSchoolId}</span>
+              <span>Rincian Data Tersimpan</span>
+              <span className="text-emerald-400 font-mono lowercase">ruang: {currentSchoolId}</span>
             </div>
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="p-2 rounded-xl bg-slate-900/80 border border-slate-800/80 flex items-center justify-between">
@@ -202,20 +178,6 @@ export const ActiveDatabaseBadge: React.FC<ActiveDatabaseBadgeProps> = ({
 
           {/* Action Links */}
           <div className="pt-2 border-t border-slate-800 flex flex-col gap-2">
-            {onOpenFirebaseModal && (
-              <button
-                type="button"
-                onClick={() => {
-                  setIsOpen(false);
-                  onOpenFirebaseModal();
-                }}
-                className="w-full py-2 px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 hover:text-amber-200 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-              >
-                <Share2 className="w-3.5 h-3.5 text-amber-400" />
-                <span>Status Multi-Perangkat & Bagikan</span>
-              </button>
-            )}
-
             {onNavigateToSettings && (
               <button
                 type="button"
@@ -223,7 +185,7 @@ export const ActiveDatabaseBadge: React.FC<ActiveDatabaseBadgeProps> = ({
                   setIsOpen(false);
                   onNavigateToSettings();
                 }}
-                className="w-full py-1.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                className="w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
               >
                 <span>Kelola & Backup Database</span>
                 <ArrowRight className="w-3.5 h-3.5" />

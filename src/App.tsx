@@ -14,7 +14,6 @@ import { generateMonthlyReportPdf } from './utils/pdfGenerator';
 import { Sidebar } from './components/Sidebar';
 import { ThemeToggle } from './components/ThemeToggle';
 import { ActiveDatabaseBadge } from './components/ActiveDatabaseBadge';
-import { FirebaseLiveModal } from './components/FirebaseLiveModal';
 import { DashboardView } from './components/DashboardView';
 import { JournalView } from './components/JournalView';
 import { AttendanceView } from './components/AttendanceView';
@@ -59,8 +58,6 @@ export default function App() {
     return DEFAULT_SCHOOL_ID;
   });
 
-  const [isFirebaseLiveModalOpen, setIsFirebaseLiveModalOpen] = useState(false);
-  const [syncStatus, setSyncStatus] = useState<'synced' | 'syncing' | 'offline' | 'error'>('synced');
   const isInitialCloudLoadRef = useRef(false);
   const isInternalUpdateRef = useRef(false);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -142,7 +139,6 @@ export default function App() {
 
     // 1. Initial full fetch from Firestore
     const initCloudData = async () => {
-      setSyncStatus('syncing');
       try {
         const cloudData = await loadSchoolAppDataFromFirestore(schoolId);
         if (cloudData && isMounted) {
@@ -162,15 +158,12 @@ export default function App() {
             ...data,
             ...cloudData,
           });
-          setSyncStatus('synced');
         } else if (isMounted) {
           // If cloud is brand new, seed it with current data
           await saveSchoolAppDataToFirestore(schoolId, data);
-          setSyncStatus('synced');
         }
       } catch (error) {
         console.error('Error initializing Firebase cloud data:', error);
-        if (isMounted) setSyncStatus('synced');
       } finally {
         isInitialCloudLoadRef.current = true;
       }
@@ -238,14 +231,11 @@ export default function App() {
       clearTimeout(debounceTimerRef.current);
     }
 
-    setSyncStatus('syncing');
     debounceTimerRef.current = setTimeout(async () => {
       try {
         await saveSchoolAppDataToFirestore(schoolId, data);
-        setSyncStatus('synced');
       } catch (err) {
         console.error('Debounce sync error to Firebase Firestore:', err);
-        setSyncStatus('error');
       }
     }, 1200);
 
@@ -255,22 +245,6 @@ export default function App() {
       }
     };
   }, [data, schoolId]);
-
-  // Manual Instant Cloud Sync
-  const handleManualSync = async () => {
-    setSyncStatus('syncing');
-    try {
-      await saveSchoolAppDataToFirestore(schoolId, data);
-      setSyncStatus('synced');
-      triggerSaveNotification(
-        'Sinkronisasi Berhasil!',
-        'Data Anda telah berhasil disinkronkan ke Firebase Cloud Firestore.'
-      );
-    } catch (err) {
-      console.error('Manual sync error:', err);
-      setSyncStatus('error');
-    }
-  };
 
   // Change School/Workspace ID handler
   const handleSchoolIdChange = (newSchoolId: string) => {
@@ -668,10 +642,7 @@ export default function App() {
         classesCount={data.classes.length}
         studentsCount={data.students.filter((s) => s.active).length}
         teachersCount={data.teachers?.length || 0}
-        syncStatus={syncStatus}
-        onManualSync={handleManualSync}
         onQuickDownloadPdf={handleQuickDownloadPdf}
-        onOpenFirebaseLiveModal={() => setIsFirebaseLiveModalOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -691,9 +662,6 @@ export default function App() {
           <div className="flex items-center gap-3">
             <ActiveDatabaseBadge
               data={data}
-              syncStatus={syncStatus}
-              onManualSync={handleManualSync}
-              onOpenFirebaseModal={() => setIsFirebaseLiveModalOpen(true)}
               onNavigateToSettings={() => setActiveTab('settings')}
               currentSchoolId={schoolId}
             />
@@ -904,17 +872,6 @@ export default function App() {
         title={notification.title}
         message={notification.message}
         onClose={() => setNotification((prev) => ({ ...prev, isOpen: false }))}
-      />
-
-      {/* Firebase Live Cloud Status & Device Sync Modal */}
-      <FirebaseLiveModal
-        isOpen={isFirebaseLiveModalOpen}
-        onClose={() => setIsFirebaseLiveModalOpen(false)}
-        data={data}
-        syncStatus={syncStatus}
-        onManualSync={handleManualSync}
-        currentSchoolId={schoolId}
-        onSwitchSchoolId={handleSchoolIdChange}
       />
     </div>
   );
