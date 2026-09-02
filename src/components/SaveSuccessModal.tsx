@@ -52,7 +52,7 @@ export const SaveSuccessModal: React.FC<SaveSuccessModalProps> = ({
     message ||
     (type === 'delete'
       ? 'Data berhasil dihapus dari sistem.'
-      : 'Data berhasil tersimpan ke Firebase!');
+      : 'Data berhasil tersimpan dengan aman!');
 
   return (
     <AnimatePresence>

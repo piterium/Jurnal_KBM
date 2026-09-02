@@ -16,10 +16,8 @@ import {
   ShieldCheck,
   Users,
   UserCheck,
-  CloudCheck,
-  RefreshCw,
-  Flame,
-  Activity,
+  CheckCircle2,
+  HardDrive,
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 
@@ -30,10 +28,7 @@ interface SidebarProps {
   classesCount: number;
   studentsCount: number;
   teachersCount?: number;
-  syncStatus: 'synced' | 'syncing' | 'offline' | 'error';
-  onManualSync: () => void;
   onQuickDownloadPdf: () => void;
-  onOpenFirebaseLiveModal?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -43,10 +38,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   classesCount,
   studentsCount,
   teachersCount = 11,
-  syncStatus,
-  onManualSync,
   onQuickDownloadPdf,
-  onOpenFirebaseLiveModal,
 }) => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
@@ -216,59 +208,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Quick Action & Stats Footer */}
       <div className="p-4 border-t border-slate-800 bg-[#0B1120]/90 space-y-3">
-        {/* Firebase Live Status Card */}
-        <button
-          id="btn-sidebar-firebase-live"
-          type="button"
-          onClick={onOpenFirebaseLiveModal}
-          className="w-full p-2.5 rounded-xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-slate-900 border border-amber-500/30 hover:border-amber-400/60 flex items-center justify-between text-left transition-all cursor-pointer group shadow-sm"
-        >
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="relative w-7 h-7 rounded-lg bg-amber-500/20 border border-amber-500/30 text-amber-400 flex items-center justify-center flex-shrink-0">
-              <Flame className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
-              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500"></span>
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[11px] font-bold text-white group-hover:text-amber-300 transition-colors">
-                  Firebase Live
-                </span>
-                <span className="text-[9px] font-extrabold px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                  REALTIME
-                </span>
-              </div>
-              <div className="text-[10px] text-slate-400 truncate">
-                {syncStatus === 'syncing' ? 'Menyinkronkan...' : 'Cloud Firestore Aktif'}
-              </div>
-            </div>
-          </div>
-          <Activity className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-        </button>
-
         {/* Persistence & Theme Row */}
         <div className="flex items-center justify-between gap-2">
           <div className="flex-1 p-2 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between min-w-0">
             <div className="flex items-center gap-2 min-w-0">
-              <div className="w-6 h-6 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center flex-shrink-0">
-                <Flame className="w-3.5 h-3.5" />
+              <div className="w-6 h-6 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center flex-shrink-0">
+                <CheckCircle2 className="w-3.5 h-3.5" />
               </div>
               <div className="min-w-0">
                 <div className="text-[11px] font-bold text-white truncate">
-                  Database
+                  Penyimpanan
                 </div>
-                <div className="text-[10px] text-amber-400 truncate">
-                  {syncStatus === 'syncing' ? 'Menyimpan...' : 'Firebase Firestore'}
+                <div className="text-[10px] text-emerald-400 truncate">
+                  Auto-Save Aktif
                 </div>
               </div>
             </div>
-            <button
-              onClick={onManualSync}
-              title="Simpan & Sinkronkan Langsung ke Firebase"
-              className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
-            >
-              <RefreshCw className={`w-3 h-3 ${syncStatus === 'syncing' ? 'animate-spin text-amber-400' : ''}`} />
-            </button>
           </div>
 
           {/* Compact Theme Switcher for Sidebar */}

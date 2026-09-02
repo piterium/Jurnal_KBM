@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   AppData,
   TeachingJournal,
@@ -11,12 +11,6 @@ import {
 } from './types';
 import { loadAppData, saveAppData, getInitialAppData, getEmptyAppData } from './utils/storage';
 import { generateMonthlyReportPdf } from './utils/pdfGenerator';
-import { auth, onAuthStateChanged, signInAnonymously, type User } from './firebase/firebase';
-import {
-  loadUserAppDataFromFirestore,
-  saveUserAppDataToFirestore,
-  syncUserProfile,
-} from './firebase/firestoreService';
 import { Sidebar } from './components/Sidebar';
 import { FirebaseAuthHeader } from './components/FirebaseAuthHeader';
 import { DashboardView } from './components/DashboardView';
@@ -38,13 +32,6 @@ export default function App() {
   const [data, setData] = useState<AppData>(() => loadAppData());
   const [activeTab, setActiveTab] = useState<string>('dashboard');
 
-  // Firebase Auth & Cloud Sync States
-  const [user, setUser] = useState<User | null>(null);
-  const [isAuthLoading, setIsAuthLoading] = useState(true);
-  const [syncStatus, setSyncStatus] = useState<'synced' | 'syncing' | 'offline' | 'error'>('synced');
-  const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const isInitialLoadRef = useRef(true);
-
   // Success and Delete Notification state (as requested in user specifications)
   const [notification, setNotification] = useState<{
     isOpen: boolean;
@@ -55,7 +42,7 @@ export default function App() {
     isOpen: false,
     type: 'success',
     title: 'Berhasil Disimpan!',
-    message: 'Data tersimpan ke Firebase!',
+    message: 'Data berhasil disimpan!',
   });
 
   const triggerSaveNotification = useCallback((title: string, message: string) => {
@@ -102,100 +89,10 @@ export default function App() {
     date?: string;
   }>({});
 
-  // Listen to Firebase Auth state (background auto-connection)
-  useEffect(() => {
-    const initAuth = async () => {
-      try {
-        if (!auth.currentUser) {
-          await signInAnonymously(auth);
-        }
-      } catch (e) {
-        console.warn('Background Firebase auth notice:', e);
-      }
-    };
-    initAuth();
-
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
-      setIsAuthLoading(false);
-
-      if (currentUser) {
-        setSyncStatus('syncing');
-        try {
-          await syncUserProfile(currentUser);
-          const cloudData = await loadUserAppDataFromFirestore(currentUser.uid);
-
-          if (cloudData && (cloudData.classes.length > 0 || cloudData.students.length > 0 || cloudData.journals.length > 0)) {
-            setData(cloudData);
-            saveAppData(cloudData);
-          } else {
-            // First time or cloud empty: upload current local data to cloud
-            await saveUserAppDataToFirestore(currentUser.uid, data);
-          }
-          setSyncStatus('synced');
-        } catch (err) {
-          console.error('Initial cloud sync error:', err);
-          setSyncStatus('offline');
-        }
-      } else {
-        setSyncStatus('offline');
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  // Save to localStorage and auto-sync to Firebase Firestore when data changes
+  // Auto-save data to localStorage whenever data changes
   useEffect(() => {
     saveAppData(data);
-
-    if (!user) {
-      setSyncStatus('offline');
-      return;
-    }
-
-    // Skip cloud save on exact first render if needed
-    if (isInitialLoadRef.current) {
-      isInitialLoadRef.current = false;
-      return;
-    }
-
-    setSyncStatus('syncing');
-    if (syncTimeoutRef.current) {
-      clearTimeout(syncTimeoutRef.current);
-    }
-
-    syncTimeoutRef.current = setTimeout(async () => {
-      try {
-        await saveUserAppDataToFirestore(user.uid, data);
-        setSyncStatus('synced');
-      } catch (err) {
-        console.error('Error auto-syncing to Firestore:', err);
-        setSyncStatus('error');
-      }
-    }, 400);
-
-    return () => {
-      if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
-    };
-  }, [data, user]);
-
-  // Manual sync function
-  const handleManualSync = useCallback(async () => {
-    if (!user) return;
-    setSyncStatus('syncing');
-    try {
-      await saveUserAppDataToFirestore(user.uid, data);
-      setSyncStatus('synced');
-      triggerSaveNotification(
-        'Berhasil Disimpan!',
-        'Semua data administrasi guru berhasil disinkronkan ke Firebase!'
-      );
-    } catch (err) {
-      console.error('Manual sync error:', err);
-      setSyncStatus('error');
-    }
-  }, [user, data, triggerSaveNotification]);
+  }, [data]);
 
   // Keep selectedGradeClassId valid if classes change
   useEffect(() => {
@@ -267,7 +164,7 @@ export default function App() {
     const cls = data.classes.find((c) => c.id === journal.classId);
     triggerSaveNotification(
       'Berhasil Disimpan!',
-      `Jurnal mengajar kelas ${cls?.name || 'terpilih'} (Pertemuan ke-${journal.meetingNumber}) tersimpan ke Firebase!`
+      `Jurnal mengajar kelas ${cls?.name || 'terpilih'} (Pertemuan ke-${journal.meetingNumber}) tersimpan!`
     );
   };
 
@@ -330,7 +227,7 @@ export default function App() {
     const count = Object.keys(record.records || {}).length;
     triggerSaveNotification(
       'Berhasil Disimpan!',
-      `Absensi kelas ${cls?.name || 'terpilih'} (${count} siswa) tersimpan ke Firebase!`
+      `Absensi kelas ${cls?.name || 'terpilih'} (${count} siswa) tersimpan!`
     );
   };
 
@@ -351,7 +248,7 @@ export default function App() {
     const cls = data.classes.find((c) => c.id === assessment.classId);
     triggerSaveNotification(
       'Berhasil Disimpan!',
-      `Penilaian "${assessment.title}" (${cls?.name || ''}) tersimpan ke Firebase!`
+      `Penilaian "${assessment.title}" (${cls?.name || ''}) tersimpan!`
     );
   };
 
@@ -390,7 +287,7 @@ export default function App() {
     setData((prev) => ({ ...prev, profile }));
     triggerSaveNotification(
       'Berhasil Disimpan!',
-      `Profil sekolah & konfigurasi guru tersimpan ke Firebase!`
+      `Profil sekolah & konfigurasi guru tersimpan!`
     );
   };
 
@@ -405,7 +302,7 @@ export default function App() {
     setData((prev) => ({ ...prev, classes: updated }));
     triggerSaveNotification(
       'Berhasil Disimpan!',
-      `Data kelas ${cls.name} tersimpan ke Firebase!`
+      `Data kelas ${cls.name} tersimpan!`
     );
   };
 
@@ -434,7 +331,7 @@ export default function App() {
     const cls = data.classes.find((c) => c.id === std.classId);
     triggerSaveNotification(
       'Berhasil Disimpan!',
-      `Data siswa ${std.name} (${cls?.name || ''}) tersimpan ke Firebase!`
+      `Data siswa ${std.name} (${cls?.name || ''}) tersimpan!`
     );
   };
 
@@ -485,7 +382,7 @@ export default function App() {
 
     triggerSaveNotification(
       'Berhasil Disimpan!',
-      successMessage || `Sebanyak ${newStudents.length} data siswa berhasil diimpor dan tersimpan ke Firebase!`
+      successMessage || `Sebanyak ${newStudents.length} data siswa berhasil diimpor dan tersimpan!`
     );
   };
 
@@ -512,7 +409,7 @@ export default function App() {
 
     triggerSaveNotification(
       'Berhasil Disimpan!',
-      `Data guru ${teacherData.name} tersimpan ke Firebase!`
+      `Data guru ${teacherData.name} tersimpan!`
     );
   };
 
@@ -540,7 +437,7 @@ export default function App() {
     }));
     triggerSaveNotification(
       'Berhasil Disimpan!',
-      `Guru aktif ${teacher.name} tersimpan ke Firebase!`
+      `Guru aktif ${teacher.name} tersimpan!`
     );
   };
 
@@ -569,7 +466,7 @@ export default function App() {
     saveAppData(imported);
     triggerSaveNotification(
       'Berhasil Disimpan!',
-      'Berkas backup berhasil dipulihkan dan tersimpan ke Firebase!'
+      'Berkas backup berhasil dipulihkan dan tersimpan!'
     );
   };
 
@@ -583,8 +480,6 @@ export default function App() {
         classesCount={data.classes.length}
         studentsCount={data.students.filter((s) => s.active).length}
         teachersCount={data.teachers?.length || 0}
-        syncStatus={syncStatus}
-        onManualSync={handleManualSync}
         onQuickDownloadPdf={handleQuickDownloadPdf}
       />
 
@@ -602,10 +497,7 @@ export default function App() {
             </span>
           </div>
 
-          <FirebaseAuthHeader
-            syncStatus={syncStatus}
-            onManualSync={handleManualSync}
-          />
+          <FirebaseAuthHeader />
         </header>
 
         <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">

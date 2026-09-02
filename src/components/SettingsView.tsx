@@ -888,26 +888,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               </button>
             </div>
           </div>
-
-          {/* Firebase Cloud Sync Info Card */}
-          <div className="p-5 bg-gradient-to-r from-blue-950/30 via-slate-900 to-indigo-950/30 rounded-2xl border border-blue-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-400 flex-shrink-0">
-                <Database className="w-5 h-5" />
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                  <span>Firebase Cloud Firestore & Authentication</span>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                    Aktif
-                  </span>
-                </h4>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Proyek: <span className="font-mono text-blue-300">turing-pursuit-hmbw7</span> • Wilayah: <span className="font-mono text-blue-300">asia-southeast1</span>
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
       )}
 
