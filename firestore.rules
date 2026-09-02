@@ -12,39 +12,8 @@ service cloud.firestore {
     match /schools/{schoolId} {
       allow read, write: if isValidId(schoolId);
 
-      // School Profile & Settings
-      match /schoolData/{docId} {
-        allow read, write: if isValidId(docId);
-      }
-
-      // Classes
-      match /classes/{classId} {
-        allow read, write: if isValidId(classId);
-      }
-
-      // Students
-      match /students/{studentId} {
-        allow read, write: if isValidId(studentId);
-      }
-
-      // Teachers
-      match /teachers/{teacherId} {
-        allow read, write: if isValidId(teacherId);
-      }
-
-      // Teaching Journals
-      match /journals/{journalId} {
-        allow read, write: if isValidId(journalId);
-      }
-
-      // Attendance Records
-      match /attendances/{attendanceId} {
-        allow read, write: if isValidId(attendanceId);
-      }
-
-      // Assessment Items & Scores
-      match /assessments/{assessmentId} {
-        allow read, write: if isValidId(assessmentId);
+      match /{allChildren=**} {
+        allow read, write: if isValidId(schoolId);
       }
     }
 
@@ -63,7 +32,10 @@ service cloud.firestore {
     match /test/{docId} {
       allow read, write: if true;
     }
+
+    // Fallback for any other documents
+    match /{document=**} {
+      allow read, write: if true;
+    }
   }
 }
-
-
