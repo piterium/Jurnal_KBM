@@ -110,10 +110,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               Sistem Administrasi Guru Terintegrasi
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-wide">
-              Selamat Mengajar, <span className="text-blue-400">{profile.teacherName}</span>
+              Selamat Datang, <span className="text-blue-400">{profile.teacherName || 'Bapak/Ibu Guru'}</span>
             </h2>
             <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
-              Kelola jurnal KBM, pantau kehadiran siswa, serta pembukuan nilai formatif & sumatif terpadu untuk {profile.schoolName}.
+              Kelola jurnal KBM, pantau kehadiran siswa, serta pembukuan nilai formatif & sumatif terpadu{profile.schoolName ? ` untuk ${profile.schoolName}` : ''}.
             </p>
           </div>
 

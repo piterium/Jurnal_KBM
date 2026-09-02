@@ -279,7 +279,7 @@ export function subscribeToSchoolRealtime(
           snap.forEach((docSnap) => {
             list.push(docSnap.data() as ClassRoom);
           });
-          if (list.length > 0) callbacks.onClassesUpdate?.(list);
+          callbacks.onClassesUpdate?.(list);
         },
         (err) => callbacks.onError?.(err)
       );
@@ -296,7 +296,7 @@ export function subscribeToSchoolRealtime(
           snap.forEach((docSnap) => {
             list.push(docSnap.data() as Student);
           });
-          if (list.length > 0) callbacks.onStudentsUpdate?.(list);
+          callbacks.onStudentsUpdate?.(list);
         },
         (err) => callbacks.onError?.(err)
       );
@@ -313,7 +313,7 @@ export function subscribeToSchoolRealtime(
           snap.forEach((docSnap) => {
             list.push(docSnap.data() as Teacher);
           });
-          if (list.length > 0) callbacks.onTeachersUpdate?.(list);
+          callbacks.onTeachersUpdate?.(list);
         },
         (err) => callbacks.onError?.(err)
       );
@@ -384,4 +384,32 @@ export async function deleteAssessmentFromFirestore(schoolId: string, assessment
   const cleanSchoolId = schoolId.trim() || DEFAULT_SCHOOL_ID;
   const ref = doc(db, 'schools', cleanSchoolId, 'assessments', assessmentId);
   await deleteDoc(ref);
+}
+
+/**
+ * Completely wipe all school data (classes, students, teachers, journals, attendances, assessments) from Firestore
+ */
+export async function clearSchoolAppDataFromFirestore(schoolId: string = DEFAULT_SCHOOL_ID): Promise<void> {
+  const cleanSchoolId = schoolId.trim() || DEFAULT_SCHOOL_ID;
+
+  try {
+    const collectionsToClear = ['classes', 'students', 'teachers', 'journals', 'attendances', 'assessments'];
+    const batch = writeBatch(db);
+
+    for (const collName of collectionsToClear) {
+      const snap = await getDocs(collection(db, 'schools', cleanSchoolId, collName));
+      snap.docs.forEach((d) => {
+        batch.delete(d.ref);
+      });
+    }
+
+    // Also reset profile document
+    const profileRef = doc(db, 'schools', cleanSchoolId, 'schoolData', 'profile');
+    batch.delete(profileRef);
+
+    await batch.commit();
+  } catch (error) {
+    console.error('Error clearing school data from Firestore:', error);
+    throw error;
+  }
 }

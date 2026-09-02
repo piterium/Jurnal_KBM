@@ -32,6 +32,7 @@ import {
   DEFAULT_SCHOOL_ID,
   loadSchoolAppDataFromFirestore,
   saveSchoolAppDataToFirestore,
+  clearSchoolAppDataFromFirestore,
   subscribeToSchoolRealtime,
   saveJournalToFirestore,
   deleteJournalFromFirestore,
@@ -147,20 +148,17 @@ export default function App() {
             ...prev,
             ...cloudData,
             profile: cloudData.profile || prev.profile,
-            classes: cloudData.classes?.length ? cloudData.classes : prev.classes,
-            students: cloudData.students?.length ? cloudData.students : prev.students,
-            teachers: cloudData.teachers?.length ? cloudData.teachers : prev.teachers,
-            journals: cloudData.journals || prev.journals,
-            attendances: cloudData.attendances || prev.attendances,
-            assessments: cloudData.assessments || prev.assessments,
+            classes: cloudData.classes || [],
+            students: cloudData.students || [],
+            teachers: cloudData.teachers || [],
+            journals: cloudData.journals || [],
+            attendances: cloudData.attendances || [],
+            assessments: cloudData.assessments || [],
           }));
           saveAppData({
             ...data,
             ...cloudData,
           });
-        } else if (isMounted) {
-          // If cloud is brand new, seed it with current data
-          await saveSchoolAppDataToFirestore(schoolId, data);
         }
       } catch (error) {
         console.error('Error initializing Firebase cloud data:', error);
@@ -603,20 +601,30 @@ export default function App() {
     );
   };
 
-  const handleResetData = () => {
-    const initial = getInitialAppData();
-    setData(initial);
-    saveAppData(initial);
-    triggerSaveNotification(
-      'Berhasil Direset!',
-      'Data contoh berhasil dimuat ulang ke aplikasi!'
-    );
-  };
-
-  const handleDeleteDatabase = () => {
+  const handleResetData = async () => {
     const empty = getEmptyAppData();
     setData(empty);
     saveAppData(empty);
+    try {
+      await clearSchoolAppDataFromFirestore(schoolId);
+    } catch (e) {
+      console.warn('Could not clear remote firestore during reset:', e);
+    }
+    triggerSaveNotification(
+      'Berhasil Dikosongkan!',
+      'Seluruh data demo dan isian telah berhasil dihapus!'
+    );
+  };
+
+  const handleDeleteDatabase = async () => {
+    const empty = getEmptyAppData();
+    setData(empty);
+    saveAppData(empty);
+    try {
+      await clearSchoolAppDataFromFirestore(schoolId);
+    } catch (e) {
+      console.warn('Could not clear remote firestore during delete:', e);
+    }
     triggerDeleteNotification(
       'Database Dikosongkan!',
       'Semua data berhasil dibersihkan dari penyimpanan.'
