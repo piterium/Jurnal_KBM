@@ -26,6 +26,10 @@ import {
   BookOpen,
   Calendar,
   Award,
+  Flame,
+  Globe,
+  Radio,
+  Wifi,
 } from 'lucide-react';
 import { exportBackup } from '../utils/storage';
 import { useTheme, THEME_OPTIONS } from '../context/ThemeContext';
@@ -42,6 +46,10 @@ interface SettingsViewProps {
   onResetData: () => void;
   onDeleteDatabase?: () => void;
   onImportData: (imported: AppData) => void;
+  onOpenFirebaseLiveModal?: () => void;
+  syncStatus?: 'synced' | 'syncing' | 'offline' | 'error';
+  onManualSync?: () => void;
+  currentSchoolId?: string;
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
@@ -56,8 +64,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   onResetData,
   onDeleteDatabase,
   onImportData,
+  onOpenFirebaseLiveModal,
+  syncStatus = 'synced',
+  onManualSync,
+  currentSchoolId = 'main',
 }) => {
   const { profile, classes, students } = data;
+
   const { theme, setTheme } = useTheme();
 
   const [activeSection, setActiveSection] = useState<'PROFILE' | 'CLASSES' | 'THEME' | 'BACKUP'>('PROFILE');
@@ -798,12 +811,60 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       {/* SECTION: BACKUP & HAPUS DATABASE */}
       {activeSection === 'BACKUP' && (
         <div className="bg-[#0F172A] p-6 rounded-2xl border border-slate-800 shadow-xl space-y-6">
+          {/* Firebase Live Cloud Banner */}
+          <div className="p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-slate-900 border border-amber-500/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="flex items-start sm:items-center gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center flex-shrink-0 shadow-lg">
+                <Flame className="w-6 h-6 fill-amber-400/20 text-amber-400 animate-pulse" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-sm font-bold text-white">Firebase Firestore Cloud Sync</h4>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    REALTIME ONLINE
+                  </span>
+                </div>
+                <p className="text-xs text-slate-300 mt-0.5">
+                  Basis data tersinkronisasi otomatis antar HP, laptop, dan tablet di jaringan internet mana pun (Wi-Fi/4G/5G).
+                </p>
+                <div className="text-[11px] font-mono text-amber-300/80 mt-1">
+                  Database ID: <span className="text-white font-bold">{currentSchoolId}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5 w-full md:w-auto">
+              {onManualSync && (
+                <button
+                  type="button"
+                  onClick={onManualSync}
+                  className="flex-1 md:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 text-xs font-bold rounded-xl shadow-md cursor-pointer transition-all active:scale-95"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${syncStatus === 'syncing' ? 'animate-spin' : ''}`} />
+                  <span>Sinkronkan Cloud</span>
+                </button>
+              )}
+
+              {onOpenFirebaseLiveModal && (
+                <button
+                  type="button"
+                  onClick={onOpenFirebaseLiveModal}
+                  className="flex-1 md:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl border border-slate-700 shadow-md cursor-pointer transition-all active:scale-95"
+                >
+                  <Radio className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Status & Bagikan</span>
+                </button>
+              )}
+            </div>
+          </div>
+
           <div>
-            <h3 className="text-base font-bold text-white">Pencadangan, Pemulihan & Hapus Database</h3>
+            <h3 className="text-base font-bold text-white">Pencadangan Lokal, Pemulihan & Hapus Database</h3>
             <p className="text-xs text-slate-400">
               Kelola berkas cadangan JSON, reset ke data awal, atau hapus seluruh database aplikasi secara permanen
             </p>
           </div>
+
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Export */}

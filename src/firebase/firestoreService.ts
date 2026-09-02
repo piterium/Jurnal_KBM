@@ -25,6 +25,8 @@ import {
 import { defaultProfile } from '../utils/initialData';
 import firebaseConfig from '../../firebase-applet-config.json';
 
+export const DEFAULT_SCHOOL_ID = 'main';
+
 export interface FirebaseLiveStats {
   projectId: string;
   databaseId: string;
@@ -32,6 +34,7 @@ export interface FirebaseLiveStats {
   isConnected: boolean;
   latencyMs: number;
   lastChecked: string;
+  schoolId: string;
   counts: {
     classes: number;
     students: number;
@@ -50,15 +53,13 @@ export function getFirebaseConfigSummary() {
   };
 }
 
-export async function testFirebaseLiveConnection(userId?: string): Promise<{ isConnected: boolean; latencyMs: number }> {
+export async function testFirebaseLiveConnection(
+  schoolId: string = DEFAULT_SCHOOL_ID
+): Promise<{ isConnected: boolean; latencyMs: number }> {
   const start = performance.now();
   try {
-    if (userId) {
-      const path = `users/${userId}/schoolData`;
-      await getDocs(collection(db, path));
-    } else {
-      await getDocs(collection(db, 'users'));
-    }
+    const path = `schools/${schoolId}/schoolData`;
+    await getDocs(collection(db, path));
     const latency = Math.round(performance.now() - start);
     return { isConnected: true, latencyMs: latency };
   } catch (err) {
@@ -87,101 +88,110 @@ export async function syncUserProfile(user: User): Promise<void> {
   }
 }
 
-export async function loadUserAppDataFromFirestore(userId: string): Promise<AppData | null> {
+/**
+ * Load complete shared school data from Firestore (cross-device)
+ */
+export async function loadSchoolAppDataFromFirestore(
+  schoolId: string = DEFAULT_SCHOOL_ID
+): Promise<AppData | null> {
   try {
     // 1. Profile
-    const profilePath = `users/${userId}/schoolData/profile`;
     let profile: SchoolProfile = { ...defaultProfile };
     try {
-      const profileDocs = await getDocs(collection(db, `users/${userId}/schoolData`));
-      profileDocs.forEach(d => {
+      const profileDocs = await getDocs(collection(db, `schools/${schoolId}/schoolData`));
+      profileDocs.forEach((d) => {
         if (d.id === 'profile') {
           profile = { ...defaultProfile, ...(d.data() as SchoolProfile) };
         }
       });
     } catch (err) {
-      handleFirestoreError(err, OperationType.GET, profilePath);
+      console.warn('Error reading school profile:', err);
     }
 
     // 2. Classes
-    const classesPath = `users/${userId}/classes`;
     const classes: ClassRoom[] = [];
     try {
-      const classSnap = await getDocs(collection(db, classesPath));
-      classSnap.forEach(d => {
+      const classSnap = await getDocs(collection(db, `schools/${schoolId}/classes`));
+      classSnap.forEach((d) => {
         const item = d.data() as ClassRoom;
         classes.push({ ...item, id: d.id });
       });
     } catch (err) {
-      handleFirestoreError(err, OperationType.LIST, classesPath);
+      console.warn('Error reading classes:', err);
     }
 
     // 3. Students
-    const studentsPath = `users/${userId}/students`;
     const students: Student[] = [];
     try {
-      const studentSnap = await getDocs(collection(db, studentsPath));
-      studentSnap.forEach(d => {
+      const studentSnap = await getDocs(collection(db, `schools/${schoolId}/students`));
+      studentSnap.forEach((d) => {
         const item = d.data() as Student;
         students.push({ ...item, id: d.id });
       });
     } catch (err) {
-      handleFirestoreError(err, OperationType.LIST, studentsPath);
+      console.warn('Error reading students:', err);
     }
 
     // 4. Teachers
-    const teachersPath = `users/${userId}/teachers`;
     const teachers: Teacher[] = [];
     try {
-      const teacherSnap = await getDocs(collection(db, teachersPath));
-      teacherSnap.forEach(d => {
+      const teacherSnap = await getDocs(collection(db, `schools/${schoolId}/teachers`));
+      teacherSnap.forEach((d) => {
         const item = d.data() as Teacher;
         teachers.push({ ...item, id: d.id });
       });
     } catch (err) {
-      handleFirestoreError(err, OperationType.LIST, teachersPath);
+      console.warn('Error reading teachers:', err);
     }
 
     // 5. Journals
-    const journalsPath = `users/${userId}/journals`;
     const journals: TeachingJournal[] = [];
     try {
-      const journalSnap = await getDocs(collection(db, journalsPath));
-      journalSnap.forEach(d => {
+      const journalSnap = await getDocs(collection(db, `schools/${schoolId}/journals`));
+      journalSnap.forEach((d) => {
         const item = d.data() as TeachingJournal;
         journals.push({ ...item, id: d.id });
       });
     } catch (err) {
-      handleFirestoreError(err, OperationType.LIST, journalsPath);
+      console.warn('Error reading journals:', err);
     }
 
     // 6. Attendances
-    const attendancesPath = `users/${userId}/attendances`;
     const attendances: AttendanceRecord[] = [];
     try {
-      const attSnap = await getDocs(collection(db, attendancesPath));
-      attSnap.forEach(d => {
+      const attSnap = await getDocs(collection(db, `schools/${schoolId}/attendances`));
+      attSnap.forEach((d) => {
         const item = d.data() as AttendanceRecord;
         attendances.push({ ...item, id: d.id });
       });
     } catch (err) {
-      handleFirestoreError(err, OperationType.LIST, attendancesPath);
+      console.warn('Error reading attendances:', err);
     }
 
     // 7. Assessments
-    const assessmentsPath = `users/${userId}/assessments`;
     const assessments: AssessmentItem[] = [];
     try {
-      const asmSnap = await getDocs(collection(db, assessmentsPath));
-      asmSnap.forEach(d => {
+      const asmSnap = await getDocs(collection(db, `schools/${schoolId}/assessments`));
+      asmSnap.forEach((d) => {
         const item = d.data() as AssessmentItem;
         assessments.push({ ...item, id: d.id });
       });
     } catch (err) {
-      handleFirestoreError(err, OperationType.LIST, assessmentsPath);
+      console.warn('Error reading assessments:', err);
     }
 
-    // Return combined app data
+    const hasData =
+      classes.length > 0 ||
+      students.length > 0 ||
+      journals.length > 0 ||
+      attendances.length > 0 ||
+      assessments.length > 0 ||
+      teachers.length > 0;
+
+    if (!hasData) {
+      return null;
+    }
+
     return {
       profile,
       classes,
@@ -192,72 +202,99 @@ export async function loadUserAppDataFromFirestore(userId: string): Promise<AppD
       assessments,
     };
   } catch (err) {
-    console.error('Error loading data from Firestore:', err);
+    console.error('Error loading school data from Firestore:', err);
     return null;
   }
 }
 
-export async function saveUserAppDataToFirestore(userId: string, data: AppData): Promise<void> {
-  const basePath = `users/${userId}`;
+/**
+ * Save complete application state to shared school Firestore collection
+ */
+export async function saveSchoolAppDataToFirestore(
+  schoolId: string = DEFAULT_SCHOOL_ID,
+  data: AppData
+): Promise<void> {
+  const basePath = `schools/${schoolId}`;
   try {
     // 1. Profile
-    const profileRef = doc(db, `users/${userId}/schoolData`, 'profile');
+    const profileRef = doc(db, `schools/${schoolId}/schoolData`, 'profile');
     await setDoc(profileRef, {
       ...data.profile,
-      userId,
+      schoolId,
       updatedAt: new Date().toISOString(),
     });
 
-    // Classes
+    // 2. Classes
     for (const cls of data.classes) {
-      const ref = doc(db, `users/${userId}/classes`, cls.id);
-      await setDoc(ref, { ...cls, userId });
+      const ref = doc(db, `schools/${schoolId}/classes`, cls.id);
+      await setDoc(ref, { ...cls, schoolId }, { merge: true });
     }
 
-    // Students
+    // 3. Students
     for (const std of data.students) {
-      const ref = doc(db, `users/${userId}/students`, std.id);
-      await setDoc(ref, { ...std, userId });
+      const ref = doc(db, `schools/${schoolId}/students`, std.id);
+      await setDoc(ref, { ...std, schoolId }, { merge: true });
     }
 
-    // Teachers
+    // 4. Teachers
     if (data.teachers && data.teachers.length > 0) {
       for (const tch of data.teachers) {
-        const ref = doc(db, `users/${userId}/teachers`, tch.id);
-        await setDoc(ref, { ...tch, userId });
+        const ref = doc(db, `schools/${schoolId}/teachers`, tch.id);
+        await setDoc(ref, { ...tch, schoolId }, { merge: true });
       }
     }
 
-    // Journals
+    // 5. Journals
     for (const jnl of data.journals) {
-      const ref = doc(db, `users/${userId}/journals`, jnl.id);
-      await setDoc(ref, { ...jnl, userId });
+      const ref = doc(db, `schools/${schoolId}/journals`, jnl.id);
+      await setDoc(ref, { ...jnl, schoolId }, { merge: true });
     }
 
-    // Attendances
+    // 6. Attendances
     for (const att of data.attendances) {
-      const ref = doc(db, `users/${userId}/attendances`, att.id);
-      await setDoc(ref, { ...att, userId });
+      const ref = doc(db, `schools/${schoolId}/attendances`, att.id);
+      await setDoc(ref, { ...att, schoolId }, { merge: true });
     }
 
-    // Assessments
+    // 7. Assessments
     for (const asm of data.assessments) {
-      const ref = doc(db, `users/${userId}/assessments`, asm.id);
-      await setDoc(ref, { ...asm, userId });
+      const ref = doc(db, `schools/${schoolId}/assessments`, asm.id);
+      await setDoc(ref, { ...asm, schoolId }, { merge: true });
     }
   } catch (err) {
     handleFirestoreError(err, OperationType.WRITE, basePath);
   }
 }
 
-export async function deleteFirestoreDocument(
-  userId: string,
+/**
+ * Save single document to school Firestore collection in real-time
+ */
+export async function saveSingleDocumentToFirestore(
+  schoolId: string = DEFAULT_SCHOOL_ID,
+  collectionName: 'classes' | 'students' | 'teachers' | 'journals' | 'attendances' | 'assessments' | 'schoolData',
+  docId: string,
+  docData: any
+): Promise<void> {
+  const path = `schools/${schoolId}/${collectionName}/${docId}`;
+  try {
+    const docRef = doc(db, `schools/${schoolId}/${collectionName}`, docId);
+    await setDoc(docRef, { ...docData, schoolId, updatedAt: new Date().toISOString() }, { merge: true });
+  } catch (err) {
+    handleFirestoreError(err, OperationType.WRITE, path);
+  }
+}
+
+/**
+ * Delete single document from school Firestore collection
+ */
+export async function deleteSchoolDocumentFromFirestore(
+  schoolId: string = DEFAULT_SCHOOL_ID,
   collectionName: 'classes' | 'students' | 'teachers' | 'journals' | 'attendances' | 'assessments',
   docId: string
 ): Promise<void> {
-  const path = `users/${userId}/${collectionName}/${docId}`;
+  const path = `schools/${schoolId}/${collectionName}/${docId}`;
   try {
-    const docRef = doc(db, `users/${userId}/${collectionName}`, docId);
+    const docRef = doc(db, `schools/${schoolId}/${collectionName}`, docId);
     await deleteDoc(docRef);
   } catch (err) {
     handleFirestoreError(err, OperationType.DELETE, path);
@@ -265,24 +302,125 @@ export async function deleteFirestoreDocument(
 }
 
 /**
- * Subscribe to real-time live changes in Firestore
+ * Subscribe to all live realtime changes across all devices and networks
  */
-export function subscribeToUserJournals(
-  userId: string,
-  onUpdate: (journals: TeachingJournal[]) => void
+export function subscribeToSchoolRealtime(
+  schoolId: string = DEFAULT_SCHOOL_ID,
+  callbacks: {
+    onJournalsUpdate?: (journals: TeachingJournal[]) => void;
+    onAttendancesUpdate?: (attendances: AttendanceRecord[]) => void;
+    onAssessmentsUpdate?: (assessments: AssessmentItem[]) => void;
+    onClassesUpdate?: (classes: ClassRoom[]) => void;
+    onStudentsUpdate?: (students: Student[]) => void;
+    onTeachersUpdate?: (teachers: Teacher[]) => void;
+    onProfileUpdate?: (profile: SchoolProfile) => void;
+  }
 ): () => void {
-  const path = `users/${userId}/journals`;
-  return onSnapshot(
-    collection(db, path),
-    (snap) => {
-      const journals: TeachingJournal[] = [];
-      snap.forEach((d) => {
-        journals.push({ ...(d.data() as TeachingJournal), id: d.id });
-      });
-      onUpdate(journals);
-    },
-    (error) => {
-      handleFirestoreError(error, OperationType.GET, path);
-    }
-  );
+  const unsubscribers: (() => void)[] = [];
+
+  // 1. Profile listener
+  if (callbacks.onProfileUpdate) {
+    const unsub = onSnapshot(
+      collection(db, `schools/${schoolId}/schoolData`),
+      (snap) => {
+        snap.forEach((d) => {
+          if (d.id === 'profile') {
+            callbacks.onProfileUpdate?.({ ...defaultProfile, ...(d.data() as SchoolProfile) });
+          }
+        });
+      },
+      (err) => console.warn('Profile realtime listener notice:', err)
+    );
+    unsubscribers.push(unsub);
+  }
+
+  // 2. Classes listener
+  if (callbacks.onClassesUpdate) {
+    const unsub = onSnapshot(
+      collection(db, `schools/${schoolId}/classes`),
+      (snap) => {
+        const items: ClassRoom[] = [];
+        snap.forEach((d) => items.push({ ...(d.data() as ClassRoom), id: d.id }));
+        if (items.length > 0) callbacks.onClassesUpdate?.(items);
+      },
+      (err) => console.warn('Classes realtime listener notice:', err)
+    );
+    unsubscribers.push(unsub);
+  }
+
+  // 3. Students listener
+  if (callbacks.onStudentsUpdate) {
+    const unsub = onSnapshot(
+      collection(db, `schools/${schoolId}/students`),
+      (snap) => {
+        const items: Student[] = [];
+        snap.forEach((d) => items.push({ ...(d.data() as Student), id: d.id }));
+        if (items.length > 0) callbacks.onStudentsUpdate?.(items);
+      },
+      (err) => console.warn('Students realtime listener notice:', err)
+    );
+    unsubscribers.push(unsub);
+  }
+
+  // 4. Teachers listener
+  if (callbacks.onTeachersUpdate) {
+    const unsub = onSnapshot(
+      collection(db, `schools/${schoolId}/teachers`),
+      (snap) => {
+        const items: Teacher[] = [];
+        snap.forEach((d) => items.push({ ...(d.data() as Teacher), id: d.id }));
+        if (items.length > 0) callbacks.onTeachersUpdate?.(items);
+      },
+      (err) => console.warn('Teachers realtime listener notice:', err)
+    );
+    unsubscribers.push(unsub);
+  }
+
+  // 5. Journals listener
+  if (callbacks.onJournalsUpdate) {
+    const unsub = onSnapshot(
+      collection(db, `schools/${schoolId}/journals`),
+      (snap) => {
+        const items: TeachingJournal[] = [];
+        snap.forEach((d) => items.push({ ...(d.data() as TeachingJournal), id: d.id }));
+        callbacks.onJournalsUpdate?.(items);
+      },
+      (err) => console.warn('Journals realtime listener notice:', err)
+    );
+    unsubscribers.push(unsub);
+  }
+
+  // 6. Attendances listener
+  if (callbacks.onAttendancesUpdate) {
+    const unsub = onSnapshot(
+      collection(db, `schools/${schoolId}/attendances`),
+      (snap) => {
+        const items: AttendanceRecord[] = [];
+        snap.forEach((d) => items.push({ ...(d.data() as AttendanceRecord), id: d.id }));
+        callbacks.onAttendancesUpdate?.(items);
+      },
+      (err) => console.warn('Attendances realtime listener notice:', err)
+    );
+    unsubscribers.push(unsub);
+  }
+
+  // 7. Assessments listener
+  if (callbacks.onAssessmentsUpdate) {
+    const unsub = onSnapshot(
+      collection(db, `schools/${schoolId}/assessments`),
+      (snap) => {
+        const items: AssessmentItem[] = [];
+        snap.forEach((d) => items.push({ ...(d.data() as AssessmentItem), id: d.id }));
+        callbacks.onAssessmentsUpdate?.(items);
+      },
+      (err) => console.warn('Assessments realtime listener notice:', err)
+    );
+    unsubscribers.push(unsub);
+  }
+
+  // Return unsubscribe all function
+  return () => {
+    unsubscribers.forEach((unsub) => unsub());
+  };
 }
+

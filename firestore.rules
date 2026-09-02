@@ -20,108 +20,93 @@ service cloud.firestore {
       return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
     }
 
-    function incoming() {
-      return request.resource.data;
-    }
+    // ===============================================================
+    // SHARED SCHOOL DATABASE (Real-time live for all devices & networks)
+    // ===============================================================
+    match /schools/{schoolId} {
+      allow read, write: if isValidId(schoolId);
 
-    function existing() {
-      return resource.data;
-    }
-
-    // User Profile
-    match /users/{userId} {
-      allow get: if isOwner(userId);
-      allow list: if false;
-      allow create, update: if isOwner(userId)
-        && isValidId(userId)
-        && incoming().id == userId
-        && incoming().email is string
-        && incoming().email.size() <= 256;
-      allow delete: if isOwner(userId);
-
-      // School Profile Settings
+      // School Profile & Settings
       match /schoolData/{docId} {
-        allow read: if isOwner(userId);
-        allow write: if isOwner(userId)
-          && isValidId(docId)
-          && (request.resource == null || incoming().userId == userId);
+        allow read, write: if isValidId(docId);
       }
 
-      // Classrooms
+      // Classes
       match /classes/{classId} {
-        allow read: if isOwner(userId);
-        allow create, update: if isOwner(userId)
-          && isValidId(classId)
-          && incoming().id == classId
-          && incoming().userId == userId
-          && incoming().name is string
-          && incoming().name.size() <= 64;
-        allow delete: if isOwner(userId) && isValidId(classId);
+        allow read, write: if isValidId(classId);
       }
 
       // Students
       match /students/{studentId} {
-        allow read: if isOwner(userId);
-        allow create, update: if isOwner(userId)
-          && isValidId(studentId)
-          && incoming().id == studentId
-          && incoming().userId == userId
-          && incoming().name is string
-          && incoming().name.size() <= 256
-          && incoming().classId is string;
-        allow delete: if isOwner(userId) && isValidId(studentId);
+        allow read, write: if isValidId(studentId);
       }
 
       // Teachers
       match /teachers/{teacherId} {
-        allow read: if isOwner(userId);
-        allow create, update: if isOwner(userId)
-          && isValidId(teacherId)
-          && incoming().id == teacherId
-          && incoming().userId == userId
-          && incoming().name is string
-          && incoming().name.size() <= 256;
-        allow delete: if isOwner(userId) && isValidId(teacherId);
+        allow read, write: if isValidId(teacherId);
       }
 
       // Teaching Journals
       match /journals/{journalId} {
-        allow read: if isOwner(userId);
-        allow create, update: if isOwner(userId)
-          && isValidId(journalId)
-          && incoming().id == journalId
-          && incoming().userId == userId
-          && incoming().date is string
-          && incoming().classId is string
-          && incoming().topic is string
-          && incoming().topic.size() <= 1000;
-        allow delete: if isOwner(userId) && isValidId(journalId);
+        allow read, write: if isValidId(journalId);
       }
 
       // Attendance Records
       match /attendances/{attendanceId} {
-        allow read: if isOwner(userId);
-        allow create, update: if isOwner(userId)
-          && isValidId(attendanceId)
-          && incoming().id == attendanceId
-          && incoming().userId == userId
-          && incoming().date is string
-          && incoming().classId is string;
-        allow delete: if isOwner(userId) && isValidId(attendanceId);
+        allow read, write: if isValidId(attendanceId);
       }
 
       // Assessment Items & Scores
       match /assessments/{assessmentId} {
-        allow read: if isOwner(userId);
-        allow create, update: if isOwner(userId)
-          && isValidId(assessmentId)
-          && incoming().id == assessmentId
-          && incoming().userId == userId
-          && incoming().title is string
-          && incoming().title.size() <= 256
-          && incoming().classId is string;
-        allow delete: if isOwner(userId) && isValidId(assessmentId);
+        allow read, write: if isValidId(assessmentId);
+      }
+    }
+
+    // ===============================================================
+    // USER SPECIFIC DATA
+    // ===============================================================
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create, update: if isOwner(userId)
+        && isValidId(userId);
+      allow delete: if isOwner(userId);
+
+      // School Profile Settings
+      match /schoolData/{docId} {
+        allow read, write: if isOwner(userId) && isValidId(docId);
+      }
+
+      // Classrooms
+      match /classes/{classId} {
+        allow read, write: if isOwner(userId) && isValidId(classId);
+      }
+
+      // Students
+      match /students/{studentId} {
+        allow read, write: if isOwner(userId) && isValidId(studentId);
+      }
+
+      // Teachers
+      match /teachers/{teacherId} {
+        allow read, write: if isOwner(userId) && isValidId(teacherId);
+      }
+
+      // Teaching Journals
+      match /journals/{journalId} {
+        allow read, write: if isOwner(userId) && isValidId(journalId);
+      }
+
+      // Attendance Records
+      match /attendances/{attendanceId} {
+        allow read, write: if isOwner(userId) && isValidId(attendanceId);
+      }
+
+      // Assessment Items & Scores
+      match /assessments/{assessmentId} {
+        allow read, write: if isOwner(userId) && isValidId(assessmentId);
       }
     }
   }
 }
+

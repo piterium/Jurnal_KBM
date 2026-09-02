@@ -487,6 +487,38 @@
     "/users/{userId}/assessments/{assessmentId}": {
       "schema": "AssessmentItem",
       "description": "Assessment entries and student scores"
+    },
+    "/schools/{schoolId}": {
+      "schema": "SchoolProfile",
+      "description": "Root school entity for multi-device collaboration"
+    },
+    "/schools/{schoolId}/schoolData/{docId}": {
+      "schema": "SchoolProfile",
+      "description": "School administrative settings and profile"
+    },
+    "/schools/{schoolId}/classes/{classId}": {
+      "schema": "ClassRoom",
+      "description": "Classroom groups in the school"
+    },
+    "/schools/{schoolId}/students/{studentId}": {
+      "schema": "Student",
+      "description": "Students in the school"
+    },
+    "/schools/{schoolId}/teachers/{teacherId}": {
+      "schema": "Teacher",
+      "description": "Teachers in the school"
+    },
+    "/schools/{schoolId}/journals/{journalId}": {
+      "schema": "TeachingJournal",
+      "description": "Teaching journals in the school"
+    },
+    "/schools/{schoolId}/attendances/{attendanceId}": {
+      "schema": "AttendanceRecord",
+      "description": "Class attendance records in the school"
+    },
+    "/schools/{schoolId}/assessments/{assessmentId}": {
+      "schema": "AssessmentItem",
+      "description": "Assessment records in the school"
     }
   }
 }
