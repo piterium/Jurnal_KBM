@@ -13,6 +13,7 @@ import { loadAppData, saveAppData, getInitialAppData, getEmptyAppData } from './
 import { generateMonthlyReportPdf } from './utils/pdfGenerator';
 import { Sidebar } from './components/Sidebar';
 import { ThemeToggle } from './components/ThemeToggle';
+import { ActiveDatabaseBadge } from './components/ActiveDatabaseBadge';
 import { DashboardView } from './components/DashboardView';
 import { JournalView } from './components/JournalView';
 import { AttendanceView } from './components/AttendanceView';
@@ -498,7 +499,11 @@ export default function App() {
             </span>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-3">
+            <ActiveDatabaseBadge
+              data={data}
+              onNavigateToSettings={() => setActiveTab('settings')}
+            />
             <ThemeToggle variant="pill" />
           </div>
         </header>

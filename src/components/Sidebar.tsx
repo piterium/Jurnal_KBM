@@ -16,8 +16,7 @@ import {
   ShieldCheck,
   Users,
   UserCheck,
-  CheckCircle2,
-  HardDrive,
+  Database,
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 
@@ -209,23 +208,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Quick Action & Stats Footer */}
       <div className="p-4 border-t border-slate-800 bg-[#0B1120]/90 space-y-3">
-        {/* Persistence & Theme Row */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex-1 p-2 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-2 min-w-0">
-            <div className="w-6 h-6 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center flex-shrink-0">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-            </div>
-            <div className="min-w-0">
-              <div className="text-[11px] font-bold text-white truncate">
-                Penyimpanan Lokal
-              </div>
-              <div className="text-[10px] text-emerald-400 truncate">
-                Auto-Save Aktif
-              </div>
-            </div>
-          </div>
-
-          {/* Compact Theme Switcher for Sidebar */}
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-medium text-slate-400">Tema Tampilan</span>
           <ThemeToggle variant="compact" />
         </div>
 
@@ -283,7 +267,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold" title="Status Database Aktif">
+            <Database className="w-3 h-3 text-emerald-400" />
+            <span>Aktif</span>
+          </div>
           <ThemeToggle variant="icon" />
           <button
             onClick={onQuickDownloadPdf}
