@@ -2,22 +2,8 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Default Deny All Catch-all
-    match /{document=**} {
-      allow read, write: if false;
-    }
-
-    // Helper functions
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-
     function isValidId(id) {
-      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+      return id is string && id.size() > 0 && id.size() <= 128;
     }
 
     // ===============================================================
@@ -66,47 +52,18 @@ service cloud.firestore {
     // USER SPECIFIC DATA
     // ===============================================================
     match /users/{userId} {
-      allow get: if isOwner(userId);
-      allow list: if false;
-      allow create, update: if isOwner(userId)
-        && isValidId(userId);
-      allow delete: if isOwner(userId);
+      allow read, write: if isValidId(userId);
 
-      // School Profile Settings
-      match /schoolData/{docId} {
-        allow read, write: if isOwner(userId) && isValidId(docId);
+      match /{allChildren=**} {
+        allow read, write: if isValidId(userId);
       }
+    }
 
-      // Classrooms
-      match /classes/{classId} {
-        allow read, write: if isOwner(userId) && isValidId(classId);
-      }
-
-      // Students
-      match /students/{studentId} {
-        allow read, write: if isOwner(userId) && isValidId(studentId);
-      }
-
-      // Teachers
-      match /teachers/{teacherId} {
-        allow read, write: if isOwner(userId) && isValidId(teacherId);
-      }
-
-      // Teaching Journals
-      match /journals/{journalId} {
-        allow read, write: if isOwner(userId) && isValidId(journalId);
-      }
-
-      // Attendance Records
-      match /attendances/{attendanceId} {
-        allow read, write: if isOwner(userId) && isValidId(attendanceId);
-      }
-
-      // Assessment Items & Scores
-      match /assessments/{assessmentId} {
-        allow read, write: if isOwner(userId) && isValidId(assessmentId);
-      }
+    // Test doc for connection health check
+    match /test/{docId} {
+      allow read, write: if true;
     }
   }
 }
+
 

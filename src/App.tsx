@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   AppData,
   TeachingJournal,
@@ -12,7 +12,7 @@ import {
 import { loadAppData, saveAppData, getInitialAppData, getEmptyAppData } from './utils/storage';
 import { generateMonthlyReportPdf } from './utils/pdfGenerator';
 import { Sidebar } from './components/Sidebar';
-import { FirebaseAuthHeader } from './components/FirebaseAuthHeader';
+import { ThemeToggle } from './components/ThemeToggle';
 import { DashboardView } from './components/DashboardView';
 import { JournalView } from './components/JournalView';
 import { AttendanceView } from './components/AttendanceView';
@@ -27,37 +27,10 @@ import { StudentModal } from './components/modals/StudentModal';
 import { ClassModal } from './components/modals/ClassModal';
 import { TeacherModal } from './components/modals/TeacherModal';
 import { SaveSuccessModal } from './components/SaveSuccessModal';
-import { FirebaseLiveModal } from './components/FirebaseLiveModal';
-import {
-  DEFAULT_SCHOOL_ID,
-  loadSchoolAppDataFromFirestore,
-  saveSchoolAppDataToFirestore,
-  subscribeToSchoolRealtime,
-} from './firebase/firestoreService';
-import { auth, signInAnonymously } from './firebase/firebase';
 
 export default function App() {
   const [data, setData] = useState<AppData>(() => loadAppData());
   const [activeTab, setActiveTab] = useState<string>('dashboard');
-
-  // Firebase Live State
-  const [schoolId, setSchoolId] = useState<string>(() => {
-    // Check URL query param first (?school=xxx)
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const urlSchool = params.get('school');
-      if (urlSchool && urlSchool.trim()) return urlSchool.trim();
-      const savedSchool = localStorage.getItem('school_workspace_id');
-      if (savedSchool && savedSchool.trim()) return savedSchool.trim();
-    }
-    return DEFAULT_SCHOOL_ID;
-  });
-
-  const [isFirebaseLiveModalOpen, setIsFirebaseLiveModalOpen] = useState(false);
-  const [syncStatus, setSyncStatus] = useState<'synced' | 'syncing' | 'offline' | 'error'>('synced');
-  const isInitialCloudLoadRef = useRef(false);
-  const isInternalUpdateRef = useRef(false);
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Success and Delete Notification state (as requested in user specifications)
   const [notification, setNotification] = useState<{
@@ -90,108 +63,6 @@ export default function App() {
     });
   }, []);
 
-  // Ensure Firebase Auth is signed in anonymously so security rules pass seamlessly across devices
-  useEffect(() => {
-    const ensureAuth = async () => {
-      try {
-        if (!auth.currentUser) {
-          await signInAnonymously(auth);
-        }
-      } catch (err) {
-        console.warn('Firebase anonymous auth auto-init:', err);
-      }
-    };
-    ensureAuth();
-  }, []);
-
-  // Initial cloud fetch & Realtime subscriptions across all devices and networks
-  useEffect(() => {
-    let isMounted = true;
-
-    // 1. Initial full fetch from Firestore
-    const initCloudData = async () => {
-      setSyncStatus('syncing');
-      try {
-        const cloudData = await loadSchoolAppDataFromFirestore(schoolId);
-        if (cloudData && isMounted) {
-          // If cloud has data, merge it or use it
-          isInternalUpdateRef.current = true;
-          setData((prev) => ({
-            ...prev,
-            ...cloudData,
-            profile: cloudData.profile || prev.profile,
-            classes: cloudData.classes?.length ? cloudData.classes : prev.classes,
-            students: cloudData.students?.length ? cloudData.students : prev.students,
-            teachers: cloudData.teachers?.length ? cloudData.teachers : prev.teachers,
-            journals: cloudData.journals || prev.journals,
-            attendances: cloudData.attendances || prev.attendances,
-            assessments: cloudData.assessments || prev.assessments,
-          }));
-          saveAppData({
-            ...data,
-            ...cloudData,
-          });
-          setSyncStatus('synced');
-        } else if (isMounted) {
-          // If cloud is brand new and empty, seed it with local initial data
-          await saveSchoolAppDataToFirestore(schoolId, data);
-          setSyncStatus('synced');
-        }
-      } catch (error) {
-        console.error('Error initializing Firebase cloud data:', error);
-        if (isMounted) setSyncStatus('synced');
-      } finally {
-        isInitialCloudLoadRef.current = true;
-      }
-    };
-
-    initCloudData();
-
-    // 2. Realtime listener for live multi-device syncing
-    const unsubscribe = subscribeToSchoolRealtime(schoolId, {
-      onJournalsUpdate: (journals) => {
-        if (!isMounted) return;
-        isInternalUpdateRef.current = true;
-        setData((prev) => ({ ...prev, journals }));
-      },
-      onAttendancesUpdate: (attendances) => {
-        if (!isMounted) return;
-        isInternalUpdateRef.current = true;
-        setData((prev) => ({ ...prev, attendances }));
-      },
-      onAssessmentsUpdate: (assessments) => {
-        if (!isMounted) return;
-        isInternalUpdateRef.current = true;
-        setData((prev) => ({ ...prev, assessments }));
-      },
-      onClassesUpdate: (classes) => {
-        if (!isMounted || !classes.length) return;
-        isInternalUpdateRef.current = true;
-        setData((prev) => ({ ...prev, classes }));
-      },
-      onStudentsUpdate: (students) => {
-        if (!isMounted || !students.length) return;
-        isInternalUpdateRef.current = true;
-        setData((prev) => ({ ...prev, students }));
-      },
-      onTeachersUpdate: (teachers) => {
-        if (!isMounted || !teachers.length) return;
-        isInternalUpdateRef.current = true;
-        setData((prev) => ({ ...prev, teachers }));
-      },
-      onProfileUpdate: (profile) => {
-        if (!isMounted || !profile) return;
-        isInternalUpdateRef.current = true;
-        setData((prev) => ({ ...prev, profile }));
-      },
-    });
-
-    return () => {
-      isMounted = false;
-      unsubscribe();
-    };
-  }, [schoolId]);
-
   // Modal states
   const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
   const [editingJournal, setEditingJournal] = useState<TeachingJournal | null>(null);
@@ -218,64 +89,10 @@ export default function App() {
     date?: string;
   }>({});
 
-  // Auto-save data locally and to Firebase Cloud (debounced)
+  // Auto-save data locally whenever data changes
   useEffect(() => {
     saveAppData(data);
-
-    // If change came from Firestore realtime, don't re-upload to avoid loops
-    if (isInternalUpdateRef.current) {
-      isInternalUpdateRef.current = false;
-      return;
-    }
-
-    if (!isInitialCloudLoadRef.current) return;
-
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-
-    setSyncStatus('syncing');
-    debounceTimerRef.current = setTimeout(async () => {
-      try {
-        await saveSchoolAppDataToFirestore(schoolId, data);
-        setSyncStatus('synced');
-      } catch (err) {
-        console.error('Debounce sync error to Firebase Firestore:', err);
-        setSyncStatus('error');
-      }
-    }, 1200);
-
-    return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-    };
-  }, [data, schoolId]);
-
-  // Manual Instant Cloud Sync
-  const handleManualSync = async () => {
-    setSyncStatus('syncing');
-    try {
-      await saveSchoolAppDataToFirestore(schoolId, data);
-      setSyncStatus('synced');
-      triggerSaveNotification(
-        'Sinkronisasi Berhasil!',
-        'Data Anda telah berhasil diperbarui ke Firebase Firestore Cloud.'
-      );
-    } catch (err) {
-      console.error('Manual sync error:', err);
-      setSyncStatus('error');
-    }
-  };
-
-  // Change School/Workspace ID handler
-  const handleSchoolIdChange = (newSchoolId: string) => {
-    const cleanId = newSchoolId.trim() || DEFAULT_SCHOOL_ID;
-    setSchoolId(cleanId);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('school_workspace_id', cleanId);
-    }
-  };
+  }, [data]);
 
   // Keep selectedGradeClassId valid if classes change
   useEffect(() => {
@@ -664,10 +481,7 @@ export default function App() {
         classesCount={data.classes.length}
         studentsCount={data.students.filter((s) => s.active).length}
         teachersCount={data.teachers?.length || 0}
-        syncStatus={syncStatus}
-        onManualSync={handleManualSync}
         onQuickDownloadPdf={handleQuickDownloadPdf}
-        onOpenFirebaseLiveModal={() => setIsFirebaseLiveModalOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -684,12 +498,9 @@ export default function App() {
             </span>
           </div>
 
-          <FirebaseAuthHeader
-            syncStatus={syncStatus}
-            onManualSync={handleManualSync}
-            onOpenFirebaseLiveModal={() => setIsFirebaseLiveModalOpen(true)}
-            isRealtimeActive={true}
-          />
+          <div className="flex items-center gap-2.5">
+            <ThemeToggle variant="pill" />
+          </div>
         </header>
 
         <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
@@ -710,9 +521,6 @@ export default function App() {
                 setIsAssessmentModalOpen(true);
               }}
               onQuickDownloadPdf={handleQuickDownloadPdf}
-              onOpenFirebaseLiveModal={() => setIsFirebaseLiveModalOpen(true)}
-              syncStatus={syncStatus}
-              currentSchoolId={schoolId}
             />
           )}
 
@@ -836,11 +644,6 @@ export default function App() {
               onDeleteStudent={handleDeleteStudent}
               onResetData={handleResetData}
               onDeleteDatabase={handleDeleteDatabase}
-              onImportData={handleImportData}
-              onOpenFirebaseLiveModal={() => setIsFirebaseLiveModalOpen(true)}
-              syncStatus={syncStatus}
-              onManualSync={handleManualSync}
-              currentSchoolId={schoolId}
             />
           )}
         </main>
@@ -894,28 +697,6 @@ export default function App() {
         initialData={editingClass}
         defaultSubject={data.profile.subject}
         defaultAcademicYear={data.profile.academicYear}
-      />
-
-      {/* Firebase Live Cross-Device Real-Time Sync Modal */}
-      <FirebaseLiveModal
-        isOpen={isFirebaseLiveModalOpen}
-        onClose={() => setIsFirebaseLiveModalOpen(false)}
-        data={data}
-        currentSchoolId={schoolId}
-        onSchoolIdChange={handleSchoolIdChange}
-        onSwitchSchoolId={handleSchoolIdChange}
-        syncStatus={syncStatus}
-        onManualSync={handleManualSync}
-        onForceSync={handleManualSync}
-        isRealtimeActive={true}
-        stats={{
-          journalsCount: data.journals.length,
-          attendancesCount: data.attendances.length,
-          assessmentsCount: data.assessments.length,
-          classesCount: data.classes.length,
-          studentsCount: data.students.length,
-          teachersCount: data.teachers?.length || 0,
-        }}
       />
 
       {/* Success and Delete Notification Modal (matching user reference specification) */}

@@ -13,12 +13,6 @@ import {
   Users,
   CheckCircle2,
   FileDown,
-  Flame,
-  Globe,
-  Wifi,
-  Radio,
-  Smartphone,
-  Laptop,
 } from 'lucide-react';
 import {
   formatShortDateIndonesian,
@@ -35,9 +29,6 @@ interface DashboardViewProps {
   onOpenNewAttendance: (classId?: string) => void;
   onOpenNewAssessmentModal: () => void;
   onQuickDownloadPdf: () => void;
-  onOpenFirebaseLiveModal?: () => void;
-  syncStatus?: 'synced' | 'syncing' | 'offline' | 'error';
-  currentSchoolId?: string;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
@@ -47,9 +38,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onOpenNewAttendance,
   onOpenNewAssessmentModal,
   onQuickDownloadPdf,
-  onOpenFirebaseLiveModal,
-  syncStatus = 'synced',
-  currentSchoolId = 'main',
 }) => {
   const { profile, classes, students, journals, attendances, assessments } = data;
 
@@ -149,43 +137,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
       </div>
-
-      {/* Firebase Live Cloud Status Ribbon */}
-      <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-slate-900 border border-amber-500/25 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md">
-        <div className="flex items-center gap-3">
-          <div className="relative w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 flex-shrink-0 shadow-inner">
-            <Flame className="w-5 h-5 fill-amber-400/20 text-amber-400" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-500" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-bold text-white">
-                Firebase Firestore Live Cloud Aktif
-              </span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                ONLINE MULTI-PERANGKAT
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-300 mt-0.5">
-              Bisa diakses dari HP (4G/5G) dan Laptop (Wi-Fi) dengan sinkronisasi langsung secara real-time.
-            </p>
-          </div>
-        </div>
-
-        {onOpenFirebaseLiveModal && (
-          <button
-            type="button"
-            onClick={onOpenFirebaseLiveModal}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/40 text-xs font-bold transition-all active:scale-95 cursor-pointer whitespace-nowrap"
-          >
-            <Radio className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-            <span>Status Live & Bagikan</span>
-          </button>
-        )}
-      </div>
-
 
       {/* KPI Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
