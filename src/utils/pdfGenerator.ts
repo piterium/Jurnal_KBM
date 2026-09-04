@@ -7,6 +7,7 @@ import {
   calculateStudentFinalGrade,
   getJournalAttendanceInfo,
   formatShortDateIndonesian,
+  sortStudentsByAttendanceNo,
 } from './storage';
 
 export interface GeneratePdfOptions {
@@ -304,7 +305,9 @@ export function generateMonthlyReportPdf(data: AppData, options: GeneratePdfOpti
   if (reportType === 'FULL' || reportType === 'ATTENDANCE') {
     // --- 2. ATTENDANCE SUMMARY TABLE ---
     filteredClasses.forEach(cls => {
-      const clsStudents = students.filter(s => s.classId === cls.id && s.active);
+      const clsStudents = sortStudentsByAttendanceNo(
+        students.filter(s => s.classId === cls.id && s.active)
+      );
       const clsAttendances = attendances.filter(a => {
         const d = new Date(a.date);
         return a.classId === cls.id && (d.getMonth() + 1) === month && d.getFullYear() === year;
@@ -487,7 +490,9 @@ export function generateMonthlyReportPdf(data: AppData, options: GeneratePdfOpti
   if (reportType === 'FULL' || reportType === 'GRADES') {
     // --- 3. GRADEBOOK & ASSESSMENT RECAP TABLE ---
     filteredClasses.forEach(cls => {
-      const clsStudents = students.filter(s => s.classId === cls.id && s.active);
+      const clsStudents = sortStudentsByAttendanceNo(
+        students.filter(s => s.classId === cls.id && s.active)
+      );
       const clsAssessments = assessments.filter(asm => {
         const d = new Date(asm.date);
         // show assessments for this class

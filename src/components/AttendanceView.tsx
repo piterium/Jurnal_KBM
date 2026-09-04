@@ -32,6 +32,7 @@ import {
   calculateStudentAttendanceSummary,
   MONTH_NAMES_ID,
   loadAppData,
+  sortStudentsByAttendanceNo,
 } from '../utils/storage';
 import { generateMonthlyReportPdf } from '../utils/pdfGenerator';
 
@@ -103,14 +104,9 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
 
   const currentClass = classes.find((c) => c.id === selectedClassId);
   const classStudents = useMemo(() => {
-    return students
-      .filter((s) => s.classId === selectedClassId && s.active)
-      .sort((a, b) => {
-        const noA = a.attendanceNo ?? 999;
-        const noB = b.attendanceNo ?? 999;
-        if (noA !== noB) return noA - noB;
-        return a.name.localeCompare(b.name);
-      });
+    return sortStudentsByAttendanceNo(
+      students.filter((s) => s.classId === selectedClassId && s.active)
+    );
   }, [students, selectedClassId]);
 
   // Filtered students for recap view

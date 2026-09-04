@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { Student, ClassRoom, AttendanceRecord, AssessmentItem, SchoolProfile } from '../types';
+import { sortStudentsByAttendanceNo } from '../utils/storage';
 import {
   Users,
   Search,
@@ -385,18 +386,7 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
       return true;
     });
 
-    return list.sort((a, b) => {
-      const numA =
-        a.attendanceNo !== undefined && a.attendanceNo !== ''
-          ? Number(a.attendanceNo)
-          : 9999;
-      const numB =
-        b.attendanceNo !== undefined && b.attendanceNo !== ''
-          ? Number(b.attendanceNo)
-          : 9999;
-      if (numA !== numB) return numA - numB;
-      return a.name.localeCompare(b.name);
-    });
+    return sortStudentsByAttendanceNo(list);
   }, [students, activeClassId, searchQuery]);
 
   const currentClass = classes.find((c) => c.id === activeClassId);

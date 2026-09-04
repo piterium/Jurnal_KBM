@@ -12,7 +12,7 @@ import {
   HelpCircle,
   Sparkles,
 } from 'lucide-react';
-import { calculateStudentFinalGrade, formatShortDateIndonesian } from '../utils/storage';
+import { calculateStudentFinalGrade, formatShortDateIndonesian, sortStudentsByAttendanceNo } from '../utils/storage';
 
 interface GradebookViewProps {
   assessments: AssessmentItem[];
@@ -38,7 +38,11 @@ export const GradebookView: React.FC<GradebookViewProps> = ({
   onSelectClassId,
 }) => {
   const currentClass = classes.find((c) => c.id === selectedClassId) || classes[0];
-  const classStudents = students.filter((s) => s.classId === selectedClassId && s.active);
+  const classStudents = React.useMemo(() => {
+    return sortStudentsByAttendanceNo(
+      students.filter((s) => s.classId === selectedClassId && s.active)
+    );
+  }, [students, selectedClassId]);
 
   // Filter assessments for this class
   const classAssessments = assessments
@@ -258,7 +262,11 @@ export const GradebookView: React.FC<GradebookViewProps> = ({
 
                   return (
                     <tr key={std.id} className="hover:bg-slate-800/30 transition-colors">
-                      <td className="p-2.5 text-center font-bold text-slate-500">{idx + 1}</td>
+                      <td className="p-2.5 text-center font-bold text-slate-500">
+                        {std.attendanceNo !== undefined && std.attendanceNo !== null && String(std.attendanceNo).trim() !== ''
+                          ? String(std.attendanceNo)
+                          : idx + 1}
+                      </td>
                       <td className="p-2.5 font-mono text-[11px] text-slate-400">{std.nisn || '-'}</td>
                       <td className="p-2.5 font-medium text-white">{std.name}</td>
                       <td className="p-2.5 text-center text-slate-400">{std.gender}</td>

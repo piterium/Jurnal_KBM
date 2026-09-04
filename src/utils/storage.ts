@@ -286,6 +286,36 @@ export function getJournalAttendanceInfo(
   };
 }
 
+export function sortStudentsByAttendanceNo(students: Student[]): Student[] {
+  return [...students].sort((a, b) => {
+    const parseNo = (val?: number | string | null): number | null => {
+      if (val === undefined || val === null) return null;
+      const str = String(val).trim();
+      if (!str) return null;
+      const num = Number(str);
+      return !isNaN(num) ? num : null;
+    };
+
+    const numA = parseNo(a.attendanceNo);
+    const numB = parseNo(b.attendanceNo);
+
+    // If both have valid numeric attendance numbers
+    if (numA !== null && numB !== null) {
+      if (numA !== numB) return numA - numB;
+    } else if (numA !== null) {
+      return -1; // students with attendance number come first
+    } else if (numB !== null) {
+      return 1; // students without attendance number come after
+    } else if (a.attendanceNo && b.attendanceNo) {
+      const cmp = String(a.attendanceNo).localeCompare(String(b.attendanceNo), undefined, { numeric: true });
+      if (cmp !== 0) return cmp;
+    }
+
+    // Fallback: alphabetical by student name (A-Z)
+    return (a.name || '').localeCompare(b.name || '', 'id', { sensitivity: 'base' });
+  });
+}
+
 export function calculateStudentAttendanceSummary(
   studentId: string,
   attendances: AttendanceRecord[],

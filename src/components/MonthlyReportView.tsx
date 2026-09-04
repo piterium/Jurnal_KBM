@@ -24,6 +24,7 @@ import {
   calculateStudentAttendanceSummary,
   calculateStudentFinalGrade,
   getJournalAttendanceInfo,
+  sortStudentsByAttendanceNo,
 } from '../utils/storage';
 
 interface MonthlyReportViewProps {
@@ -397,7 +398,9 @@ export const MonthlyReportView: React.FC<MonthlyReportViewProps> = ({ data }) =>
           {(reportType === 'FULL' || reportType === 'ATTENDANCE') && (
             <div className="space-y-4">
               {filteredClasses.map((cls) => {
-                const clsStudents = students.filter((s) => s.classId === cls.id && s.active);
+                const clsStudents = sortStudentsByAttendanceNo(
+                  students.filter((s) => s.classId === cls.id && s.active)
+                );
                 const clsAttendances = attendances.filter((a) => {
                   const d = new Date(a.date);
                   return a.classId === cls.id && d.getMonth() + 1 === selectedMonth && d.getFullYear() === selectedYear;
@@ -428,7 +431,11 @@ export const MonthlyReportView: React.FC<MonthlyReportViewProps> = ({ data }) =>
                             const sum = calculateStudentAttendanceSummary(std.id, clsAttendances);
                             return (
                               <tr key={std.id}>
-                                <td className="p-1 text-center border-r border-slate-200 font-bold">{idx + 1}</td>
+                                <td className="p-1 text-center border-r border-slate-200 font-bold">
+                                  {std.attendanceNo !== undefined && std.attendanceNo !== null && String(std.attendanceNo).trim() !== ''
+                                    ? String(std.attendanceNo)
+                                    : (idx + 1)}
+                                </td>
                                 <td className="p-1 border-r border-slate-200 font-mono">{std.nisn}</td>
                                 <td className="p-1 border-r border-slate-200 font-semibold">{std.name}</td>
                                 <td className="p-1 border-r border-slate-200 text-center">{std.gender}</td>
@@ -457,7 +464,9 @@ export const MonthlyReportView: React.FC<MonthlyReportViewProps> = ({ data }) =>
           {(reportType === 'FULL' || reportType === 'GRADES') && (
             <div className="space-y-4">
               {filteredClasses.map((cls) => {
-                const clsStudents = students.filter((s) => s.classId === cls.id && s.active);
+                const clsStudents = sortStudentsByAttendanceNo(
+                  students.filter((s) => s.classId === cls.id && s.active)
+                );
                 const clsAssessments = assessments.filter((a) => a.classId === cls.id);
 
                 return (
@@ -488,7 +497,11 @@ export const MonthlyReportView: React.FC<MonthlyReportViewProps> = ({ data }) =>
                             const res = calculateStudentFinalGrade(std.id, clsAssessments, cls.kkm || 75);
                             return (
                               <tr key={std.id}>
-                                <td className="p-1 text-center border-r border-slate-200 font-bold">{idx + 1}</td>
+                                <td className="p-1 text-center border-r border-slate-200 font-bold">
+                                  {std.attendanceNo !== undefined && std.attendanceNo !== null && String(std.attendanceNo).trim() !== ''
+                                    ? String(std.attendanceNo)
+                                    : (idx + 1)}
+                                </td>
                                 <td className="p-1 border-r border-slate-200 font-mono">{std.nisn}</td>
                                 <td className="p-1 border-r border-slate-200 font-semibold">{std.name}</td>
                                 <td className="p-1 border-r border-slate-200 text-center">{std.gender}</td>
