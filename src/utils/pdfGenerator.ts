@@ -46,20 +46,38 @@ export function generateMonthlyReportPdf(data: AppData, options: GeneratePdfOpti
     const topY = 10;
     const leftMargin = 14;
     const rightMargin = pageWidth - 14;
+    const availableWidth = rightMargin - leftMargin;
 
-    const headerOfficeLines = profile.letterHeaderOffice
-      ? profile.letterHeaderOffice.split('\n').map(l => l.trim()).filter(Boolean)
-      : ['PEMERINTAH DAERAH / KOTA', 'DINAS PENDIDIKAN DAN KEBUDAYAAN'];
+    // 1. If user uploaded a complete Kop Surat image, draw it directly
+    if (
+      profile.kopSuratUrl &&
+      (profile.kopSuratUrl.startsWith('data:image') ||
+        profile.kopSuratUrl.startsWith('http') ||
+        profile.kopSuratUrl.startsWith('blob:'))
+    ) {
+      try {
+        // @ts-ignore
+        const imgProps = currentDoc.getImageProperties(profile.kopSuratUrl);
+        let kopW = availableWidth;
+        let kopH = 30; // sensible default height for letterhead banner
+        if (imgProps && imgProps.width && imgProps.height) {
+          const aspect = imgProps.width / imgProps.height;
+          kopH = Math.min(Math.max(availableWidth / aspect, 18), 38);
+        }
+        currentDoc.addImage(profile.kopSuratUrl, leftMargin, topY, kopW, kopH);
+        return topY + kopH + 5;
+      } catch (e) {
+        console.warn('Could not add uploaded kop surat image, falling back to standard layout:', e);
+      }
+    }
 
-    // Calculate text measurements
-    const officeLineHeight = 4.2;
-    const schoolNameHeight = 5.2;
-    const addressHeight = 3.8;
-    const totalOfficeHeight = headerOfficeLines.length * officeLineHeight;
-    const totalTextHeight = totalOfficeHeight + schoolNameHeight + addressHeight;
+    // 2. Fallback text Kop Surat without Dinas/Kantor text (per user request)
+    const schoolNameHeight = 6.0;
+    const addressHeight = 4.2;
+    const totalTextHeight = schoolNameHeight + addressHeight;
 
     // Define Logo bounding limits
-    const maxLogoBox = 21; // 21mm x 21mm bounding box
+    const maxLogoBox = 20; // 20mm x 20mm bounding box
     let logoW = maxLogoBox;
     let logoH = maxLogoBox;
     let hasLogo = false;
@@ -87,15 +105,15 @@ export function generateMonthlyReportPdf(data: AppData, options: GeneratePdfOpti
 
     // Determine total Kop content height ensuring both text and logo have clear vertical breathing room
     const effectiveContentH = hasLogo ? Math.max(totalTextHeight, logoH) : totalTextHeight;
-    const kopHeight = Math.max(effectiveContentH + 5, 23);
+    const kopHeight = Math.max(effectiveContentH + 4, 22);
     const doubleLineY = topY + kopHeight;
 
     // Calculate vertical start positions to perfectly center both logo and text
-    const textStartY = topY + (kopHeight - totalTextHeight) / 2 + 3.2;
+    const textStartY = topY + (kopHeight - totalTextHeight) / 2 + 3.5;
     const logoY = topY + (kopHeight - logoH) / 2;
     const logoX = leftMargin + (maxLogoBox - logoW) / 2;
 
-    // 1. Draw School Logo (cleanly centered on the left, strictly above the double line)
+    // A. Draw School Logo on the left
     if (hasLogo && profile.logoUrl) {
       try {
         currentDoc.addImage(profile.logoUrl, logoX, logoY, logoW, logoH);
@@ -104,24 +122,16 @@ export function generateMonthlyReportPdf(data: AppData, options: GeneratePdfOpti
       }
     }
 
-    // 2. Draw Office & School Header Text
+    // B. Draw School Name and Address (Kantor / Dinas header removed)
     let curY = textStartY;
     currentDoc.setFont('helvetica', 'bold');
-    currentDoc.setFontSize(10);
-    currentDoc.setTextColor(30, 41, 59);
-
-    headerOfficeLines.forEach(line => {
-      currentDoc.text(line.toUpperCase(), pageWidth / 2, curY, { align: 'center' });
-      curY += officeLineHeight;
-    });
-
-    currentDoc.setFontSize(13);
+    currentDoc.setFontSize(14);
     currentDoc.setTextColor(15, 23, 42);
-    currentDoc.text(profile.schoolName.toUpperCase(), pageWidth / 2, curY, { align: 'center' });
+    currentDoc.text((profile.schoolName || 'SEKOLAH / MADRASAH').toUpperCase(), pageWidth / 2, curY, { align: 'center' });
     curY += schoolNameHeight;
 
     currentDoc.setFont('helvetica', 'normal');
-    currentDoc.setFontSize(8);
+    currentDoc.setFontSize(8.5);
     currentDoc.setTextColor(71, 85, 105);
     const addressParts = [
       profile.schoolAddress,
@@ -129,9 +139,11 @@ export function generateMonthlyReportPdf(data: AppData, options: GeneratePdfOpti
       profile.districtCity && profile.province ? `${profile.districtCity}, ${profile.province}` : (profile.districtCity || profile.province || ''),
     ].filter(Boolean);
     const addressStr = addressParts.join(' | ');
-    currentDoc.text(addressStr, pageWidth / 2, curY, { align: 'center' });
+    if (addressStr) {
+      currentDoc.text(addressStr, pageWidth / 2, curY, { align: 'center' });
+    }
 
-    // 3. Draw Formal Indonesian Double Lines (Solid primary line + thin secondary line)
+    // C. Draw Formal Indonesian Double Lines (Solid primary line + thin secondary line)
     currentDoc.setDrawColor(15, 23, 42);
     currentDoc.setLineWidth(0.85);
     currentDoc.line(leftMargin, doubleLineY, rightMargin, doubleLineY);

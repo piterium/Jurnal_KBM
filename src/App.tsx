@@ -7,13 +7,14 @@ import {
   SchoolProfile,
   ClassRoom,
   Student,
+  TeachingSchedule,
 } from './types';
 import { loadAppData, saveAppData, getInitialAppData, getEmptyAppData } from './utils/storage';
 import { generateMonthlyReportPdf } from './utils/pdfGenerator';
 import { Sidebar } from './components/Sidebar';
-import { ThemeToggle } from './components/ThemeToggle';
 import { ActiveDatabaseBadge } from './components/ActiveDatabaseBadge';
 import { DashboardView } from './components/DashboardView';
+import { ScheduleView } from './components/ScheduleView';
 import { JournalView } from './components/JournalView';
 import { AttendanceView } from './components/AttendanceView';
 import { GradebookView } from './components/GradebookView';
@@ -37,6 +38,8 @@ import {
   deleteAttendanceFromFirestore,
   saveAssessmentToFirestore,
   deleteAssessmentFromFirestore,
+  saveScheduleToFirestore,
+  deleteScheduleFromFirestore,
 } from './firebase/firestoreService';
 import { auth, signInAnonymously } from './firebase/firebase';
 
@@ -148,6 +151,7 @@ export default function App() {
             journals: cloudData.journals || [],
             attendances: cloudData.attendances || [],
             assessments: cloudData.assessments || [],
+            schedules: cloudData.schedules || [],
           }));
           saveAppData({
             ...data,
@@ -199,6 +203,11 @@ export default function App() {
         if (!isMounted || !profile) return;
         isInternalUpdateRef.current = true;
         setData((prev) => ({ ...prev, profile }));
+      },
+      onSchedulesUpdate: (schedules) => {
+        if (!isMounted) return;
+        isInternalUpdateRef.current = true;
+        setData((prev) => ({ ...prev, schedules }));
       },
     });
 
@@ -540,6 +549,47 @@ export default function App() {
     );
   };
 
+  // --- SCHEDULE HANDLERS ---
+  const handleSaveSchedule = async (schedule: TeachingSchedule) => {
+    let updated = [...(data.schedules || [])];
+    const existingIndex = updated.findIndex((s) => s.id === schedule.id);
+    if (existingIndex >= 0) {
+      updated[existingIndex] = schedule;
+    } else {
+      updated.push(schedule);
+    }
+    setData((prev) => ({
+      ...prev,
+      schedules: updated,
+    }));
+    try {
+      await saveScheduleToFirestore(schoolId, schedule);
+    } catch (e) {
+      console.warn('Could not sync schedule to firestore:', e);
+    }
+    triggerSaveNotification(
+      'Jadwal Tersimpan!',
+      `Jadwal mengajar kelas ${schedule.className} (${schedule.day}, Jam ke-${schedule.jamKe}) tersimpan!`
+    );
+  };
+
+  const handleDeleteSchedule = async (scheduleId: string) => {
+    const target = (data.schedules || []).find((s) => s.id === scheduleId);
+    setData((prev) => ({
+      ...prev,
+      schedules: (prev.schedules || []).filter((s) => s.id !== scheduleId),
+    }));
+    try {
+      await deleteScheduleFromFirestore(schoolId, scheduleId);
+    } catch (e) {
+      console.warn('Could not delete schedule from firestore:', e);
+    }
+    triggerDeleteNotification(
+      'Jadwal Dihapus!',
+      `Jadwal mengajar ${target?.className ? `kelas ${target.className}` : ''} (${target?.day || ''}) berhasil dihapus.`
+    );
+  };
+
   const handleResetData = async () => {
     const empty = getEmptyAppData();
     setData(empty);
@@ -611,7 +661,6 @@ export default function App() {
               onNavigateToSettings={() => setActiveTab('settings')}
               currentSchoolId={schoolId}
             />
-            <ThemeToggle variant="pill" />
           </div>
         </header>
 
@@ -633,6 +682,41 @@ export default function App() {
                 setIsAssessmentModalOpen(true);
               }}
               onQuickDownloadPdf={handleQuickDownloadPdf}
+            />
+          )}
+
+          {activeTab === 'schedule' && (
+            <ScheduleView
+              schedules={data.schedules || []}
+              classes={data.classes}
+              profile={data.profile}
+              onSaveSchedule={handleSaveSchedule}
+              onDeleteSchedule={handleDeleteSchedule}
+              onOpenAttendance={(classId) => {
+                setAttendanceContext({
+                  classId,
+                  date: new Date().toISOString().split('T')[0],
+                });
+                setActiveTab('attendance');
+              }}
+              onOpenNewJournal={({ classId, subject, hoursCount, jamKe }) => {
+                const foundClass = data.classes.find((c) => c.id === classId);
+                const classJournals = data.journals.filter((j) => j.classId === classId);
+                const nextMeetingNumber = classJournals.length + 1;
+                setEditingJournal({
+                  id: `jrn-${Date.now()}`,
+                  date: new Date().toISOString().split('T')[0],
+                  classId,
+                  className: foundClass?.name || '',
+                  subject,
+                  meetingNumber: nextMeetingNumber,
+                  hoursCount,
+                  materialTopic: '',
+                  learningActivities: '',
+                  notes: `Jadwal Jam ke-${jamKe}`,
+                });
+                setIsJournalModalOpen(true);
+              }}
             />
           )}
 

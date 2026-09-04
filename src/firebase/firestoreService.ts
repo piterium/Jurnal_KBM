@@ -20,6 +20,7 @@ import {
   Student,
   Teacher,
   SchoolProfile,
+  TeachingSchedule,
 } from '../types';
 import firebaseConfig from '../../firebase-applet-config.json';
 
@@ -79,6 +80,10 @@ export async function loadSchoolAppDataFromFirestore(
     const assessmentsSnap = await getDocs(collection(db, 'schools', cleanSchoolId, 'assessments'));
     const assessments: AssessmentItem[] = assessmentsSnap.docs.map((d) => d.data() as AssessmentItem);
 
+    // 8. Fetch Schedules
+    const schedulesSnap = await getDocs(collection(db, 'schools', cleanSchoolId, 'schedules'));
+    const schedules: TeachingSchedule[] = schedulesSnap.docs.map((d) => d.data() as TeachingSchedule);
+
     // Check if any cloud records exist
     const hasAnyData =
       profileSnap.exists() ||
@@ -87,7 +92,8 @@ export async function loadSchoolAppDataFromFirestore(
       teachers.length > 0 ||
       journals.length > 0 ||
       attendances.length > 0 ||
-      assessments.length > 0;
+      assessments.length > 0 ||
+      schedules.length > 0;
 
     if (!hasAnyData) {
       return null;
@@ -101,6 +107,7 @@ export async function loadSchoolAppDataFromFirestore(
       journals,
       attendances,
       assessments,
+      schedules,
     };
   } catch (error) {
     console.error('Error loading school data from Firestore:', error);
@@ -188,6 +195,16 @@ export async function saveSchoolAppDataToFirestore(
       }
     });
 
+    // 9. Schedules
+    if (data.schedules && data.schedules.length > 0) {
+      data.schedules.forEach((sch) => {
+        if (sch.id) {
+          const ref = doc(db, 'schools', cleanSchoolId, 'schedules', sch.id);
+          batch.set(ref, cleanFirestoreObject(sch), { merge: true });
+        }
+      });
+    }
+
     await batch.commit();
   } catch (error) {
     console.error('Error saving school data to Firestore:', error);
@@ -208,6 +225,7 @@ export function subscribeToSchoolRealtime(
     onStudentsUpdate?: (students: Student[]) => void;
     onTeachersUpdate?: (teachers: Teacher[]) => void;
     onProfileUpdate?: (profile: SchoolProfile) => void;
+    onSchedulesUpdate?: (schedules: TeachingSchedule[]) => void;
     onError?: (err: Error) => void;
   }
 ): Unsubscribe {
@@ -334,6 +352,23 @@ export function subscribeToSchoolRealtime(
       );
       unsubscribes.push(un);
     }
+
+    // 8. Listen to Schedules
+    if (callbacks.onSchedulesUpdate) {
+      const q = collection(db, 'schools', cleanSchoolId, 'schedules');
+      const un = onSnapshot(
+        q,
+        (snap) => {
+          const list: TeachingSchedule[] = [];
+          snap.forEach((docSnap) => {
+            list.push(docSnap.data() as TeachingSchedule);
+          });
+          callbacks.onSchedulesUpdate?.(list);
+        },
+        (err) => callbacks.onError?.(err)
+      );
+      unsubscribes.push(un);
+    }
   } catch (err) {
     console.warn('Realtime subscription error:', err);
   }
@@ -386,14 +421,26 @@ export async function deleteAssessmentFromFirestore(schoolId: string, assessment
   await deleteDoc(ref);
 }
 
+export async function saveScheduleToFirestore(schoolId: string, schedule: TeachingSchedule): Promise<void> {
+  const cleanSchoolId = schoolId.trim() || DEFAULT_SCHOOL_ID;
+  const ref = doc(db, 'schools', cleanSchoolId, 'schedules', schedule.id);
+  await setDoc(ref, cleanFirestoreObject(schedule), { merge: true });
+}
+
+export async function deleteScheduleFromFirestore(schoolId: string, scheduleId: string): Promise<void> {
+  const cleanSchoolId = schoolId.trim() || DEFAULT_SCHOOL_ID;
+  const ref = doc(db, 'schools', cleanSchoolId, 'schedules', scheduleId);
+  await deleteDoc(ref);
+}
+
 /**
- * Completely wipe all school data (classes, students, teachers, journals, attendances, assessments) from Firestore
+ * Completely wipe all school data (classes, students, teachers, journals, attendances, assessments, schedules) from Firestore
  */
 export async function clearSchoolAppDataFromFirestore(schoolId: string = DEFAULT_SCHOOL_ID): Promise<void> {
   const cleanSchoolId = schoolId.trim() || DEFAULT_SCHOOL_ID;
 
   try {
-    const collectionsToClear = ['classes', 'students', 'teachers', 'journals', 'attendances', 'assessments'];
+    const collectionsToClear = ['classes', 'students', 'teachers', 'journals', 'attendances', 'assessments', 'schedules'];
     const batch = writeBatch(db);
 
     for (const collName of collectionsToClear) {

@@ -1,4 +1,4 @@
-import { ClassRoom, Student, Teacher, TeachingJournal, AttendanceRecord, AssessmentItem, SchoolProfile } from '../types';
+import { ClassRoom, Student, Teacher, TeachingJournal, AttendanceRecord, AssessmentItem, SchoolProfile, TeachingSchedule } from '../types';
 
 export const defaultTeachers: Teacher[] = [];
 
@@ -6,6 +6,7 @@ export const defaultProfile: SchoolProfile = {
   schoolName: '',
   npsn: '',
   logoUrl: '',
+  kopSuratUrl: '',
   schoolAddress: '',
   districtCity: '',
   province: '',
@@ -29,3 +30,5 @@ export const defaultJournals: TeachingJournal[] = [];
 export const defaultAttendances: AttendanceRecord[] = [];
 
 export const defaultAssessments: AssessmentItem[] = [];
+
+export const defaultSchedules: TeachingSchedule[] = [];

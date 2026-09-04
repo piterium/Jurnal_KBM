@@ -1,5 +1,5 @@
-import { AppData, Student, AttendanceRecord, AssessmentItem, TeachingJournal, Teacher } from '../types';
-import { defaultProfile, defaultClasses, defaultStudents, defaultTeachers, defaultJournals, defaultAttendances, defaultAssessments } from './initialData';
+import { AppData, Student, AttendanceRecord, AssessmentItem, TeachingJournal, Teacher, TeachingSchedule } from '../types';
+import { defaultProfile, defaultClasses, defaultStudents, defaultTeachers, defaultJournals, defaultAttendances, defaultAssessments, defaultSchedules } from './initialData';
 
 const STORAGE_KEY = 'jurnal_guru_app_data_v2';
 
@@ -12,6 +12,7 @@ export function getInitialAppData(): AppData {
     journals: defaultJournals,
     attendances: defaultAttendances,
     assessments: defaultAssessments,
+    schedules: defaultSchedules,
   };
 }
 
@@ -22,6 +23,7 @@ export function getEmptyAppData(): AppData {
       schoolName: '',
       npsn: '',
       logoUrl: '',
+      kopSuratUrl: '',
       schoolAddress: '',
       districtCity: '',
       province: '',
@@ -41,6 +43,7 @@ export function getEmptyAppData(): AppData {
     journals: [],
     attendances: [],
     assessments: [],
+    schedules: [],
   };
 }
 
@@ -77,6 +80,7 @@ export function loadAppData(): AppData {
       journals: parsed.journals || [],
       attendances: parsed.attendances || [],
       assessments: parsed.assessments || [],
+      schedules: parsed.schedules || [],
     };
   } catch (err) {
     console.error('Error loading app data from localStorage', err);

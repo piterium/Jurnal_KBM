@@ -7,27 +7,27 @@ import {
   FileText,
   Settings,
   LayoutDashboard,
-  FileDown,
   School,
   Users,
   UserCheck,
+  CalendarDays,
 } from 'lucide-react';
 
 interface NavbarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   profile: SchoolProfile;
-  onQuickDownloadPdf: () => void;
+  onQuickDownloadPdf?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   activeTab,
   setActiveTab,
   profile,
-  onQuickDownloadPdf,
 }) => {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'schedule', label: 'Jadwal Mengajar', icon: CalendarDays },
     { id: 'journal', label: 'Jurnal Mengajar', icon: BookOpen },
     { id: 'attendance', label: 'Presensi Siswa', icon: CalendarCheck },
     { id: 'grades', label: 'Daftar Penilaian', icon: GraduationCap },
@@ -66,18 +66,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                 Guru: <span className="text-white font-medium">{profile.teacherName}</span> (NIP: {profile.teacherNip || '-'}) • Mapel: <span className="text-blue-400 font-medium">{profile.subject}</span>
               </p>
             </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              id="btn-quick-pdf"
-              onClick={onQuickDownloadPdf}
-              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-bold px-4 py-2 rounded-xl shadow-md shadow-blue-600/20 transition-all active:scale-95 cursor-pointer tracking-wide"
-              title="Unduh Laporan Bulanan Resmi PDF"
-            >
-              <FileDown className="w-4 h-4 text-white" />
-              <span>Cetak / Unduh PDF</span>
-            </button>
           </div>
         </div>
       </div>

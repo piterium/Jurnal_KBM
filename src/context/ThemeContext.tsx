@@ -19,7 +19,7 @@ export interface ThemeOption {
 export const THEME_OPTIONS: ThemeOption[] = [
   {
     id: 'dark',
-    name: 'Midnight Slate (Gelap Modern)',
+    name: 'Midnight Slate',
     category: 'dark',
     tagline: 'Latar gelap elegan, hemat baterai & teduh',
     description: 'Nuansa abu-abu biru gelap slate dengan aksen neon blue beresolusi tinggi.',
@@ -29,71 +29,6 @@ export const THEME_OPTIONS: ThemeOption[] = [
     previewBg: '#0B1120',
     previewBorder: '#1E293B',
     previewText: '#FFFFFF',
-  },
-  {
-    id: 'light',
-    name: 'Clean Paper (Terang Bersih)',
-    category: 'light',
-    tagline: 'Latar putih cerah kontras tinggi & siap cetak',
-    description: 'Tampilan dokumen kertas putih bersih dengan teks hitam tegas.',
-    primaryColor: '#2563EB',
-    badgeBg: 'bg-blue-100',
-    badgeText: 'text-blue-800',
-    previewBg: '#FFFFFF',
-    previewBorder: '#E2E8F0',
-    previewText: '#0F172A',
-  },
-  {
-    id: 'emerald',
-    name: 'Emerald Madrasah (Hijau Edukasi)',
-    category: 'dark',
-    tagline: 'Nuansa hijau zamrud tenang & khas instansi',
-    description: 'Sentuhan warna hijau emerald sejuk dengan aksen mint dan sage, sangat pas untuk madrasah / sekolah adiwiyata.',
-    primaryColor: '#10B981',
-    badgeBg: 'bg-emerald-500/20',
-    badgeText: 'text-emerald-400',
-    previewBg: '#06281E',
-    previewBorder: '#064E3B',
-    previewText: '#ECFDF5',
-  },
-  {
-    id: 'ocean',
-    name: 'Ocean Sapphire (Biru Akademik)',
-    category: 'dark',
-    tagline: 'Biru kobalt formal & dinamis khas kampus',
-    description: 'Kombinasi biru laut dalam safir dengan aksen cyan terang, formal dan profesional.',
-    primaryColor: '#0EA5E9',
-    badgeBg: 'bg-cyan-500/20',
-    badgeText: 'text-cyan-400',
-    previewBg: '#082038',
-    previewBorder: '#0C4A6E',
-    previewText: '#F0F9FF',
-  },
-  {
-    id: 'sepia',
-    name: 'Warm Sepia (Kertas Buku & Nyaman)',
-    category: 'light',
-    tagline: 'Krem hangat ramah mata untuk durasi panjang',
-    description: 'Latar kertas klasik warm alabaster dengan aksen cokelat tembaga amber, tidak menyilaukan mata.',
-    primaryColor: '#D97706',
-    badgeBg: 'bg-amber-100',
-    badgeText: 'text-amber-800',
-    previewBg: '#FEF3C7',
-    previewBorder: '#FDE68A',
-    previewText: '#78350F',
-  },
-  {
-    id: 'purple',
-    name: 'Royal Twilight (Ungu Elegan)',
-    category: 'dark',
-    tagline: 'Nuansa ungu indigo mewah & modern',
-    description: 'Latar ungu malam berkelas dipadu aksen fuchsia dan emas lembut, estetis dan futuristik.',
-    primaryColor: '#8B5CF6',
-    badgeBg: 'bg-purple-500/20',
-    badgeText: 'text-purple-400',
-    previewBg: '#1E1035',
-    previewBorder: '#4C1D95',
-    previewText: '#FAF5FF',
   },
 ];
 
@@ -110,52 +45,26 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 const THEME_STORAGE_KEY = 'jurnal_guru_app_theme';
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setThemeState] = useState<ThemeMode>(() => {
-    try {
-      const saved = localStorage.getItem(THEME_STORAGE_KEY) as ThemeMode | null;
-      if (saved && THEME_OPTIONS.some((t) => t.id === saved)) {
-        return saved;
-      }
-      // Check system preference if no saved preference
-      if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-        return 'light';
-      }
-    } catch (e) {
-      console.warn('Could not read theme from localStorage:', e);
-    }
-    return 'dark'; // default to dark
-  });
+  // Permanently locked to Midnight Slate (dark)
+  const theme: ThemeMode = 'dark';
+  const setTheme = (_newTheme: ThemeMode) => {};
+  const toggleTheme = () => {};
 
-  const setTheme = (newTheme: ThemeMode) => {
-    setThemeState(newTheme);
+  const currentThemeMeta = THEME_OPTIONS[0];
+
+  useEffect(() => {
     try {
-      localStorage.setItem(THEME_STORAGE_KEY, newTheme);
+      localStorage.setItem(THEME_STORAGE_KEY, 'dark');
     } catch (e) {
       console.warn('Could not save theme to localStorage:', e);
     }
-  };
 
-  const toggleTheme = () => {
-    // Cycles between dark and light or back to dark
-    if (theme === 'dark') setTheme('light');
-    else if (theme === 'light') setTheme('emerald');
-    else if (theme === 'emerald') setTheme('ocean');
-    else if (theme === 'ocean') setTheme('sepia');
-    else if (theme === 'sepia') setTheme('purple');
-    else setTheme('dark');
-  };
-
-  const currentThemeMeta = THEME_OPTIONS.find((t) => t.id === theme) || THEME_OPTIONS[0];
-
-  useEffect(() => {
     const root = document.documentElement;
     const body = document.body;
 
-    // Reset previous theme classes
+    // Remove any previous alternate themes
     root.classList.remove(
-      'dark',
       'light',
-      'theme-dark',
       'theme-light',
       'theme-emerald',
       'theme-ocean',
@@ -163,7 +72,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       'theme-purple'
     );
     body.classList.remove(
-      'theme-dark',
+      'light',
       'theme-light',
       'theme-emerald',
       'theme-ocean',
@@ -171,16 +80,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       'theme-purple'
     );
 
-    root.setAttribute('data-theme', theme);
-    root.classList.add(`theme-${theme}`);
-    body.classList.add(`theme-${theme}`);
-
-    if (theme === 'light' || theme === 'sepia') {
-      root.classList.add('light');
-    } else {
-      root.classList.add('dark');
-    }
-  }, [theme]);
+    root.setAttribute('data-theme', 'dark');
+    root.classList.add('dark', 'theme-dark');
+    body.classList.add('dark', 'theme-dark');
+  }, []);
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme, toggleTheme, themeOptions: THEME_OPTIONS, currentThemeMeta }}>

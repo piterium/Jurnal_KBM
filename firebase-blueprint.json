@@ -453,6 +453,68 @@
         }
       },
       "required": ["id", "userId", "title", "type", "classId"]
+    },
+    "TeachingSchedule": {
+      "title": "TeachingSchedule",
+      "description": "Weekly teaching schedule entry for an educator",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique schedule entry ID",
+          "maxLength": 128
+        },
+        "day": {
+          "type": "string",
+          "description": "Day of week (Senin, Selasa, etc.)",
+          "enum": ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]
+        },
+        "jamKe": {
+          "type": "string",
+          "description": "Teaching periods or hours",
+          "maxLength": 64
+        },
+        "timeStart": {
+          "type": "string",
+          "description": "Start time HH:mm",
+          "maxLength": 16
+        },
+        "timeEnd": {
+          "type": "string",
+          "description": "End time HH:mm",
+          "maxLength": 16
+        },
+        "totalHours": {
+          "type": "number",
+          "description": "Total lesson hours (JP)"
+        },
+        "subject": {
+          "type": "string",
+          "description": "Subject name",
+          "maxLength": 128
+        },
+        "classId": {
+          "type": "string",
+          "description": "Assigned class ID",
+          "maxLength": 128
+        },
+        "className": {
+          "type": "string",
+          "description": "Assigned class display name",
+          "maxLength": 128
+        },
+        "room": {
+          "type": "string",
+          "description": "Classroom or laboratory name",
+          "maxLength": 128
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional notes",
+          "maxLength": 512
+        }
+      },
+      "required": ["id", "day", "jamKe", "timeStart", "timeEnd", "subject", "classId", "className"]
     }
   },
   "firestore": {
@@ -519,6 +581,10 @@
     "/schools/{schoolId}/assessments/{assessmentId}": {
       "schema": "AssessmentItem",
       "description": "Assessment records in the school"
+    },
+    "/schools/{schoolId}/schedules/{scheduleId}": {
+      "schema": "TeachingSchedule",
+      "description": "Teaching schedules in the school"
     }
   }
 }

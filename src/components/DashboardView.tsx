@@ -12,7 +12,7 @@ import {
   Sparkles,
   Users,
   CheckCircle2,
-  FileDown,
+  CalendarDays,
 } from 'lucide-react';
 import {
   formatShortDateIndonesian,
@@ -21,6 +21,7 @@ import {
   getJournalAttendanceInfo,
   MONTH_NAMES_ID,
 } from '../utils/storage';
+import { getTodayDayOfWeek } from './ScheduleView';
 
 interface DashboardViewProps {
   data: AppData;
@@ -28,7 +29,7 @@ interface DashboardViewProps {
   onOpenNewJournalModal: () => void;
   onOpenNewAttendance: (classId?: string) => void;
   onOpenNewAssessmentModal: () => void;
-  onQuickDownloadPdf: () => void;
+  onQuickDownloadPdf?: () => void;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
@@ -40,7 +41,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onQuickDownloadPdf,
 }) => {
   const { profile, classes, students, journals, attendances, assessments } = data;
-
+  const todayDay = getTodayDayOfWeek();
+  const todaySchedules = (data.schedules || []).filter((s) => s.day === todayDay);
 
   const currentMonth = new Date().getMonth() + 1; // 1-12
   const currentYear = new Date().getFullYear();
@@ -125,14 +127,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             >
               <PlusCircle className="w-4 h-4 text-white" />
               <span>Tambah Jurnal & Presensi</span>
-            </button>
-
-            <button
-              onClick={onQuickDownloadPdf}
-              className="inline-flex items-center gap-2 bg-[#0B1120] hover:bg-slate-800 text-white font-medium text-xs sm:text-sm px-4 py-2.5 rounded-xl border border-slate-700 transition-all active:scale-95 cursor-pointer"
-            >
-              <FileDown className="w-4 h-4 text-blue-400" />
-              <span>Laporan PDF</span>
             </button>
           </div>
         </div>
@@ -313,6 +307,69 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
         {/* Right 1 Col: Quick Roster & At-Risk Alert */}
         <div className="space-y-6">
+          {/* Jadwal Mengajar Hari Ini */}
+          <div className="bg-[#0F172A] rounded-2xl border border-slate-800 p-5 shadow-xl">
+            <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
+              <div className="flex items-center gap-2">
+                <CalendarDays className="w-4 h-4 text-blue-400" />
+                <h3 className="font-bold text-sm text-white">
+                  Jadwal Hari Ini ({todayDay})
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => onNavigate('schedule')}
+                className="text-[11px] font-semibold text-blue-400 hover:text-blue-300 flex items-center gap-1 cursor-pointer transition-colors"
+              >
+                Lihat Semua
+                <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
+
+            {todaySchedules.length > 0 ? (
+              <div className="space-y-2">
+                {todaySchedules.map((sch) => (
+                  <div
+                    key={sch.id}
+                    className="p-3 bg-[#0B1120] rounded-xl border border-slate-800 hover:border-slate-700 transition-all flex items-center justify-between"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-white">{sch.className}</span>
+                        <span className="text-[10px] font-semibold text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded">
+                          Jam {sch.jamKe}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-slate-400 mt-0.5">
+                        {sch.subject} {sch.room ? `• ${sch.room}` : ''}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => onOpenNewAttendance(sch.classId)}
+                        className="px-2.5 py-1 text-[11px] font-medium bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 rounded-lg cursor-pointer transition-colors"
+                      >
+                        Presensi
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-4 text-center text-xs text-slate-400 bg-[#0B1120] rounded-xl border border-slate-800/80">
+                <p>Tidak ada jadwal mengajar pada hari {todayDay}.</p>
+                <button
+                  type="button"
+                  onClick={() => onNavigate('schedule')}
+                  className="mt-2 text-[11px] font-semibold text-blue-400 hover:underline cursor-pointer"
+                >
+                  + Atur Jadwal Mengajar
+                </button>
+              </div>
+            )}
+          </div>
+
           {/* Per-Class Summary */}
           <div className="bg-[#0F172A] rounded-2xl border border-slate-800 p-5 shadow-xl">
             <h3 className="font-bold text-base text-white mb-3">

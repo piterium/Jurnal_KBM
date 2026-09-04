@@ -7,7 +7,6 @@ import {
   FileText,
   Settings,
   LayoutDashboard,
-  FileDown,
   School,
   Menu,
   X,
@@ -15,8 +14,8 @@ import {
   ChevronRight,
   ShieldCheck,
   Users,
+  CalendarDays,
 } from 'lucide-react';
-import { ThemeToggle } from './ThemeToggle';
 
 interface SidebarProps {
   activeTab: string;
@@ -24,7 +23,7 @@ interface SidebarProps {
   profile: SchoolProfile;
   classesCount: number;
   studentsCount: number;
-  onQuickDownloadPdf: () => void;
+  onQuickDownloadPdf?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -43,6 +42,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Dashboard',
       icon: LayoutDashboard,
       description: 'Ringkasan & Aktivitas',
+    },
+    {
+      id: 'schedule',
+      label: 'Jadwal Mengajar',
+      icon: CalendarDays,
+      description: 'Hari, Jam, Mapel & Kelas',
     },
     {
       id: 'journal',
@@ -193,11 +198,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Quick Action & Stats Footer */}
       <div className="p-4 border-t border-slate-800 bg-[#0B1120]/90 space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] font-medium text-slate-400">Tema Tampilan</span>
-          <ThemeToggle variant="compact" />
-        </div>
-
         <div className="grid grid-cols-2 gap-2 text-center">
           <div className="p-2 rounded-lg bg-slate-800/40 border border-slate-800">
             <div className="text-[10px] text-slate-400">Kelas Binaan</div>
@@ -209,19 +209,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </div>
 
-        <button
-          id="btn-sidebar-quick-pdf"
-          onClick={() => {
-            onQuickDownloadPdf();
-            setIsMobileOpen(false);
-          }}
-          className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold shadow-md shadow-blue-500/20 transition-all active:scale-[0.98] cursor-pointer"
-        >
-          <FileDown className="w-4 h-4 text-white" />
-          <span>Unduh Laporan PDF</span>
-        </button>
-
-        <div className="flex items-center justify-center gap-1.5 text-[10px] text-slate-400 text-center">
+        <div className="flex items-center justify-center gap-1.5 text-[10px] text-slate-400 text-center pt-1">
           <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
           <span>Sistem Administrasi Guru Resmi</span>
         </div>
@@ -231,7 +219,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <>
-      {/* Mobile Top App Bar with Hamburger & Theme Switcher */}
+      {/* Mobile Top App Bar with Hamburger */}
       <div className="md:hidden flex items-center justify-between p-3.5 bg-[#0F172A] border-b border-slate-800 sticky top-0 z-40">
         <div className="flex items-center gap-3 min-w-0">
           <button
@@ -250,17 +238,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {profile.teacherName} • {profile.subject}
             </p>
           </div>
-        </div>
-
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <ThemeToggle variant="icon" />
-          <button
-            onClick={onQuickDownloadPdf}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow-md cursor-pointer flex-shrink-0"
-          >
-            <FileDown className="w-3.5 h-3.5 text-white" />
-            <span>PDF</span>
-          </button>
         </div>
       </div>
 

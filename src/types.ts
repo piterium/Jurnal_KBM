@@ -85,6 +85,7 @@ export interface SchoolProfile {
   schoolName: string;
   npsn: string;
   logoUrl?: string; // Logo sekolah (Base64 data URL atau URL gambar)
+  kopSuratUrl?: string; // Berkas / Gambar Kop Surat resmi lengkap (Base64 data URL atau URL gambar)
   schoolAddress: string;
   districtCity: string;
   province: string;
@@ -96,7 +97,7 @@ export interface SchoolProfile {
   subject: string;
   academicYear: string;
   semester: 'Ganjil' | 'Genap';
-  letterHeaderOffice: string; // e.g. "DINAS PENDIDIKAN DAN KEBUDAYAAN KABUPATEN..."
+  letterHeaderOffice?: string;
 }
 
 export interface Teacher {
@@ -114,6 +115,22 @@ export interface Teacher {
   isHeadmaster?: boolean;
 }
 
+export type DayOfWeek = 'Senin' | 'Selasa' | 'Rabu' | 'Kamis' | 'Jumat' | 'Sabtu' | 'Minggu';
+
+export interface TeachingSchedule {
+  id: string;
+  day: DayOfWeek; // Hari mengajar
+  jamKe: string; // Jam mengajar, e.g. "1 - 2" atau "3, 4"
+  timeStart: string; // Jam mulai e.g. "07:15" atau "07:30"
+  timeEnd: string; // Jam selesai e.g. "08:35" atau "09:00"
+  totalHours: number; // Jumlah JP (Jam Pelajaran)
+  subject: string; // Nama Mata Pelajaran
+  classId: string; // ID Kelas binaan
+  className: string; // Nama Kelas
+  room?: string; // Ruang Kelas / Lab
+  notes?: string; // Catatan tambahan
+}
+
 export interface AppData {
   profile: SchoolProfile;
   classes: ClassRoom[];
@@ -122,4 +139,5 @@ export interface AppData {
   journals: TeachingJournal[];
   attendances: AttendanceRecord[];
   assessments: AssessmentItem[];
+  schedules: TeachingSchedule[];
 }

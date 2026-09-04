@@ -13,7 +13,6 @@ import {
   Image as ImageIcon,
   X,
   Database,
-  Palette,
   Search,
   BookOpen,
   Calendar,
@@ -22,10 +21,8 @@ import {
   Upload,
   User,
   Users,
-  Sun,
-  Moon,
+  FileText,
 } from 'lucide-react';
-import { useTheme, THEME_OPTIONS } from '../context/ThemeContext';
 
 interface SettingsViewProps {
   data: AppData;
@@ -54,15 +51,16 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 }) => {
   const { profile, classes, students } = data;
 
-  const { theme, setTheme } = useTheme();
-
-  const [activeSection, setActiveSection] = useState<'PROFILE' | 'CLASSES' | 'THEME' | 'DATABASE'>('PROFILE');
+  const [activeSection, setActiveSection] = useState<'PROFILE' | 'CLASSES' | 'DATABASE'>('PROFILE');
   const [formData, setFormData] = useState<SchoolProfile>({ ...profile });
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [classSearch, setClassSearch] = useState('');
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteConfirmationText, setDeleteConfirmationText] = useState('');
   const logoInputRef = useRef<HTMLInputElement>(null);
+  const kopSuratInputRef = useRef<HTMLInputElement>(null);
+  const [isDraggingKop, setIsDraggingKop] = useState(false);
+  const [isDraggingLogo, setIsDraggingLogo] = useState(false);
 
   const handleProfileSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,16 +69,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     setTimeout(() => setSavedSuccess(false), 3000);
   };
 
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Check size limit (max 2MB for base64 safety)
+  const processLogoFile = (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      alert('Mohon pilih berkas gambar (PNG, JPG, WEBP, SVG).');
+      return;
+    }
     if (file.size > 2 * 1024 * 1024) {
       alert('Ukuran file logo maksimal 2 MB.');
       return;
     }
-
     const reader = new FileReader();
     reader.onload = (event) => {
       const base64 = event.target?.result as string;
@@ -89,6 +86,35 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       }
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) processLogoFile(file);
+  };
+
+  const processKopSuratFile = (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      alert('Mohon pilih berkas gambar (PNG, JPG, JPEG, WEBP, SVG).');
+      return;
+    }
+    if (file.size > 3 * 1024 * 1024) {
+      alert('Ukuran berkas kop surat maksimal 3 MB.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      if (base64) {
+        setFormData((prev) => ({ ...prev, kopSuratUrl: base64 }));
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleKopSuratUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) processKopSuratFile(file);
   };
 
   const handleConfirmDeleteDatabase = () => {
@@ -145,7 +171,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               activeSection === 'PROFILE' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
             }`}
           >
-            Profil & Logo Sekolah
+            Profil & Kop Surat Sekolah
           </button>
           <button
             onClick={() => setActiveSection('CLASSES')}
@@ -155,15 +181,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           >
             <Layers className="w-3.5 h-3.5" />
             <span>Setting Kelas ({classes.length})</span>
-          </button>
-          <button
-            onClick={() => setActiveSection('THEME')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
-              activeSection === 'THEME' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <Palette className="w-3.5 h-3.5" />
-            <span>Tema Tampilan</span>
           </button>
           <button
             onClick={() => setActiveSection('DATABASE')}
@@ -187,16 +204,147 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             </div>
           )}
 
-          {/* Upload Logo Section */}
+          {/* Upload Kop Surat Resmi Section */}
           <div className="space-y-4">
             <h3 className="text-sm font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-3">
+              <FileText className="w-4 h-4 text-blue-400" />
+              <span>Kop Surat Resmi Sekolah / Madrasah (Tampil di Atas Lembar Laporan PDF)</span>
+            </h3>
+
+            <div className="p-4 sm:p-5 rounded-xl bg-[#0B1120] border border-slate-800 space-y-4">
+              {formData.kopSuratUrl ? (
+                <div className="space-y-3">
+                  <div className="relative group rounded-xl border border-slate-700 bg-white p-3 overflow-hidden shadow-inner">
+                    <img
+                      src={formData.kopSuratUrl}
+                      alt="Pratinjau Kop Surat Resmi"
+                      className="w-full max-h-36 sm:max-h-40 object-contain mx-auto"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, kopSuratUrl: '' }))}
+                      className="absolute top-2 right-2 px-2.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg shadow-md transition-colors flex items-center gap-1.5 text-xs font-bold cursor-pointer"
+                      title="Hapus Berkas Kop Surat"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Hapus Kop Surat</span>
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-emerald-400 font-medium bg-emerald-500/10 border border-emerald-500/20 px-3 py-2 rounded-lg">
+                    <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                    <span>Berkas kop surat aktif. Gambar ini akan otomatis dicetak di bagian paling atas dokumen PDF.</span>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setIsDraggingKop(true);
+                  }}
+                  onDragLeave={() => setIsDraggingKop(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setIsDraggingKop(false);
+                    const file = e.dataTransfer.files?.[0];
+                    if (file) processKopSuratFile(file);
+                  }}
+                  onClick={() => kopSuratInputRef.current?.click()}
+                  className={`p-6 sm:p-8 rounded-2xl border-2 border-dashed transition-all text-center cursor-pointer flex flex-col items-center justify-center gap-3 ${
+                    isDraggingKop
+                      ? 'border-blue-500 bg-blue-500/10 scale-[1.01]'
+                      : 'border-slate-700 hover:border-blue-500/50 hover:bg-slate-800/30 bg-[#0F172A]'
+                  }`}
+                >
+                  <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center border border-blue-500/20 shadow-sm">
+                    <Upload className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-white">
+                      Klik untuk memilih berkas Kop Surat, atau seret & lepas ke sini
+                    </p>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Format gambar didukung: PNG transparan, JPG, JPEG, WEBP (Ukuran maks. 3 MB)
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-2.5 pt-1">
+                <input
+                  ref={kopSuratInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                  onChange={handleKopSuratUpload}
+                  className="hidden"
+                />
+
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => kopSuratInputRef.current?.click()}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>{formData.kopSuratUrl ? 'Ganti Berkas Kop Surat' : 'Unggah Berkas Kop Surat (PNG/JPG)'}</span>
+                  </button>
+
+                  {formData.kopSuratUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, kopSuratUrl: '' }))}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                      <span>Hapus Kop Surat</span>
+                    </button>
+                  )}
+                </div>
+
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  Unggah gambar banner Kop Surat resmi sekolah Anda (berisi logo instansi, nama sekolah, alamat, telepon, dan garis pemisah). Saat kop surat terunggah, laporan PDF akan langsung menyematkan gambar ini secara utuh.
+                </p>
+
+                <div className="pt-1.5">
+                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                    Atau tempelkan tautan URL gambar Kop Surat secara langsung:
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="https://example.com/kop-surat-sekolah.png"
+                    value={formData.kopSuratUrl || ''}
+                    onChange={(e) => setFormData({ ...formData, kopSuratUrl: e.target.value })}
+                    className="w-full text-xs px-3.5 py-2 border border-slate-700 rounded-lg outline-none focus:border-blue-500 bg-[#0F172A] text-white"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Upload Logo Section (Alternatif jika tidak menggunakan Kop Surat Gambar) */}
+          <div className="space-y-4 pt-2">
+            <h3 className="text-sm font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-3">
               <ImageIcon className="w-4 h-4 text-blue-400" />
-              <span>Logo Sekolah / Madrasah (Tampil pada Kop Surat PDF)</span>
+              <span>Logo Sekolah / Madrasah (Digunakan jika tanpa Kop Surat Gambar)</span>
             </h3>
 
             <div className="p-4 rounded-xl bg-[#0B1120] border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center gap-5">
               <div className="relative group">
-                <div className="w-24 h-24 rounded-2xl bg-[#0F172A] border-2 border-dashed border-slate-700 flex items-center justify-center overflow-hidden p-1.5">
+                <div
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setIsDraggingLogo(true);
+                  }}
+                  onDragLeave={() => setIsDraggingLogo(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setIsDraggingLogo(false);
+                    const file = e.dataTransfer.files?.[0];
+                    if (file) processLogoFile(file);
+                  }}
+                  className={`w-24 h-24 rounded-2xl bg-[#0F172A] border-2 border-dashed flex items-center justify-center overflow-hidden p-1.5 transition-all ${
+                    isDraggingLogo ? 'border-blue-500 bg-blue-500/10' : 'border-slate-700'
+                  }`}
+                >
                   {formData.logoUrl ? (
                     <img
                       src={formData.logoUrl}
@@ -214,7 +362,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   <button
                     type="button"
                     onClick={() => setFormData((prev) => ({ ...prev, logoUrl: '' }))}
-                    className="absolute -top-2 -right-2 p-1 bg-rose-500 text-white rounded-full shadow hover:bg-rose-600 transition-colors"
+                    className="absolute -top-2 -right-2 p-1 bg-rose-500 text-white rounded-full shadow hover:bg-rose-600 transition-colors cursor-pointer"
                     title="Hapus Logo"
                   >
                     <X className="w-3.5 h-3.5" />
@@ -252,7 +400,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   )}
                 </div>
                 <p className="text-[11px] text-slate-400">
-                  Logo akan otomatis dicetak pada bagian kiri Kop Surat di semua lembar ekspor PDF (Presensi, Jurnal, dan Nilai). Format yang disarankan: PNG transparan atau JPG, ukuran &lt; 2 MB.
+                  Logo dicetak pada bagian kiri Kop Surat standar (jika tidak ada Kop Surat Gambar). Format: PNG transparan atau JPG, ukuran &lt; 2 MB.
                 </p>
                 <div className="pt-1">
                   <label className="block text-[11px] font-semibold text-slate-400 mb-1">
@@ -273,7 +421,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <div className="space-y-4 pt-2">
             <h3 className="text-sm font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-3">
               <School className="w-4 h-4 text-blue-400" />
-              <span>Identitas Satuan Pendidikan & Kop Surat</span>
+              <span>Identitas Satuan Pendidikan</span>
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -339,18 +487,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-[#0B1120] text-white"
                 />
               </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                Teks Header Kantor / Dinas (Tampil di baris paling atas Kop Surat PDF)
-              </label>
-              <textarea
-                rows={2}
-                value={formData.letterHeaderOffice}
-                onChange={(e) => setFormData({ ...formData, letterHeaderOffice: e.target.value })}
-                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-[#0B1120] text-white font-mono"
-              />
             </div>
           </div>
 
@@ -640,135 +776,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               )}
             </div>
           )}
-        </div>
-      )}
-
-      {/* SECTION: TEMA TAMPILAN (LIGHT & DARK) */}
-      {activeSection === 'THEME' && (
-        <div className="bg-[#0F172A] p-6 sm:p-8 rounded-2xl border border-slate-800 shadow-xl space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <Palette className="w-4 h-4 text-blue-400" />
-                <span>Pilihan Tema & Nuansa Visual Aplikasi</span>
-              </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Pilih palet warna yang paling nyaman di mata Anda saat mengelola data presensi, jurnal mengajar, dan buku nilai.
-              </p>
-            </div>
-
-            <div className="px-3.5 py-1.5 rounded-xl bg-blue-500/10 text-blue-400 text-xs font-bold border border-blue-500/20 flex items-center gap-2 self-start sm:self-auto">
-              <span className="w-2.5 h-2.5 rounded-full bg-blue-400 animate-pulse" />
-              <span>Tema Aktif: {THEME_OPTIONS.find((t) => t.id === theme)?.name || theme}</span>
-            </div>
-          </div>
-
-          {/* All 6 Theme Option Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
-            {THEME_OPTIONS.map((opt) => {
-              const isActive = theme === opt.id;
-              return (
-                <div
-                  key={opt.id}
-                  onClick={() => setTheme(opt.id)}
-                  className={`p-5 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between relative overflow-hidden group hover:shadow-lg ${
-                    isActive
-                      ? 'border-blue-500 bg-[#0B1120] shadow-xl ring-2 ring-blue-500/20'
-                      : 'border-slate-800 bg-[#0B1120]/60 hover:border-slate-700'
-                  }`}
-                >
-                  {isActive && (
-                    <div className="absolute top-3.5 right-3.5 flex items-center gap-1 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">
-                      <CheckCircle2 className="w-3 h-3" />
-                      <span>Aktif</span>
-                    </div>
-                  )}
-
-                  <div className="space-y-3.5">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-10 h-10 rounded-xl border flex items-center justify-center flex-shrink-0 shadow-sm"
-                        style={{
-                          backgroundColor: `${opt.primaryColor}20`,
-                          borderColor: `${opt.primaryColor}40`,
-                          color: opt.primaryColor,
-                        }}
-                      >
-                        {opt.category === 'light' ? (
-                          <Sun className="w-5 h-5" />
-                        ) : (
-                          <Moon className="w-5 h-5" />
-                        )}
-                      </div>
-                      <div className="pr-12">
-                        <h4 className="text-sm font-bold text-white leading-snug">{opt.name}</h4>
-                        <span className="text-[10px] font-semibold text-slate-400 block">{opt.tagline}</span>
-                      </div>
-                    </div>
-
-                    <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">
-                      {opt.description}
-                    </p>
-
-                    {/* Visual Mini Preview Box */}
-                    <div
-                      className="p-3 rounded-xl border space-y-1.5 transition-all shadow-inner"
-                      style={{
-                        backgroundColor: opt.previewBg,
-                        borderColor: opt.previewBorder,
-                        color: opt.previewText,
-                      }}
-                    >
-                      <div className="flex items-center justify-between border-b pb-1.5" style={{ borderColor: opt.previewBorder }}>
-                        <div className="flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: opt.primaryColor }} />
-                          <span className="text-[10px] font-bold">Jurnal Guru Terpadu</span>
-                        </div>
-                        <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded ${opt.badgeBg} ${opt.badgeText}`}>
-                          Kelas VII-A
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-1.5 text-[9px]">
-                        <div className="p-1.5 rounded border opacity-90" style={{ borderColor: opt.previewBorder }}>
-                          <span className="opacity-70 block text-[8px]">Kehadiran</span>
-                          <strong>98% Hadir</strong>
-                        </div>
-                        <div className="p-1.5 rounded border opacity-90" style={{ borderColor: opt.previewBorder }}>
-                          <span className="opacity-70 block text-[8px]">Rata-Rata</span>
-                          <strong>88.5 / 100</strong>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
-                    <span className="text-[10px] text-slate-400 capitalize">Kategori: {opt.category === 'light' ? 'Mode Terang' : 'Mode Gelap'}</span>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setTheme(opt.id);
-                      }}
-                      className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer ${
-                        isActive
-                          ? 'bg-blue-600 text-white shadow-md'
-                          : 'bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700'
-                      }`}
-                    >
-                      {isActive ? 'Sedang Digunakan' : 'Terapkan Tema'}
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl text-xs text-blue-300 flex items-start gap-2.5">
-            <Palette className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-            <p>
-              Pilihan tema Anda akan otomatis tersimpan di peramban ini dan diterapkan secara menyeluruh ke seluruh modul (Dashboard, Jurnal Mengajar, Presensi Siswa, Rekap Nilai, dan Laporan Bulanan).
-            </p>
-          </div>
         </div>
       )}
 

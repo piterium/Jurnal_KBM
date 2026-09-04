@@ -1,6 +1,6 @@
 {
   "name": "Remix Jurnal Mengajar, Absensi \u0026 Daftar Nilai",
-  "description": "Aplikasi terintegrasi untuk Jurnal Mengajar Guru, Absensi Siswa, Buku Nilai, dan Cetak/Unduh Laporan Bulanan PDF resmi.",
+  "description": "Aplikasi terintegrasi untuk Jurnal Mengajar Guru Mandiri, Jadwal Mengajar, Absensi Siswa, Buku Nilai, dan Cetak/Unduh Laporan Bulanan PDF resmi.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
