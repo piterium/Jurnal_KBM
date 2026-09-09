@@ -211,15 +211,21 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
                       <Moon className="w-3.5 h-3.5 text-blue-400" />
                     )}
                   </div>
-                  <div className="flex gap-1">
-                    <div
-                      className="h-2 rounded w-1/3 opacity-80"
-                      style={{ backgroundColor: opt.primaryColor }}
-                    />
-                    <div
-                      className="h-2 rounded w-1/2 opacity-40"
-                      style={{ backgroundColor: opt.previewText }}
-                    />
+                  <div className="flex gap-1 items-center">
+                    {opt.id === 'light' ? (
+                      <div className="h-2.5 rounded w-full bg-gradient-to-r from-emerald-600 via-green-500 to-yellow-400 shadow-xs" />
+                    ) : (
+                      <>
+                        <div
+                          className="h-2 rounded w-1/3 opacity-80"
+                          style={{ backgroundColor: opt.primaryColor }}
+                        />
+                        <div
+                          className="h-2 rounded w-1/2 opacity-40"
+                          style={{ backgroundColor: opt.previewText }}
+                        />
+                      </>
+                    )}
                   </div>
                 </div>
 

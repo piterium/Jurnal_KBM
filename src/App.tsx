@@ -13,6 +13,7 @@ import { loadAppData, saveAppData, getInitialAppData, getEmptyAppData } from './
 import { generateMonthlyReportPdf } from './utils/pdfGenerator';
 import { Sidebar } from './components/Sidebar';
 import { ThemeToggle } from './components/ThemeToggle';
+import { useTheme } from './context/ThemeContext';
 import { ActiveDatabaseBadge } from './components/ActiveDatabaseBadge';
 import { DashboardView } from './components/DashboardView';
 import { ScheduleView } from './components/ScheduleView';
@@ -45,6 +46,8 @@ import {
 import { auth, signInAnonymously } from './firebase/firebase';
 
 export default function App() {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const [data, setData] = useState<AppData>(() => loadAppData());
   const [activeTab, setActiveTab] = useState<string>('dashboard');
 
@@ -645,13 +648,34 @@ export default function App() {
       {/* Main Content Area */}
       <div className="flex-1 min-w-0 flex flex-col min-h-screen">
         {/* Top Header Bar with Status controls */}
-        <header className="hidden md:flex items-center justify-between px-6 lg:px-8 py-3.5 bg-[#0F172A]/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-20">
+        <header
+          className={`hidden md:flex items-center justify-between px-6 lg:px-8 py-3.5 sticky top-0 z-20 backdrop-blur-md transition-colors relative ${
+            isLight
+              ? 'bg-white/95 border-b border-slate-200 shadow-xs'
+              : 'bg-[#0F172A]/80 border-b border-slate-800'
+          }`}
+        >
+          {/* Green-to-yellow gradient top accent line in light mode */}
+          {isLight && (
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-600 via-green-500 to-yellow-400" />
+          )}
+
           <div className="flex items-center gap-3">
-            <span className="text-xs font-semibold text-slate-400">
+            <span
+              className={`text-xs font-semibold ${
+                isLight ? 'text-slate-700' : 'text-slate-400'
+              }`}
+            >
               {data.profile.schoolName || 'Sistem Administrasi Guru'}
             </span>
-            <span className="text-slate-600">•</span>
-            <span className="text-xs text-blue-400 font-medium">
+            <span className={isLight ? 'text-slate-300' : 'text-slate-600'}>•</span>
+            <span
+              className={`text-xs font-semibold px-2 py-0.5 rounded-md ${
+                isLight
+                  ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                  : 'text-blue-400'
+              }`}
+            >
               {data.profile.academicYear} ({data.profile.semester})
             </span>
           </div>
