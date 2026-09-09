@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { SchoolProfile } from '../types';
+import { ThemeToggle } from './ThemeToggle';
 import {
   BookOpen,
   CalendarCheck,
@@ -198,6 +199,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Quick Action & Stats Footer */}
       <div className="p-4 border-t border-slate-800 bg-[#0B1120]/90 space-y-3">
+        <div className="flex items-center justify-between gap-2 p-1.5 rounded-xl bg-slate-800/40 border border-slate-800">
+          <span className="text-[11px] font-semibold text-slate-400 pl-2">Tema Tampilan</span>
+          <ThemeToggle variant="pill" showPaletteMenu={false} />
+        </div>
+
         <div className="grid grid-cols-2 gap-2 text-center">
           <div className="p-2 rounded-lg bg-slate-800/40 border border-slate-800">
             <div className="text-[10px] text-slate-400">Kelas Binaan</div>
@@ -238,6 +244,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {profile.teacherName} • {profile.subject}
             </p>
           </div>
+        </div>
+
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <ThemeToggle variant="compact" showPaletteMenu={false} />
         </div>
       </div>
 
