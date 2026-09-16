@@ -338,7 +338,7 @@ export function calculateStudentAttendanceSummary(
 
   filtered.forEach(att => {
     const rec = att.records[studentId];
-    if (rec) {
+    if (rec && rec.status !== '-') {
       totalSessions++;
       if (rec.status === 'H') H++;
       else if (rec.status === 'S') S++;

@@ -3,6 +3,7 @@ import {
   AppData,
   TeachingJournal,
   AttendanceRecord,
+  AttendanceStatus,
   AssessmentItem,
   SchoolProfile,
   ClassRoom,
@@ -12,8 +13,6 @@ import {
 import { loadAppData, saveAppData, getInitialAppData, getEmptyAppData } from './utils/storage';
 import { generateMonthlyReportPdf } from './utils/pdfGenerator';
 import { Sidebar } from './components/Sidebar';
-import { ThemeToggle } from './components/ThemeToggle';
-import { useTheme } from './context/ThemeContext';
 import { ActiveDatabaseBadge } from './components/ActiveDatabaseBadge';
 import { DashboardView } from './components/DashboardView';
 import { ScheduleView } from './components/ScheduleView';
@@ -43,11 +42,8 @@ import {
   saveScheduleToFirestore,
   deleteScheduleFromFirestore,
 } from './firebase/firestoreService';
-import { auth, signInAnonymously } from './firebase/firebase';
 
 export default function App() {
-  const { theme } = useTheme();
-  const isLight = theme === 'light';
   const [data, setData] = useState<AppData>(() => loadAppData());
   const [activeTab, setActiveTab] = useState<string>('dashboard');
 
@@ -120,20 +116,6 @@ export default function App() {
     classId?: string;
     date?: string;
   }>({});
-
-  // Ensure Firebase Auth is signed in anonymously so security rules pass seamlessly across devices
-  useEffect(() => {
-    const ensureAuth = async () => {
-      try {
-        if (!auth.currentUser) {
-          await signInAnonymously(auth);
-        }
-      } catch (err) {
-        console.warn('Firebase anonymous auth auto-init:', err);
-      }
-    };
-    ensureAuth();
-  }, []);
 
   // Initial cloud fetch & Realtime subscriptions across all devices and networks
   useEffect(() => {
@@ -297,9 +279,9 @@ export default function App() {
     if (autoCreateAttendance && existingIndex === -1) {
       const classStudents = data.students.filter((s) => s.classId === journal.classId && s.active);
       const attId = `att-${Date.now()}`;
-      const defaultRecords: Record<string, { status: 'H'; note?: string }> = {};
+      const defaultRecords: Record<string, { status: AttendanceStatus; note?: string }> = {};
       classStudents.forEach((s) => {
-        defaultRecords[s.id] = { status: 'H' };
+        defaultRecords[s.id] = { status: '-' };
       });
 
       const newAtt: AttendanceRecord = {
@@ -312,7 +294,7 @@ export default function App() {
 
       updatedAttendances.push(newAtt);
       journal.attendanceSessionId = attId;
-      journal.studentsPresentCount = classStudents.length;
+      journal.studentsPresentCount = 0;
       journal.studentsTotalCount = classStudents.length;
     }
 
@@ -634,7 +616,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B1120] text-[#E2E8F0] flex flex-col md:flex-row font-sans antialiased selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen bg-[#0F1117] text-[#E2E8F0] flex flex-col md:flex-row font-sans antialiased selection:bg-amber-500 selection:text-slate-950">
       {/* Left Sidebar Menu */}
       <Sidebar
         activeTab={activeTab}
@@ -646,42 +628,20 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <div className="flex-1 min-w-0 flex flex-col min-h-screen">
+      <div className="flex-1 min-w-0 flex flex-col min-h-screen bg-[#0F1117]">
         {/* Top Header Bar with Status controls */}
-        <header
-          className={`hidden md:flex items-center justify-between px-6 lg:px-8 py-3.5 sticky top-0 z-20 backdrop-blur-md transition-colors relative ${
-            isLight
-              ? 'bg-white/95 border-b border-slate-200 shadow-xs'
-              : 'bg-[#0F172A]/80 border-b border-slate-800'
-          }`}
-        >
-          {/* Green-to-yellow gradient top accent line in light mode */}
-          {isLight && (
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-600 via-green-500 to-yellow-400" />
-          )}
-
+        <header className="hidden md:flex items-center justify-between px-6 lg:px-8 py-3.5 sticky top-0 z-20 backdrop-blur-md bg-[#0F1117]/90 border-b border-slate-800">
           <div className="flex items-center gap-3">
-            <span
-              className={`text-xs font-semibold ${
-                isLight ? 'text-slate-700' : 'text-slate-400'
-              }`}
-            >
+            <span className="text-xs font-semibold text-slate-300">
               {data.profile.schoolName || 'Sistem Administrasi Guru'}
             </span>
-            <span className={isLight ? 'text-slate-300' : 'text-slate-600'}>•</span>
-            <span
-              className={`text-xs font-semibold px-2 py-0.5 rounded-md ${
-                isLight
-                  ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                  : 'text-blue-400'
-              }`}
-            >
+            <span className="text-slate-600">•</span>
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-amber-500/10 text-[#F1B33B] border border-amber-500/20">
               {data.profile.academicYear} ({data.profile.semester})
             </span>
           </div>
 
           <div className="flex items-center gap-3">
-            <ThemeToggle variant="pill" />
             <ActiveDatabaseBadge
               data={data}
               onNavigateToSettings={() => setActiveTab('settings')}

@@ -22,12 +22,7 @@ import {
   User,
   Users,
   FileText,
-  Palette,
-  Sun,
-  Moon,
-  Sparkles,
 } from 'lucide-react';
-import { ThemeToggle } from './ThemeToggle';
 
 interface SettingsViewProps {
   data: AppData;
@@ -56,7 +51,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 }) => {
   const { profile, classes, students } = data;
 
-  const [activeSection, setActiveSection] = useState<'PROFILE' | 'CLASSES' | 'DATABASE' | 'THEME'>('PROFILE');
+  const [activeSection, setActiveSection] = useState<'PROFILE' | 'CLASSES' | 'DATABASE'>('PROFILE');
   const [formData, setFormData] = useState<SchoolProfile>({ ...profile });
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [classSearch, setClassSearch] = useState('');
@@ -162,7 +157,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 Pengaturan Sistem & Data Master
               </h2>
               <p className="text-xs text-slate-400">
-                Kelola identitas sekolah, setting kelas/rombel, profil guru, tema tampilan, dan pencadangan database
+                Kelola identitas sekolah, setting kelas/rombel, profil guru, dan pencadangan database
               </p>
             </div>
           </div>
@@ -186,15 +181,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           >
             <Layers className="w-3.5 h-3.5" />
             <span>Setting Kelas ({classes.length})</span>
-          </button>
-          <button
-            onClick={() => setActiveSection('THEME')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
-              activeSection === 'THEME' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <Palette className="w-3.5 h-3.5" />
-            <span>Tema Tampilan</span>
           </button>
           <button
             onClick={() => setActiveSection('DATABASE')}
@@ -790,49 +776,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               )}
             </div>
           )}
-        </div>
-      )}
-
-      {/* SECTION 3: TEMA & TAMPILAN */}
-      {activeSection === 'THEME' && (
-        <div className="bg-[#0F172A] p-6 sm:p-8 rounded-2xl border border-slate-800 shadow-xl space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
-            <div>
-              <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-                <Palette className="w-5 h-5 text-blue-400" />
-                <span>Tema & Mode Tampilan Antarmuka</span>
-              </h3>
-              <p className="text-xs text-slate-400 mt-1">
-                Pilih antara <strong>Tema Terang (Light Mode)</strong> untuk tampilan cerah & hasil cetak yang selaras, atau <strong>Tema Gelap (Dark Mode)</strong> untuk kenyamanan mata di malam hari.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2 self-start sm:self-auto">
-              <span className="text-xs text-slate-400 hidden sm:inline">Alihkan Cepat:</span>
-              <ThemeToggle variant="pill" showPaletteMenu={false} />
-            </div>
-          </div>
-
-          {/* Quick Notice about Light Mode for Printing & Eye Comfort */}
-          <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs text-blue-300 flex items-start gap-3">
-            <Sparkles className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-            <div className="space-y-1">
-              <span className="font-bold text-white">Panduan Kenyamanan Tampilan:</span>
-              <p className="text-slate-300 leading-relaxed">
-                • <strong>Tema Terang (Light Mode):</strong> Sangat cocok saat siang hari atau ruangan berpencahayaan terang, serta memberikan visual yang persis dengan lembar cetak dokumen fisik PDF.
-                <br />
-                • <strong>Tema Gelap (Dark Mode):</strong> Mengurangi radiasi cahaya dan kelelahan mata saat menginput presensi dan rekap nilai di malam hari.
-              </p>
-            </div>
-          </div>
-
-          {/* Theme Selector Cards */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-              Pilihan Tema Tampilan:
-            </h4>
-            <ThemeToggle variant="selector" />
-          </div>
         </div>
       )}
 

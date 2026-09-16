@@ -25,6 +25,7 @@ import {
   PlusCircle,
   Table as TableIcon,
   FileText,
+  RotateCcw,
 } from 'lucide-react';
 import {
   formatDateIndonesian,
@@ -90,12 +91,12 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
 
     if (existing) {
       classStudents.forEach((s) => {
-        initialMap[s.id] = existing.records[s.id] || { status: 'H', note: '' };
+        initialMap[s.id] = existing.records[s.id] || { status: '-', note: '' };
       });
     } else {
-      // Default all Hadir
+      // Default: Tombol Hadir dan status presensi diposisikan non-aktif (-)
       classStudents.forEach((s) => {
-        initialMap[s.id] = { status: 'H', note: '' };
+        initialMap[s.id] = { status: '-', note: '' };
       });
     }
 
@@ -127,13 +128,18 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
   );
 
   const handleStatusChange = (studentId: string, status: AttendanceStatus) => {
-    setCurrentRecords((prev) => ({
-      ...prev,
-      [studentId]: {
-        ...(prev[studentId] || {}),
-        status,
-      },
-    }));
+    setCurrentRecords((prev) => {
+      const current = prev[studentId]?.status;
+      // Jika status yang diklik sudah aktif, klik lagi untuk menonaktifkan (kembali ke '-')
+      const nextStatus = current === status ? '-' : status;
+      return {
+        ...prev,
+        [studentId]: {
+          ...(prev[studentId] || {}),
+          status: nextStatus,
+        },
+      };
+    });
     setIsSavedRecently(false);
   };
 
@@ -141,7 +147,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
     setCurrentRecords((prev) => ({
       ...prev,
       [studentId]: {
-        ...(prev[studentId] || { status: 'H' }),
+        ...(prev[studentId] || { status: '-' }),
         note,
       },
     }));
@@ -151,7 +157,16 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
   const handleMarkAllHadir = () => {
     const updated: Record<string, { status: AttendanceStatus; note?: string }> = {};
     classStudents.forEach((s) => {
-      updated[s.id] = { status: 'H', note: '' };
+      updated[s.id] = { status: 'H', note: currentRecords[s.id]?.note || '' };
+    });
+    setCurrentRecords(updated);
+    setIsSavedRecently(false);
+  };
+
+  const handleMarkAllInactive = () => {
+    const updated: Record<string, { status: AttendanceStatus; note?: string }> = {};
+    classStudents.forEach((s) => {
+      updated[s.id] = { status: '-', note: currentRecords[s.id]?.note || '' };
     });
     setCurrentRecords(updated);
     setIsSavedRecently(false);
@@ -180,16 +195,19 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
   let countS = 0;
   let countI = 0;
   let countA = 0;
+  let countNonActive = 0;
 
   Object.values(currentRecords).forEach((r: { status: AttendanceStatus; note?: string }) => {
     if (r.status === 'H') countH++;
     else if (r.status === 'S') countS++;
     else if (r.status === 'I') countI++;
     else if (r.status === 'A') countA++;
+    else countNonActive++;
   });
 
   const totalActive = classStudents.length;
-  const attendanceRate = totalActive > 0 ? Math.round((countH / totalActive) * 100) : 100;
+  const totalMarked = countH + countS + countI + countA;
+  const attendanceRate = totalMarked > 0 ? Math.round((countH / totalMarked) * 100) : 0;
 
   // Monthly Attendances filtered
   const monthlyAttendances = useMemo(() => {
@@ -506,6 +524,16 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
             <div className="flex items-center gap-2">
               <button
                 type="button"
+                onClick={handleMarkAllInactive}
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 hover:text-white rounded-xl border border-slate-700 transition-colors cursor-pointer"
+                title="Posisikan semua status presensi non-aktif (-)"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
+                <span>Non-aktifkan Semua</span>
+              </button>
+
+              <button
+                type="button"
                 onClick={handleMarkAllHadir}
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 hover:text-white rounded-xl border border-slate-700 transition-colors cursor-pointer"
               >
@@ -560,8 +588,12 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
 
             <div className="col-span-2 sm:col-span-1 bg-[#0F172A] p-3.5 rounded-xl border border-emerald-500/20 flex items-center justify-between">
               <div>
-                <div className="text-[10px] font-bold text-emerald-400/80 uppercase tracking-wider">% Kehadiran</div>
-                <div className="text-2xl font-bold text-emerald-400 mt-0.5">{attendanceRate}%</div>
+                <div className="text-[10px] font-bold text-emerald-400/80 uppercase tracking-wider">
+                  {countNonActive > 0 ? `${countNonActive} Non-aktif` : '% Kehadiran'}
+                </div>
+                <div className="text-2xl font-bold text-emerald-400 mt-0.5">
+                  {totalMarked > 0 ? `${attendanceRate}%` : '-'}
+                </div>
               </div>
               <CheckCircle2 className="w-5 h-5 text-emerald-400" />
             </div>
@@ -580,13 +612,20 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
               <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
                 Daftar Presensi: <span className="text-blue-400">{currentClass?.name}</span> ({formatDateIndonesian(selectedDate)})
               </h3>
-              <span className="text-xs text-slate-400">{classStudents.length} Siswa Terdaftar</span>
+              <div className="flex items-center gap-2">
+                {countNonActive > 0 && (
+                  <span className="text-[11px] px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-400 border border-amber-500/30 font-semibold">
+                    {countNonActive} belum dipresensi (non-aktif)
+                  </span>
+                )}
+                <span className="text-xs text-slate-400">{classStudents.length} Siswa Terdaftar</span>
+              </div>
             </div>
 
             <div className="divide-y divide-slate-800">
               {classStudents.length > 0 ? (
                 classStudents.map((std, idx) => {
-                  const rec = currentRecords[std.id] || { status: 'H', note: '' };
+                  const rec = currentRecords[std.id] || { status: '-', note: '' };
                   return (
                     <div
                       key={std.id}
@@ -610,7 +649,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                         <button
                           type="button"
                           onClick={() => handleStatusChange(std.id, 'H')}
-                          title="Hadir (H)"
+                          title={rec.status === 'H' ? "Hadir (Klik lagi untuk non-aktifkan)" : "Tandai Hadir (H)"}
                           className={`w-8 h-8 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center justify-center ${
                             rec.status === 'H'
                               ? 'bg-emerald-500 text-white shadow-sm ring-2 ring-emerald-400'
@@ -622,7 +661,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                         <button
                           type="button"
                           onClick={() => handleStatusChange(std.id, 'S')}
-                          title="Sakit (S)"
+                          title={rec.status === 'S' ? "Sakit (Klik lagi untuk non-aktifkan)" : "Tandai Sakit (S)"}
                           className={`w-8 h-8 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center justify-center ${
                             rec.status === 'S'
                               ? 'bg-amber-500 text-white shadow-sm ring-2 ring-amber-400'
@@ -634,7 +673,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                         <button
                           type="button"
                           onClick={() => handleStatusChange(std.id, 'I')}
-                          title="Izin (I)"
+                          title={rec.status === 'I' ? "Izin (Klik lagi untuk non-aktifkan)" : "Tandai Izin (I)"}
                           className={`w-8 h-8 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center justify-center ${
                             rec.status === 'I'
                               ? 'bg-sky-500 text-white shadow-sm ring-2 ring-sky-400'
@@ -646,7 +685,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                         <button
                           type="button"
                           onClick={() => handleStatusChange(std.id, 'A')}
-                          title="Alpa (A)"
+                          title={rec.status === 'A' ? "Alpa (Klik lagi untuk non-aktifkan)" : "Tandai Alpa (A)"}
                           className={`w-8 h-8 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center justify-center ${
                             rec.status === 'A'
                               ? 'bg-rose-500 text-white shadow-sm ring-2 ring-rose-400'
@@ -655,6 +694,11 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                         >
                           A
                         </button>
+                        {rec.status === '-' && (
+                          <span className="text-[10px] text-slate-400 font-medium px-2 py-1 rounded bg-slate-800/80 border border-slate-700/60 ml-1">
+                            Non-aktif
+                          </span>
+                        )}
                       </div>
 
                       {/* Note Input */}

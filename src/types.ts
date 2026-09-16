@@ -1,4 +1,4 @@
-export type AttendanceStatus = 'H' | 'S' | 'I' | 'A'; // Hadir, Sakit, Izin, Alpa
+export type AttendanceStatus = 'H' | 'S' | 'I' | 'A' | '-'; // Hadir, Sakit, Izin, Alpa, atau Non-aktif (-)
 
 export type AssessmentType =
   | 'FORMATIF_TUGAS'
