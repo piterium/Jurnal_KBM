@@ -440,7 +440,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
           <div>
             <h2 className="text-lg sm:text-xl font-bold text-white tracking-wide flex items-center gap-2">
               <span>Presensi & Absensi Siswa</span>
-              <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+              <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-[#F1B33B] border border-amber-500/20">
                 {currentClass?.name || 'Pilih Kelas'}
               </span>
             </h2>
@@ -456,7 +456,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
             onClick={() => setActiveTab('INPUT')}
             className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
               activeTab === 'INPUT'
-                ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
+                ? 'bg-[#F1B33B] text-slate-950 shadow-md shadow-amber-500/20 font-extrabold'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
@@ -467,7 +467,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
             onClick={() => setActiveTab('RECAP')}
             className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
               activeTab === 'RECAP'
-                ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
+                ? 'bg-[#F1B33B] text-slate-950 shadow-md shadow-amber-500/20 font-extrabold'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
@@ -486,12 +486,12 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
           <div className="bg-[#0F172A] p-4 rounded-2xl border border-slate-800 shadow-xl flex flex-wrap items-center justify-between gap-4">
             <div className="flex flex-wrap items-center gap-3">
               <div className="flex items-center gap-1.5">
-                <Layers className="w-4 h-4 text-blue-400" />
+                <Layers className="w-4 h-4 text-[#F1B33B]" />
                 <span className="text-xs font-semibold text-slate-300">Pilih Kelas:</span>
                 <select
                   value={selectedClassId}
                   onChange={(e) => setSelectedClassId(e.target.value)}
-                  className="text-xs font-semibold px-3 py-1.5 border border-slate-700 rounded-lg bg-[#0B1120] text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="text-xs font-semibold px-3 py-1.5 border border-slate-700 rounded-lg bg-[#0B1120] text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
                 >
                   {classes.map((cls) => (
                     <option key={cls.id} value={cls.id}>
@@ -502,18 +502,18 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
               </div>
 
               <div className="flex items-center gap-1.5">
-                <Calendar className="w-4 h-4 text-blue-400" />
+                <Calendar className="w-4 h-4 text-[#F1B33B]" />
                 <span className="text-xs font-semibold text-slate-300">Tanggal:</span>
                 <input
                   type="date"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  className="text-xs font-semibold px-3 py-1.5 border border-slate-700 rounded-lg bg-[#0B1120] text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="text-xs font-semibold px-3 py-1.5 border border-slate-700 rounded-lg bg-[#0B1120] text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
                 />
               </div>
 
               {linkedJournal && (
-                <span className="text-xs px-3 py-1 bg-blue-500/15 text-blue-400 border border-blue-500/30 rounded-lg font-medium flex items-center gap-1.5">
+                <span className="text-xs px-3 py-1 bg-amber-500/15 text-[#F1B33B] border border-amber-500/30 rounded-lg font-medium flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>Terhubung: Jurnal Pertemuan Ke-{linkedJournal.meetingNumber} ({linkedJournal.topic})</span>
                 </span>
@@ -544,9 +544,9 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
               <button
                 type="button"
                 onClick={handleSave}
-                className="inline-flex items-center gap-1.5 px-5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-lg shadow-blue-600/20 transition-all active:scale-95 cursor-pointer tracking-wide"
+                className="inline-flex items-center gap-1.5 px-5 py-2 text-xs font-bold text-slate-950 bg-[#F1B33B] hover:bg-[#E0A22B] rounded-xl shadow-lg shadow-amber-500/20 transition-all active:scale-95 cursor-pointer tracking-wide"
               >
-                <Save className="w-4 h-4 text-white" />
+                <Save className="w-4 h-4 text-slate-950" />
                 <span>Simpan Presensi</span>
               </button>
             </div>
@@ -610,7 +610,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
           <div className="bg-[#0F172A] rounded-2xl border border-slate-800 shadow-xl overflow-hidden">
             <div className="px-5 py-4 bg-[#0B1120] border-b border-slate-800 flex items-center justify-between">
               <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-                Daftar Presensi: <span className="text-blue-400">{currentClass?.name}</span> ({formatDateIndonesian(selectedDate)})
+                Daftar Presensi: <span className="text-[#F1B33B]">{currentClass?.name}</span> ({formatDateIndonesian(selectedDate)})
               </h3>
               <div className="flex items-center gap-2">
                 {countNonActive > 0 && (
@@ -708,7 +708,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                           placeholder="Catatan / keterangan..."
                           value={rec.note || ''}
                           onChange={(e) => handleNoteChange(std.id, e.target.value)}
-                          className="w-full text-xs px-3 py-1.5 border border-slate-700 rounded-lg outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-[#0B1120] text-white placeholder:text-slate-500"
+                          className="w-full text-xs px-3 py-1.5 border border-slate-700 rounded-lg outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 bg-[#0B1120] text-white placeholder:text-slate-500"
                         />
                       </div>
                     </div>
@@ -734,7 +734,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
               <div className="flex flex-wrap items-center gap-3">
                 {/* Select Class */}
                 <div className="flex items-center gap-1.5 bg-[#0B1120] px-3 py-1.5 rounded-xl border border-slate-700">
-                  <Layers className="w-4 h-4 text-blue-400" />
+                  <Layers className="w-4 h-4 text-[#F1B33B]" />
                   <span className="text-xs font-semibold text-slate-300">Kelas:</span>
                   <select
                     value={selectedClassId}
@@ -808,7 +808,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                     onClick={() => setTableModel('CALENDAR')}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                       tableModel === 'CALENDAR'
-                        ? 'bg-blue-600 text-white shadow-sm'
+                        ? 'bg-[#F1B33B] text-slate-950 shadow-sm font-extrabold'
                         : 'text-slate-400 hover:text-white'
                     }`}
                     title="Menampilkan seluruh tanggal 1 s/d akhir bulan (format kalender resmi)"
@@ -821,7 +821,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                     onClick={() => setTableModel('SESSIONS')}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                       tableModel === 'SESSIONS'
-                        ? 'bg-blue-600 text-white shadow-sm'
+                        ? 'bg-[#F1B33B] text-slate-950 shadow-sm font-extrabold'
                         : 'text-slate-400 hover:text-white'
                     }`}
                     title="Menampilkan hanya tanggal yang ada sesi presensi KBM"
@@ -862,10 +862,10 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                   type="button"
                   onClick={() => handleExportPdf('CALENDAR')}
                   disabled={isExportingPdf}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-lg shadow-blue-600/20 transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-slate-950 bg-[#F1B33B] hover:bg-[#E0A22B] rounded-xl shadow-lg shadow-amber-500/20 transition-all cursor-pointer active:scale-95 disabled:opacity-50"
                   title="Cetak Rekap Presensi Format Kalender Lengkap (1 s/d akhir bulan)"
                 >
-                  <Printer className="w-4 h-4" />
+                  <Printer className="w-4 h-4 text-slate-950" />
                   <span>{isExportingPdf ? 'Membuat PDF...' : 'Cetak PDF Kalender'}</span>
                 </button>
               </div>
@@ -881,7 +881,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                     placeholder="Cari nama siswa atau NISN..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-[#0B1120] text-xs text-white pl-9 pr-3 py-1.5 rounded-xl border border-slate-700 focus:outline-none focus:border-blue-500 placeholder:text-slate-500"
+                    className="w-full bg-[#0B1120] text-xs text-white pl-9 pr-3 py-1.5 rounded-xl border border-slate-700 focus:outline-none focus:border-amber-500 placeholder:text-slate-500"
                   />
                 </div>
               </div>
@@ -891,7 +891,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                 <select
                   value={genderFilter}
                   onChange={(e) => setGenderFilter(e.target.value as any)}
-                  className="text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-700 bg-[#0B1120] text-white focus:outline-none focus:border-blue-500"
+                  className="text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-700 bg-[#0B1120] text-white focus:outline-none focus:border-amber-500"
                 >
                   <option value="ALL">Semua Siswa</option>
                   <option value="L">Laki-laki (L)</option>
@@ -899,7 +899,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                 </select>
 
                 <span className="text-xs font-semibold text-slate-400 ml-2">
-                  Menampilkan: <strong className="text-blue-400">{filteredStudents.length} Siswa</strong>
+                  Menampilkan: <strong className="text-[#F1B33B]">{filteredStudents.length} Siswa</strong>
                 </span>
               </div>
             </div>
@@ -920,8 +920,8 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
             <div className="bg-[#0F172A] p-3.5 rounded-xl border border-slate-800 flex flex-col justify-between">
               <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Sesi KBM Terdata</div>
               <div className="flex items-baseline justify-between mt-1">
-                <span className="text-2xl font-black text-blue-400">{monthlyStats.totalSessions}</span>
-                <CalendarCheck className="w-5 h-5 text-blue-400 opacity-60" />
+                <span className="text-2xl font-black text-[#F1B33B]">{monthlyStats.totalSessions}</span>
+                <CalendarCheck className="w-5 h-5 text-[#F1B33B] opacity-60" />
               </div>
             </div>
 
@@ -963,9 +963,9 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
           </div>
 
           {/* Guide / Instruction Note */}
-          <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 bg-blue-500/10 border border-blue-500/20 rounded-xl text-xs text-blue-300">
+          <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs text-amber-200">
             <div className="flex items-center gap-2">
-              <HelpCircle className="w-4 h-4 text-blue-400 flex-shrink-0" />
+              <HelpCircle className="w-4 h-4 text-[#F1B33B] flex-shrink-0" />
               <span>
                 <strong>Petunjuk:</strong> Klik nomor tanggal pada kolom tabel untuk langsung membuka form input / edit presensi pada tanggal tersebut.
               </span>
@@ -1023,13 +1023,13 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                             isSunday
                               ? 'bg-rose-950/30 text-rose-300'
                               : hasSession
-                              ? 'bg-blue-950/40 text-blue-300 hover:bg-blue-900/60'
+                              ? 'bg-amber-950/40 text-amber-300 hover:bg-amber-900/60'
                               : 'text-slate-400 hover:bg-slate-800'
                           }`}
                           title={`Tanggal: ${formatDateIndonesian(col.dateString)} - Klik untuk catat presensi`}
                         >
                           <div className="flex flex-col items-center">
-                            <span className={`text-[11px] font-bold ${isSunday ? 'text-rose-400' : hasSession ? 'text-blue-400 font-black' : 'text-slate-300'}`}>
+                            <span className={`text-[11px] font-bold ${isSunday ? 'text-rose-400' : hasSession ? 'text-[#F1B33B] font-black' : 'text-slate-300'}`}>
                               {col.dayNumber}
                             </span>
                             <span className={`text-[9px] font-semibold uppercase ${isSunday ? 'text-rose-500' : 'text-slate-500'}`}>
@@ -1056,7 +1056,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                     <th className="p-2.5 text-center bg-rose-950/60 text-rose-400 w-11 font-bold border-r border-slate-800" title="Total Alpa">
                       A
                     </th>
-                    <th className="p-2.5 text-center bg-slate-900 text-blue-400 min-w-[76px] font-bold" title="Persentase Kehadiran">
+                    <th className="p-2.5 text-center bg-slate-900 text-[#F1B33B] min-w-[76px] font-bold" title="Persentase Kehadiran">
                       % Hadir
                     </th>
                   </tr>
@@ -1125,7 +1125,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                               <td
                                 key={col.dateString}
                                 onClick={() => handleJumpToDateInput(col.dateString)}
-                                className="p-1 text-center border-r border-slate-800 cursor-pointer hover:bg-blue-500/10 transition-colors"
+                                className="p-1 text-center border-r border-slate-800 cursor-pointer hover:bg-amber-500/10 transition-colors"
                                 title={`${std.name} (${col.dayNumber} ${MONTH_NAMES_ID[recapMonth - 1]}): ${
                                   status === 'H'
                                     ? 'Hadir'
@@ -1305,7 +1305,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                     <td className="p-2 text-center font-black text-rose-400 bg-rose-950/40 border-r border-slate-800">
                       {monthlyStats.totalA}
                     </td>
-                    <td className="p-2 text-center font-black text-blue-400 bg-blue-950/40">
+                    <td className="p-2 text-center font-black text-[#F1B33B] bg-amber-950/40">
                       {monthlyStats.averagePercent}%
                     </td>
                   </tr>

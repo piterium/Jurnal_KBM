@@ -405,7 +405,7 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
       {/* 1. Header with Title & Action Buttons */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+          <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[#F1B33B] flex items-center justify-center flex-shrink-0 mt-0.5">
             <Users className="w-5 h-5" />
           </div>
           <div>
@@ -434,9 +434,9 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
             id="btn-upload-direct-file"
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-semibold shadow-md shadow-blue-600/20 transition-all active:scale-95 cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#F1B33B] hover:bg-[#E0A22B] text-slate-950 text-xs sm:text-sm font-bold shadow-md shadow-amber-500/10 transition-all active:scale-95 cursor-pointer"
           >
-            <UploadCloud className="w-4 h-4 text-white" />
+            <UploadCloud className="w-4 h-4 text-slate-950" />
             <span>Upload Siswa</span>
           </button>
         </div>
@@ -473,7 +473,7 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
                 placeholder="Contoh: 1"
                 value={formAttendanceNo}
                 onChange={(e) => setFormAttendanceNo(e.target.value)}
-                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-slate-50 dark:bg-[#0B1120] text-slate-800 dark:text-white placeholder:text-slate-400"
+                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none bg-slate-50 dark:bg-[#0B1120] text-slate-800 dark:text-white placeholder:text-slate-400"
               />
             </div>
 
@@ -487,7 +487,7 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
                 placeholder="Contoh: 0012345678"
                 value={formNisn}
                 onChange={(e) => setFormNisn(e.target.value)}
-                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-slate-50 dark:bg-[#0B1120] text-slate-800 dark:text-white placeholder:text-slate-400 font-mono"
+                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none bg-slate-50 dark:bg-[#0B1120] text-slate-800 dark:text-white placeholder:text-slate-400 font-mono"
               />
             </div>
 
@@ -502,7 +502,7 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
                 placeholder="Nama lengkap siswa"
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
-                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-slate-50 dark:bg-[#0B1120] text-slate-800 dark:text-white placeholder:text-slate-400 font-medium"
+                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none bg-slate-50 dark:bg-[#0B1120] text-slate-800 dark:text-white placeholder:text-slate-400 font-medium"
               />
             </div>
 
@@ -518,7 +518,7 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
                 placeholder="Contoh: VII A"
                 value={formClassName}
                 onChange={(e) => setFormClassName(e.target.value)}
-                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-slate-50 dark:bg-[#0B1120] text-slate-800 dark:text-white placeholder:text-slate-400 font-medium"
+                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none bg-slate-50 dark:bg-[#0B1120] text-slate-800 dark:text-white placeholder:text-slate-400 font-medium"
               />
               <datalist id="classes-datalist">
                 {classes.map((cls) => (
@@ -532,9 +532,9 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
               <button
                 type="submit"
                 id="btn-save-student-inline"
-                className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md shadow-blue-600/20 transition-all active:scale-95 cursor-pointer whitespace-nowrap"
+                className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#F1B33B] hover:bg-[#E0A22B] text-slate-950 font-bold text-xs sm:text-sm rounded-xl shadow-md shadow-amber-500/10 transition-all active:scale-95 cursor-pointer whitespace-nowrap"
               >
-                <Plus className="w-4 h-4 text-white stroke-[2.5]" />
+                <Plus className="w-4 h-4 text-slate-950 stroke-[2.5]" />
                 <span>{editingStudentId ? 'Simpan' : 'Simpan'}</span>
               </button>
             </div>
@@ -552,7 +552,7 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
                   name="gender"
                   checked={formGender === 'L'}
                   onChange={() => setFormGender('L')}
-                  className="text-blue-600 focus:ring-blue-500"
+                  className="text-amber-500 focus:ring-amber-500"
                 />
                 <span>Laki-laki (L)</span>
               </label>
@@ -583,7 +583,7 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
               placeholder="Cari NISN atau Nama..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full text-xs sm:text-sm pl-9 pr-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-slate-50 dark:bg-[#0B1120] text-slate-800 dark:text-white placeholder:text-slate-400"
+              className="w-full text-xs sm:text-sm pl-9 pr-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none bg-slate-50 dark:bg-[#0B1120] text-slate-800 dark:text-white placeholder:text-slate-400"
             />
           </div>
 
@@ -592,7 +592,7 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
             <select
               value={activeClassId}
               onChange={(e) => handleClassChange(e.target.value)}
-              className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-slate-50 dark:bg-[#0B1120] text-blue-600 dark:text-blue-400 font-semibold cursor-pointer"
+              className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none bg-slate-50 dark:bg-[#0B1120] text-[#F1B33B] font-semibold cursor-pointer"
             >
               <option value="">-- Pilih Kelas untuk Melihat Siswa --</option>
               <option value="ALL">-- Tampilkan Semua Kelas ({students.length} Siswa) --</option>
@@ -628,7 +628,7 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
                   <tr>
                     <td colSpan={6} className="py-16 text-center">
                       <div className="flex flex-col items-center justify-center space-y-3">
-                        <div className="w-14 h-14 rounded-2xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
+                        <div className="w-14 h-14 rounded-2xl bg-amber-500/10 text-[#F1B33B] flex items-center justify-center">
                           <Users className="w-8 h-8" />
                         </div>
                         <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">
@@ -663,7 +663,7 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
 
                         {/* NAMA LENGKAP */}
                         <td className="py-3.5 px-4">
-                          <span className="font-semibold text-slate-800 dark:text-white group-hover:text-blue-500 transition-colors">
+                          <span className="font-semibold text-slate-800 dark:text-white group-hover:text-[#F1B33B] transition-colors">
                             {std.name}
                           </span>
                         </td>
@@ -673,7 +673,7 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
                           <span
                             className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full ${
                               std.gender === 'L'
-                                ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/20'
+                                ? 'bg-sky-500/15 text-sky-400 border border-sky-500/20'
                                 : 'bg-pink-500/15 text-pink-600 dark:text-pink-400 border border-pink-500/20'
                             }`}
                           >
@@ -694,7 +694,7 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
                             <button
                               type="button"
                               onClick={() => handleStartEdit(std)}
-                              className="p-1.5 text-slate-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+                              className="p-1.5 text-slate-500 hover:text-[#F1B33B] hover:bg-amber-500/10 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
                               title="Edit Siswa"
                             >
                               <Edit2 className="w-4 h-4" />

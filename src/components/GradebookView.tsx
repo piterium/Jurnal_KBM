@@ -76,7 +76,7 @@ export const GradebookView: React.FC<GradebookViewProps> = ({
       <div className="bg-[#0F172A] p-5 sm:p-6 rounded-2xl border border-slate-800 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-500/10 text-blue-400 rounded-xl flex items-center justify-center border border-blue-500/20 flex-shrink-0">
+            <div className="w-10 h-10 bg-amber-500/10 text-[#F1B33B] rounded-xl flex items-center justify-center border border-amber-500/20 flex-shrink-0">
               <GraduationCap className="w-5 h-5" />
             </div>
             <div>
@@ -91,10 +91,11 @@ export const GradebookView: React.FC<GradebookViewProps> = ({
         </div>
 
         <button
+          type="button"
           onClick={onAddAssessment}
-          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-bold rounded-xl shadow-lg shadow-blue-600/20 transition-all active:scale-95 cursor-pointer tracking-wide"
+          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#F1B33B] hover:bg-[#E0A22B] text-slate-950 text-xs sm:text-sm font-bold rounded-xl shadow-lg shadow-amber-500/10 transition-all active:scale-95 cursor-pointer tracking-wide"
         >
-          <Plus className="w-4 h-4 text-white" />
+          <Plus className="w-4 h-4 text-slate-950" />
           <span>Tambah Asesmen / Nilai Baru</span>
         </button>
       </div>
@@ -107,10 +108,11 @@ export const GradebookView: React.FC<GradebookViewProps> = ({
             {classes.map((cls) => (
               <button
                 key={cls.id}
+                type="button"
                 onClick={() => onSelectClassId(cls.id)}
                 className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   cls.id === selectedClassId
-                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
+                    ? 'bg-[#F1B33B] text-slate-950 shadow-md shadow-amber-500/10'
                     : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white border border-slate-700'
                 }`}
               >
@@ -121,7 +123,7 @@ export const GradebookView: React.FC<GradebookViewProps> = ({
         </div>
 
         <div className="flex items-center gap-3 text-xs font-medium">
-          <span className="px-3 py-1 bg-blue-500/15 text-blue-400 border border-blue-500/30 rounded-lg font-bold">
+          <span className="px-3 py-1 bg-amber-500/15 text-[#F1B33B] border border-amber-500/30 rounded-lg font-bold">
             KKM / KKTP: {currentClass?.kkm || 75}
           </span>
           <span className="px-3 py-1 bg-slate-800 text-slate-300 border border-slate-700 rounded-lg font-bold">
@@ -134,7 +136,7 @@ export const GradebookView: React.FC<GradebookViewProps> = ({
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-[#0F172A] p-4 rounded-xl border border-slate-800 shadow-md">
           <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Rata-rata Kelas</div>
-          <div className="text-2xl sm:text-3xl font-bold text-blue-400 mt-1">{classAverage}</div>
+          <div className="text-2xl sm:text-3xl font-bold text-[#F1B33B] mt-1">{classAverage}</div>
           <div className="text-[11px] text-slate-500 mt-0.5">Dari {validStudentsCount} siswa dinilai</div>
         </div>
 
@@ -161,7 +163,7 @@ export const GradebookView: React.FC<GradebookViewProps> = ({
       <div className="bg-[#0F172A] rounded-2xl border border-slate-800 shadow-xl overflow-hidden">
         <div className="px-5 py-4 bg-[#0B1120] border-b border-slate-800 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300">
-            Leger Nilai: <span className="text-blue-400">{currentClass?.name}</span> ({currentClass?.subject})
+            Leger Nilai: <span className="text-[#F1B33B]">{currentClass?.name}</span> ({currentClass?.subject})
           </h3>
           <span className="text-xs text-slate-400">
             Nilai dapat diedit langsung pada kotak angka di setiap kolom
@@ -211,7 +213,7 @@ export const GradebookView: React.FC<GradebookViewProps> = ({
                         <div className="flex items-center gap-0.5">
                           <button
                             onClick={() => onEditAssessment(asm)}
-                            className="p-1 text-slate-500 hover:text-blue-400 rounded transition-colors cursor-pointer"
+                            className="p-1 text-slate-500 hover:text-[#F1B33B] rounded transition-colors cursor-pointer"
                             title="Edit Asesmen"
                           >
                             <Edit2 className="w-3 h-3" />
@@ -239,7 +241,7 @@ export const GradebookView: React.FC<GradebookViewProps> = ({
                   );
                 })}
 
-                <th className="p-3 text-center bg-blue-500/15 text-blue-400 min-w-[80px] font-bold border-l border-slate-800">
+                <th className="p-3 text-center bg-amber-500/15 text-[#F1B33B] min-w-[80px] font-bold border-l border-slate-800">
                   Nilai Akhir
                 </th>
                 <th className="p-3 text-center bg-slate-800 text-slate-300 w-16 font-bold">
@@ -293,7 +295,7 @@ export const GradebookView: React.FC<GradebookViewProps> = ({
                                   ? isBelowKkm
                                     ? 'bg-rose-500/10 text-rose-400 border-rose-500/30 focus:border-rose-400'
                                     : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 focus:border-emerald-400'
-                                  : 'bg-[#0B1120] text-slate-500 border-dashed border-slate-700 focus:border-blue-500'
+                                  : 'bg-[#0B1120] text-slate-500 border-dashed border-slate-700 focus:border-amber-500'
                               }`}
                             />
                           </td>
@@ -301,7 +303,7 @@ export const GradebookView: React.FC<GradebookViewProps> = ({
                       })}
 
                       {/* Final Weighted Score */}
-                      <td className="p-2.5 text-center font-bold bg-blue-500/5 text-blue-400 border-l border-slate-800 text-sm">
+                      <td className="p-2.5 text-center font-bold bg-amber-500/5 text-[#F1B33B] border-l border-slate-800 text-sm">
                         {gradeSummary.completedAssessments > 0 ? gradeSummary.averageScore : '-'}
                       </td>
 
@@ -310,7 +312,7 @@ export const GradebookView: React.FC<GradebookViewProps> = ({
                         <span
                           className={`inline-block w-6 py-0.5 rounded text-xs font-bold ${
                             gradeSummary.predicate === 'A'
-                              ? 'bg-blue-600 text-white'
+                              ? 'bg-[#F1B33B] text-slate-950 font-bold'
                               : gradeSummary.predicate === 'B'
                               ? 'bg-emerald-500 text-white'
                               : gradeSummary.predicate === 'C'

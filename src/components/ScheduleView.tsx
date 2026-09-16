@@ -243,7 +243,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#0F172A] p-5 sm:p-6 rounded-2xl border border-slate-800 shadow-xl">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-blue-600/20 text-blue-400 border border-blue-500/30 flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-[#F1B33B] border border-amber-500/20 flex items-center justify-center font-bold">
               <CalendarDays className="w-5 h-5" />
             </div>
             <div>
@@ -264,16 +264,16 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
             onClick={() => setIsPrintPreviewOpen(true)}
             className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-sm hover:text-white"
           >
-            <Printer className="w-4 h-4 text-blue-400" />
+            <Printer className="w-4 h-4 text-[#F1B33B]" />
             <span>Cetak / PDF Jadwal</span>
           </button>
 
           <button
             type="button"
             onClick={() => handleOpenAddModal()}
-            className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-lg shadow-blue-600/25"
+            className="px-4 py-2 rounded-xl bg-[#F1B33B] hover:bg-[#E0A22B] text-slate-950 text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shadow-lg shadow-amber-500/10"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 text-slate-950" />
             <span>Tambah Jadwal Baru</span>
           </button>
         </div>
@@ -282,7 +282,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
       {/* KPI Stats Strip */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         <div className="p-4 rounded-xl bg-[#0F172A] border border-slate-800 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-500/15 text-blue-400 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-[#F1B33B] border border-amber-500/20 flex items-center justify-center flex-shrink-0">
             <Clock className="w-5 h-5" />
           </div>
           <div className="min-w-0">
@@ -335,7 +335,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari mapel, kelas, ruang..."
-              className="w-full pl-9 pr-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+              className="w-full pl-9 pr-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 transition-colors"
             />
             {searchQuery && (
               <button
@@ -355,7 +355,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
             <select
               value={selectedDayFilter}
               onChange={(e) => setSelectedDayFilter(e.target.value)}
-              className="py-1 px-2.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+              className="py-1 px-2.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
             >
               <option value="Semua">Semua Hari</option>
               {DAYS_OF_WEEK.map((day) => (
@@ -373,7 +373,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
               <select
                 value={selectedClassFilter}
                 onChange={(e) => setSelectedClassFilter(e.target.value)}
-                className="py-1 px-2.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+                className="py-1 px-2.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
               >
                 <option value="Semua">Semua Kelas</option>
                 {classes.map((cls) => (
@@ -393,7 +393,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
             onClick={() => setViewMode('cards')}
             className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
               viewMode === 'cards'
-                ? 'bg-blue-600 text-white shadow-sm font-semibold'
+                ? 'bg-[#F1B33B] text-slate-950 shadow-sm font-bold'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -404,7 +404,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
             onClick={() => setViewMode('table')}
             className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
               viewMode === 'table'
-                ? 'bg-blue-600 text-white shadow-sm font-semibold'
+                ? 'bg-[#F1B33B] text-slate-950 shadow-sm font-bold'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -417,7 +417,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
       {schedules.length === 0 ? (
         /* Empty State */
         <div className="p-12 text-center bg-[#0F172A] rounded-2xl border border-slate-800 space-y-4">
-          <div className="w-14 h-14 mx-auto rounded-2xl bg-blue-600/10 text-blue-400 border border-blue-500/20 flex items-center justify-center">
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-500/10 text-[#F1B33B] border border-amber-500/20 flex items-center justify-center">
             <CalendarDays className="w-7 h-7" />
           </div>
           <div className="max-w-md mx-auto">
@@ -430,9 +430,9 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
             <button
               type="button"
               onClick={() => handleOpenAddModal()}
-              className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold inline-flex items-center gap-2 shadow-lg shadow-blue-600/20 cursor-pointer"
+              className="px-4 py-2.5 rounded-xl bg-[#F1B33B] hover:bg-[#E0A22B] text-slate-950 text-xs font-bold inline-flex items-center gap-2 shadow-lg shadow-amber-500/10 cursor-pointer"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-4 h-4 text-slate-950" />
               <span>Tambah Jadwal Mengajar Pertama</span>
             </button>
           </div>
@@ -453,7 +453,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
                 key={day}
                 className={`rounded-2xl border transition-all ${
                   isToday
-                    ? 'bg-[#0F172A] border-blue-500/50 shadow-lg shadow-blue-500/5'
+                    ? 'bg-[#0F172A] border-amber-500/50 shadow-lg shadow-amber-500/5'
                     : 'bg-[#0F172A] border-slate-800'
                 }`}
               >
@@ -463,7 +463,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
                     <div
                       className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs ${
                         isToday
-                          ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
+                          ? 'bg-[#F1B33B] text-slate-950 shadow-md shadow-amber-500/10'
                           : 'bg-slate-800 text-slate-300'
                       }`}
                     >
@@ -489,7 +489,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
                     onClick={() => handleOpenAddModal(day)}
                     className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-medium inline-flex items-center gap-1.5 transition-colors cursor-pointer"
                   >
-                    <Plus className="w-3.5 h-3.5 text-blue-400" />
+                    <Plus className="w-3.5 h-3.5 text-[#F1B33B]" />
                     <span>Tambah di {day}</span>
                   </button>
                 </div>
@@ -510,8 +510,8 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
                           <div>
                             {/* Time and JP badge */}
                             <div className="flex items-center justify-between gap-2 mb-2.5">
-                              <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400">
-                                <Clock className="w-3.5 h-3.5 text-blue-400" />
+                              <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#F1B33B]">
+                                <Clock className="w-3.5 h-3.5 text-[#F1B33B]" />
                                 <span>Jam ke-{sch.jamKe}</span>
                                 {sch.timeStart && sch.timeEnd && (
                                   <span className="text-slate-400 font-normal">
@@ -519,7 +519,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
                                   </span>
                                 )}
                               </div>
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-[#F1B33B] border border-amber-500/20">
                                 {sch.totalHours || 2} JP
                               </span>
                             </div>
@@ -579,7 +579,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
                                       jamKe: sch.jamKe,
                                     })
                                   }
-                                  className="px-2.5 py-1 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+                                  className="px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-[#F1B33B] border border-amber-500/20 text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
                                 >
                                   <FileText className="w-3 h-3" />
                                   <span>Jurnal</span>
@@ -645,7 +645,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
                     <tr
                       key={sch.id}
                       className={`hover:bg-slate-800/40 transition-colors ${
-                        isToday ? 'bg-blue-500/5' : ''
+                        isToday ? 'bg-amber-500/5' : ''
                       }`}
                     >
                       <td className="px-4 py-3.5 text-center text-slate-500 font-mono">
@@ -660,7 +660,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
                         )}
                       </td>
                       <td className="px-4 py-3.5 whitespace-nowrap">
-                        <div className="font-semibold text-blue-400">Jam ke-{sch.jamKe}</div>
+                        <div className="font-semibold text-[#F1B33B]">Jam ke-{sch.jamKe}</div>
                         {sch.timeStart && sch.timeEnd && (
                           <div className="text-[11px] text-slate-400">
                             {sch.timeStart} - {sch.timeEnd}
@@ -674,7 +674,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
                         {sch.subject}
                       </td>
                       <td className="px-4 py-3.5 text-center whitespace-nowrap">
-                        <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                        <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/10 text-[#F1B33B] border border-amber-500/20">
                           {sch.totalHours || 2} JP
                         </span>
                       </td>
@@ -734,7 +734,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-blue-600/20 text-blue-400 border border-blue-500/30 flex items-center justify-center font-bold">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-[#F1B33B] border border-amber-500/20 flex items-center justify-center font-bold">
                   <CalendarDays className="w-4 h-4" />
                 </div>
                 <h3 className="text-base font-bold text-white">
@@ -765,7 +765,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
                       onClick={() => setFormData((prev) => ({ ...prev, day: d }))}
                       className={`py-2 px-1 text-center rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                         formData.day === d
-                          ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
+                          ? 'bg-[#F1B33B] text-slate-950 shadow-md shadow-amber-500/10 font-bold'
                           : 'bg-slate-900 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-slate-200'
                       }`}
                     >
@@ -814,7 +814,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
                     value={formData.jamKe}
                     onChange={(e) => setFormData((prev) => ({ ...prev, jamKe: e.target.value }))}
                     placeholder="misal: 1 - 2 atau 3, 4"
-                    className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
                   />
                 </div>
 
@@ -830,7 +830,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
                         onClick={() => setFormData((prev) => ({ ...prev, totalHours: num }))}
                         className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                           formData.totalHours === num
-                            ? 'bg-blue-600 text-white shadow-sm'
+                            ? 'bg-[#F1B33B] text-slate-950 shadow-sm'
                             : 'bg-slate-900 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-white'
                         }`}
                       >
@@ -851,7 +851,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
                     type="time"
                     value={formData.timeStart}
                     onChange={(e) => setFormData((prev) => ({ ...prev, timeStart: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-500"
                   />
                 </div>
                 <div>
@@ -862,7 +862,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
                     type="time"
                     value={formData.timeEnd}
                     onChange={(e) => setFormData((prev) => ({ ...prev, timeEnd: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-500"
                   />
                 </div>
               </div>
@@ -877,7 +877,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
                     <select
                       value={formData.classId}
                       onChange={(e) => handleClassChange(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white focus:outline-none focus:border-blue-500"
+                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-500"
                     >
                       <option value="">-- Pilih Kelas Binaan --</option>
                       {classes.map((cls) => (
@@ -897,7 +897,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
                           classId: prev.classId || `custom-${e.target.value}`,
                         }))
                       }
-                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
                     />
                   </div>
                 ) : (
@@ -913,7 +913,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
                         classId: `custom-${e.target.value}`,
                       }))
                     }
-                    className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
                   />
                 )}
               </div>
@@ -929,7 +929,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
                   placeholder="misal: Informatika, Matematika, Bahasa Indonesia"
                   value={formData.subject}
                   onChange={(e) => setFormData((prev) => ({ ...prev, subject: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
                 />
               </div>
 
@@ -943,7 +943,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
                   placeholder="misal: Lab Komputer 1, R. 7A, Ruang Teori"
                   value={formData.room}
                   onChange={(e) => setFormData((prev) => ({ ...prev, room: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
                 />
               </div>
 
@@ -957,7 +957,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
                   placeholder="misal: Mengajar di lab multimedia, bawa modul pegangan..."
                   value={formData.notes}
                   onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 resize-none"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 resize-none"
                 />
               </div>
 
@@ -972,7 +972,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-all shadow-lg shadow-blue-600/25 cursor-pointer"
+                  className="px-5 py-2 rounded-xl bg-[#F1B33B] hover:bg-[#E0A22B] text-slate-950 text-xs font-bold transition-all shadow-lg shadow-amber-500/10 cursor-pointer"
                 >
                   {editingSchedule ? 'Simpan Perubahan' : 'Tambah Jadwal'}
                 </button>
@@ -989,14 +989,14 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
             {/* Action Bar (Not Printed) */}
             <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between border-b border-slate-800">
               <div className="flex items-center gap-2">
-                <Printer className="w-5 h-5 text-blue-400" />
+                <Printer className="w-5 h-5 text-[#F1B33B]" />
                 <h3 className="text-sm font-bold">Pratinjau Cetak Jadwal Mengajar Guru Mandiri</h3>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                  className="px-4 py-1.5 rounded-lg bg-[#F1B33B] hover:bg-[#E0A22B] text-slate-950 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   <span>Cetak / Simpan PDF</span>
@@ -1123,7 +1123,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
                       <td colSpan={5} className="border border-slate-900 px-3 py-2 text-right">
                         TOTAL BEBAN MENGAJAR (JP / MINGGU) :
                       </td>
-                      <td className="border border-slate-900 px-2 py-2 text-center text-blue-900">
+                      <td className="border border-slate-900 px-2 py-2 text-center text-slate-950 font-black">
                         {totalWeeklyJP} JP
                       </td>
                       <td colSpan={2} className="border border-slate-900 px-3 py-2"></td>

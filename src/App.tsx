@@ -632,6 +632,16 @@ export default function App() {
         {/* Top Header Bar with Status controls */}
         <header className="hidden md:flex items-center justify-between px-6 lg:px-8 py-3.5 sticky top-0 z-20 backdrop-blur-md bg-[#0F1117]/90 border-b border-slate-800">
           <div className="flex items-center gap-3">
+            {data.profile.logoUrl && (
+              <div className="w-7 h-7 rounded-lg overflow-hidden flex items-center justify-center bg-white/5 border border-amber-500/30 p-0.5 shadow-xs">
+                <img
+                  src={data.profile.logoUrl}
+                  alt="Logo Sekolah"
+                  className="w-full h-full object-contain"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+            )}
             <span className="text-xs font-semibold text-slate-300">
               {data.profile.schoolName || 'Sistem Administrasi Guru'}
             </span>

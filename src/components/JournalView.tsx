@@ -68,7 +68,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#0F172A] p-5 sm:p-6 rounded-2xl border border-slate-800 shadow-xl">
         <div>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-500/10 text-blue-400 rounded-xl flex items-center justify-center border border-blue-500/20 flex-shrink-0">
+            <div className="w-10 h-10 bg-amber-500/10 text-[#F1B33B] rounded-xl flex items-center justify-center border border-amber-500/20 flex-shrink-0">
               <BookOpen className="w-5 h-5" />
             </div>
             <div>
@@ -83,10 +83,11 @@ export const JournalView: React.FC<JournalViewProps> = ({
         </div>
 
         <button
+          type="button"
           onClick={onAddJournal}
-          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-bold rounded-xl shadow-lg shadow-blue-600/20 transition-all active:scale-95 cursor-pointer tracking-wide"
+          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#F1B33B] hover:bg-[#E0A22B] text-slate-950 text-xs sm:text-sm font-bold rounded-xl shadow-lg shadow-amber-500/10 transition-all active:scale-95 cursor-pointer tracking-wide"
         >
-          <Plus className="w-4 h-4 text-white" />
+          <Plus className="w-4 h-4 text-slate-950" />
           <span>Tambah Jurnal Mengajar</span>
         </button>
       </div>
@@ -96,13 +97,13 @@ export const JournalView: React.FC<JournalViewProps> = ({
         <div className="flex flex-wrap items-center gap-3 flex-1 min-w-[280px]">
           {/* Class Filter */}
           <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-300">
-            <Filter className="w-3.5 h-3.5 text-blue-400" />
+            <Filter className="w-3.5 h-3.5 text-[#F1B33B]" />
             <span>Kelas:</span>
           </div>
           <select
             value={selectedClassId}
             onChange={(e) => setSelectedClassId(e.target.value)}
-            className="text-xs font-medium px-3 py-1.5 border border-slate-700 rounded-lg bg-[#0B1120] text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            className="text-xs font-medium px-3 py-1.5 border border-slate-700 rounded-lg bg-[#0B1120] text-white outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
           >
             <option value="ALL">Semua Kelas</option>
             {classes.map((cls) => (
@@ -114,13 +115,13 @@ export const JournalView: React.FC<JournalViewProps> = ({
 
           {/* Month Filter */}
           <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-300 ml-2">
-            <Calendar className="w-3.5 h-3.5 text-blue-400" />
+            <Calendar className="w-3.5 h-3.5 text-[#F1B33B]" />
             <span>Bulan:</span>
           </div>
           <select
             value={selectedMonth}
             onChange={(e) => setSelectedMonth(e.target.value)}
-            className="text-xs font-medium px-3 py-1.5 border border-slate-700 rounded-lg bg-[#0B1120] text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            className="text-xs font-medium px-3 py-1.5 border border-slate-700 rounded-lg bg-[#0B1120] text-white outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
           >
             <option value="ALL">Semua Bulan</option>
             {MONTH_NAMES_ID.map((name, idx) => (
@@ -138,7 +139,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
               placeholder="Cari materi atau kegiatan..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-700 rounded-lg bg-[#0B1120] text-white placeholder:text-slate-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              className="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-700 rounded-lg bg-[#0B1120] text-white placeholder:text-slate-500 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
             />
           </div>
         </div>
@@ -147,7 +148,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
         <div className="flex items-center gap-3 text-xs font-medium text-slate-300 bg-[#0B1120] px-3 py-1.5 rounded-lg border border-slate-800">
           <span>Ditemukan: <strong className="text-white">{filteredJournals.length} Jurnal</strong></span>
           <span>•</span>
-          <span>Total: <strong className="text-blue-400">{totalJP} JP</strong></span>
+          <span>Total: <strong className="text-[#F1B33B]">{totalJP} JP</strong></span>
         </div>
       </div>
 
@@ -169,14 +170,14 @@ export const JournalView: React.FC<JournalViewProps> = ({
                 <div className="p-5 sm:p-6">
                   <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-500/15 text-blue-400 border border-blue-500/30">
+                      <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500/15 text-[#F1B33B] border border-amber-500/30">
                         {cls?.name || j.classId}
                       </span>
                       <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-200 border border-slate-700">
                         Pertemuan Ke-{j.meetingNumber}
                       </span>
-                      <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-500/10 text-blue-300 border border-blue-500/20 flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5 text-blue-400" />
+                      <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500/10 text-[#F1B33B] border border-amber-500/20 flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5 text-[#F1B33B]" />
                         Jam Ke- {j.jamKe || '1, 2'} ({j.hoursCount || 2} JP)
                       </span>
                     </div>
@@ -191,7 +192,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
                             ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                             : j.status === 'Tertunda'
                             ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                            : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                            : 'bg-amber-500/10 text-[#F1B33B] border-amber-500/20'
                         }`}
                       >
                         {j.status || 'Terlaksana'}
@@ -212,7 +213,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
                   {/* Keterangan / Ket Badge/Note */}
                   {(j.keterangan || j.notes) && (
                     <div className="mt-2.5 flex items-start gap-2 bg-[#0B1120] px-3 py-2 rounded-xl border border-slate-800 text-xs">
-                      <span className="px-1.5 py-0.5 text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded flex-shrink-0">
+                      <span className="px-1.5 py-0.5 text-[10px] font-bold bg-amber-500/10 text-[#F1B33B] border border-amber-500/20 rounded flex-shrink-0">
                         Ket.
                       </span>
                       <p className="text-slate-300 font-medium">
@@ -226,7 +227,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
                     <div className="mt-4 pt-4 border-t border-slate-800 space-y-2.5 bg-[#0B1120] p-4 rounded-xl border border-slate-800 text-xs">
                       {j.learningObjective && (
                         <div>
-                          <strong className="text-blue-400 font-semibold">Tujuan / CP:</strong>
+                          <strong className="text-[#F1B33B] font-semibold">Tujuan / CP:</strong>
                           <p className="text-slate-300 mt-0.5">{j.learningObjective}</p>
                         </div>
                       )}
@@ -293,10 +294,10 @@ export const JournalView: React.FC<JournalViewProps> = ({
                               {attInfo.izinDetails.map((s) => (
                                 <span
                                   key={s.studentId}
-                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-blue-500/15 text-blue-300 border border-blue-500/30"
+                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-amber-500/15 text-amber-300 border border-amber-500/30"
                                   title={`Izin: No. Absen ${s.attendanceNo} - ${s.name}`}
                                 >
-                                  <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                                  <span className="w-1.5 h-1.5 rounded-full bg-[#F1B33B]"></span>
                                   I: No. {s.attendanceNo} ({s.name})
                                 </span>
                               ))}
@@ -335,7 +336,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
                       </button>
                       <button
                         onClick={() => onEditJournal(j)}
-                        className="p-1.5 text-slate-400 hover:text-blue-400 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+                        className="p-1.5 text-slate-400 hover:text-[#F1B33B] hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
                         title="Edit Jurnal"
                       >
                         <Edit2 className="w-4 h-4" />
@@ -367,10 +368,11 @@ export const JournalView: React.FC<JournalViewProps> = ({
               Belum ada data jurnal yang sesuai dengan filter kelas atau bulan yang dipilih.
             </p>
             <button
+              type="button"
               onClick={onAddJournal}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-600/20 cursor-pointer transition-all"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#F1B33B] hover:bg-[#E0A22B] text-slate-950 text-xs font-bold rounded-xl shadow-lg shadow-amber-500/10 cursor-pointer transition-all"
             >
-              <Plus className="w-4 h-4 text-white" />
+              <Plus className="w-4 h-4 text-slate-950" />
               <span>Tambah Jurnal Sekarang</span>
             </button>
           </div>

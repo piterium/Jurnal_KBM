@@ -99,9 +99,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Brand Header */}
       <div className="p-4 border-b bg-[#141722] border-slate-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-[#F1B33B] text-slate-950 shadow-md shadow-amber-500/20">
-            <School className="w-5 h-5 text-slate-950" />
-          </div>
+          {profile.logoUrl ? (
+            <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0 bg-white/5 border border-amber-500/30 p-1 shadow-md shadow-amber-500/10">
+              <img
+                src={profile.logoUrl}
+                alt="Logo Sekolah"
+                className="w-full h-full object-contain"
+                referrerPolicy="no-referrer"
+              />
+            </div>
+          ) : (
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-[#F1B33B] text-slate-950 shadow-md shadow-amber-500/20">
+              <School className="w-5 h-5 text-slate-950" />
+            </div>
+          )}
           <div className="min-w-0 flex-1">
             <h2 className="text-sm font-bold text-white tracking-tight truncate">
               {profile.schoolName || 'SMP NEGERI 1 NUSANTARA'}
@@ -234,11 +245,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
           >
             {isMobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
+          {profile.logoUrl && (
+            <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0 bg-white/5 border border-amber-500/30 p-0.5 shadow-sm">
+              <img
+                src={profile.logoUrl}
+                alt="Logo Sekolah"
+                className="w-full h-full object-contain"
+                referrerPolicy="no-referrer"
+              />
+            </div>
+          )}
           <div className="min-w-0">
             <h1 className="text-sm font-bold truncate text-white">
               {profile.schoolName || 'Administrasi Guru'}
             </h1>
-            <p className="text-[11px] font-medium truncate text-blue-400">
+            <p className="text-[11px] font-medium truncate text-[#F1B33B]">
               {profile.teacherName} • {profile.subject}
             </p>
           </div>

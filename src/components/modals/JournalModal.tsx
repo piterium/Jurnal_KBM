@@ -91,7 +91,7 @@ export const JournalModal: React.FC<JournalModalProps> = ({
         {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-4.5 bg-[#0B1120] border-b border-slate-800 text-white">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-500/10 text-blue-400 rounded-xl flex items-center justify-center border border-blue-500/20 flex-shrink-0">
+            <div className="w-10 h-10 bg-amber-500/10 text-[#F1B33B] rounded-xl flex items-center justify-center border border-amber-500/20 flex-shrink-0">
               <BookOpen className="w-5 h-5" />
             </div>
             <div>
@@ -118,14 +118,14 @@ export const JournalModal: React.FC<JournalModalProps> = ({
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="block text-xs font-semibold text-slate-300">
-                  Target Kelas <span className="text-blue-400">*</span>
+                  Target Kelas <span className="text-[#F1B33B]">*</span>
                 </label>
                 <span className="text-[10px] text-slate-400">Data Master Kelas</span>
               </div>
               <select
                 value={classId}
                 onChange={(e) => setClassId(e.target.value)}
-                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-[#0B1120] text-white font-medium"
+                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none bg-[#0B1120] text-white font-medium"
                 required
               >
                 {classes.map((cls) => (
@@ -138,13 +138,13 @@ export const JournalModal: React.FC<JournalModalProps> = ({
 
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                Tanggal Pelaksanaan <span className="text-blue-400">*</span>
+                Tanggal Pelaksanaan <span className="text-[#F1B33B]">*</span>
               </label>
               <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-[#0B1120] text-white"
+                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none bg-[#0B1120] text-white"
                 required
               />
             </div>
@@ -154,7 +154,7 @@ export const JournalModal: React.FC<JournalModalProps> = ({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                Pertemuan Ke- <span className="text-blue-400">*</span>
+                Pertemuan Ke- <span className="text-[#F1B33B]">*</span>
               </label>
               <input
                 type="number"
@@ -162,21 +162,21 @@ export const JournalModal: React.FC<JournalModalProps> = ({
                 max="100"
                 value={meetingNumber}
                 onChange={(e) => setMeetingNumber(Number(e.target.value))}
-                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-[#0B1120] text-white"
+                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none bg-[#0B1120] text-white"
                 required
               />
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                Jam Ke- <span className="text-blue-400">*</span>
+                Jam Ke- <span className="text-[#F1B33B]">*</span>
               </label>
               <input
                 type="text"
                 placeholder="Contoh: 1, 2"
                 value={jamKe}
                 onChange={(e) => setJamKe(e.target.value)}
-                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-[#0B1120] text-white font-medium"
+                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none bg-[#0B1120] text-white font-medium"
                 required
               />
             </div>
@@ -191,7 +191,7 @@ export const JournalModal: React.FC<JournalModalProps> = ({
                 max="10"
                 value={hoursCount}
                 onChange={(e) => setHoursCount(Number(e.target.value))}
-                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-[#0B1120] text-white"
+                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none bg-[#0B1120] text-white"
                 required
               />
             </div>
@@ -203,7 +203,7 @@ export const JournalModal: React.FC<JournalModalProps> = ({
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as any)}
-                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-[#0B1120] text-white font-medium"
+                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none bg-[#0B1120] text-white font-medium"
               >
                 <option value="Terlaksana">Terlaksana</option>
                 <option value="Tertunda">Tertunda</option>
@@ -214,14 +214,14 @@ export const JournalModal: React.FC<JournalModalProps> = ({
 
           <div>
             <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-              Materi Pokok / Pokok Bahasan <span className="text-blue-400">*</span>
+              Materi Pokok / Pokok Bahasan <span className="text-[#F1B33B]">*</span>
             </label>
             <input
               type="text"
               placeholder="Contoh: Berpikir Komputasional & Pengenalan Algoritma Sederhana"
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
-              className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-[#0B1120] text-white font-medium"
+              className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none bg-[#0B1120] text-white font-medium"
               required
             />
           </div>
@@ -239,7 +239,7 @@ export const JournalModal: React.FC<JournalModalProps> = ({
               placeholder="Contoh: Praktik di Lab Komputer, diskusi kelompok berjalan lancar, remedial 2 siswa, atau KBM selesai tepat waktu"
               value={keterangan}
               onChange={(e) => setKeterangan(e.target.value)}
-              className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-[#0B1120] text-white font-medium resize-none"
+              className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none bg-[#0B1120] text-white font-medium resize-none"
             />
             {/* Quick Suggestions Chips */}
             <div className="flex flex-wrap items-center gap-1.5 mt-2">
@@ -274,16 +274,16 @@ export const JournalModal: React.FC<JournalModalProps> = ({
 
           {/* Integrated Attendance Option */}
           {!initialData && (
-            <div className="p-3.5 bg-blue-500/10 border border-blue-500/20 rounded-xl flex items-start gap-3">
+            <div className="p-3.5 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-start gap-3">
               <input
                 type="checkbox"
                 id="check-auto-att"
                 checked={autoCreateAttendance}
                 onChange={(e) => setAutoCreateAttendance(e.target.checked)}
-                className="mt-0.5 w-4 h-4 text-blue-600 rounded border-slate-700 bg-[#0B1120] focus:ring-blue-500 cursor-pointer"
+                className="mt-0.5 w-4 h-4 text-amber-600 rounded border-slate-700 bg-[#0B1120] focus:ring-amber-500 cursor-pointer accent-[#F1B33B]"
               />
               <label htmlFor="check-auto-att" className="text-xs text-slate-200 cursor-pointer">
-                <span className="font-bold flex items-center gap-1.5 text-blue-400">
+                <span className="font-bold flex items-center gap-1.5 text-[#F1B33B]">
                   <UserCheck className="w-3.5 h-3.5" />
                   Integrasikan Presensi Otomatis (Default: Nihil / Hadir Semua)
                 </span>
@@ -305,9 +305,9 @@ export const JournalModal: React.FC<JournalModalProps> = ({
             </button>
             <button
               type="submit"
-              className="inline-flex items-center gap-2 px-5 py-2.5 text-xs sm:text-sm font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-lg shadow-blue-600/20 transition-all active:scale-95 cursor-pointer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-xs sm:text-sm font-bold text-slate-950 bg-[#F1B33B] hover:bg-[#E0A22B] rounded-xl shadow-lg shadow-amber-500/20 transition-all active:scale-95 cursor-pointer"
             >
-              <CheckCircle2 className="w-4 h-4 text-white" />
+              <CheckCircle2 className="w-4 h-4 text-slate-950" />
               <span>{initialData ? 'Simpan Perubahan' : 'Simpan Jurnal Mengajar'}</span>
             </button>
           </div>

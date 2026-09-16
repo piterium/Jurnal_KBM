@@ -93,8 +93,8 @@ export const SaveSuccessModal: React.FC<SaveSuccessModalProps> = ({
                 <AlertTriangle className="w-10 h-10 sm:w-12 sm:h-12 text-amber-500 stroke-[2.5]" />
               </div>
             ) : type === 'info' ? (
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-3 sm:border-4 border-blue-300 dark:border-blue-500/30 bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center mb-5 shadow-inner">
-                <Info className="w-10 h-10 sm:w-12 sm:h-12 text-blue-500 stroke-[2.5]" />
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-3 sm:border-4 border-amber-300 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center mb-5 shadow-inner">
+                <Info className="w-10 h-10 sm:w-12 sm:h-12 text-[#F1B33B] stroke-[2.5]" />
               </div>
             ) : (
               <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-3 sm:border-4 border-[#86efac]/80 dark:border-emerald-500/30 bg-[#f0fdf4] dark:bg-emerald-950/40 flex items-center justify-center mb-5 shadow-inner">

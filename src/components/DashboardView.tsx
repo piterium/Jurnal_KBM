@@ -105,15 +105,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     <div className="space-y-6">
       {/* Welcome Banner */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0F172A] p-6 sm:p-8 text-white border border-slate-800 shadow-2xl">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20"></div>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20"></div>
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/15 text-blue-400 text-xs font-bold border border-blue-500/30 uppercase tracking-widest">
-              <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 text-[#F1B33B] text-xs font-bold border border-amber-500/30 uppercase tracking-widest">
+              <Sparkles className="w-3.5 h-3.5 text-[#F1B33B]" />
               Sistem Administrasi Guru Terintegrasi
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-wide">
-              Selamat Datang, <span className="text-blue-400">{profile.teacherName || 'Bapak/Ibu Guru'}</span>
+              Selamat Datang, <span className="text-[#F1B33B]">{profile.teacherName || 'Bapak/Ibu Guru'}</span>
             </h2>
             <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
               Kelola jurnal KBM, pantau kehadiran siswa, serta pembukuan nilai formatif & sumatif terpadu{profile.schoolName ? ` untuk ${profile.schoolName}` : ''}.
@@ -149,18 +149,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <span className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold">
               Pertemuan Bulan Ini
             </span>
-            <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-[#F1B33B]">
               <BookOpen className="w-4 h-4" />
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold text-blue-400">
+            <span className="text-3xl font-bold text-[#F1B33B]">
               {thisMonthJournals.length}
             </span>
             <span className="text-xs text-slate-400 font-medium">Sesi KBM</span>
           </div>
           <div className="mt-2 flex items-center gap-1.5 text-xs text-slate-300">
-            <Clock className="w-3.5 h-3.5 text-blue-400" />
+            <Clock className="w-3.5 h-3.5 text-[#F1B33B]" />
             <span>Total <strong className="text-white">{totalJP} JP</strong> di {currentMonthName}</span>
           </div>
         </div>
@@ -193,7 +193,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <span className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold">
               Rata-rata Nilai
             </span>
-            <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-[#F1B33B]">
               <GraduationCap className="w-4 h-4" />
             </div>
           </div>
@@ -204,7 +204,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <span className="text-xs text-slate-400 font-medium">/ 100</span>
           </div>
           <div className="mt-2 flex items-center gap-1.5 text-xs text-slate-300">
-            <TrendingUp className="w-3.5 h-3.5 text-blue-400" />
+            <TrendingUp className="w-3.5 h-3.5 text-[#F1B33B]" />
             <span>{assessments.length} Asesmen tercatat</span>
           </div>
         </div>
@@ -246,7 +246,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
             <button
               onClick={() => onNavigate('journal')}
-              className="text-xs font-semibold text-blue-400 hover:text-blue-300 flex items-center gap-1 cursor-pointer transition-colors"
+              className="text-xs font-semibold text-[#F1B33B] hover:text-[#E0A22B] flex items-center gap-1 cursor-pointer transition-colors"
             >
               Lihat Semua
               <ArrowRight className="w-3.5 h-3.5" />
@@ -265,7 +265,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
                       <div className="flex items-center gap-2">
-                        <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-500/15 text-blue-400 border border-blue-500/30">
+                        <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/15 text-[#F1B33B] border border-amber-500/30">
                           {cls?.name || j.classId}
                         </span>
                         <span className="text-xs font-medium text-slate-300">
@@ -283,7 +283,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
                     <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-800">
                       <span className="text-slate-400 flex items-center gap-1.5">
-                        <CalendarCheck className="w-3.5 h-3.5 text-blue-400" />
+                        <CalendarCheck className="w-3.5 h-3.5 text-[#F1B33B]" />
                         Presensi:{' '}
                         {attInfo.isNihil ? (
                           <strong className="text-emerald-400 font-bold">Nihil (Hadir Lengkap)</strong>
@@ -298,7 +298,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                           : j.status === 'Tertunda'
                           ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                          : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                          : 'bg-amber-500/10 text-[#F1B33B] border-amber-500/20'
                       }`}>
                         {j.status || 'Terlaksana'}
                       </span>
@@ -320,7 +320,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="bg-[#0F172A] rounded-2xl border border-slate-800 p-5 shadow-xl">
             <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
               <div className="flex items-center gap-2">
-                <CalendarDays className="w-4 h-4 text-blue-400" />
+                <CalendarDays className="w-4 h-4 text-[#F1B33B]" />
                 <h3 className="font-bold text-sm text-white">
                   Jadwal Hari Ini ({todayDay})
                 </h3>
@@ -328,7 +328,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <button
                 type="button"
                 onClick={() => onNavigate('schedule')}
-                className="text-[11px] font-semibold text-blue-400 hover:text-blue-300 flex items-center gap-1 cursor-pointer transition-colors"
+                className="text-[11px] font-semibold text-[#F1B33B] hover:text-[#E0A22B] flex items-center gap-1 cursor-pointer transition-colors"
               >
                 Lihat Semua
                 <ArrowRight className="w-3 h-3" />
@@ -345,7 +345,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold text-white">{sch.className}</span>
-                        <span className="text-[10px] font-semibold text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded">
+                        <span className="text-[10px] font-semibold text-[#F1B33B] bg-amber-500/10 px-1.5 py-0.5 rounded">
                           Jam {sch.jamKe}
                         </span>
                       </div>
@@ -371,7 +371,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <button
                   type="button"
                   onClick={() => onNavigate('schedule')}
-                  className="mt-2 text-[11px] font-semibold text-blue-400 hover:underline cursor-pointer"
+                  className="mt-2 text-[11px] font-semibold text-[#F1B33B] hover:underline cursor-pointer"
                 >
                   + Atur Jadwal Mengajar
                 </button>
@@ -409,7 +409,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         </button>
                         <button
                           onClick={() => onNavigate('grades')}
-                          className="px-2.5 py-1 text-[11px] font-semibold bg-blue-500/15 hover:bg-blue-500/25 text-blue-400 border border-blue-500/30 rounded-lg cursor-pointer transition-colors"
+                          className="px-2.5 py-1 text-[11px] font-semibold bg-amber-500/15 hover:bg-amber-500/25 text-[#F1B33B] border border-amber-500/30 rounded-lg cursor-pointer transition-colors"
                           title="Buka Nilai Kelas Ini"
                         >
                           Nilai

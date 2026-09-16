@@ -42,15 +42,16 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="border-b border-slate-800 px-4 py-3 sm:px-6">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/20 flex-shrink-0 overflow-hidden p-1">
+            <div className="w-10 h-10 bg-[#F1B33B] rounded-xl flex items-center justify-center text-slate-950 font-bold shadow-lg shadow-amber-500/20 flex-shrink-0 overflow-hidden p-1">
               {profile.logoUrl ? (
                 <img
                   src={profile.logoUrl}
                   alt="Logo"
                   className="w-full h-full object-contain"
+                  referrerPolicy="no-referrer"
                 />
               ) : (
-                <School className="w-5 h-5 text-white" />
+                <School className="w-5 h-5 text-slate-950" />
               )}
             </div>
             <div>
@@ -58,12 +59,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <h1 className="text-base sm:text-lg font-bold text-white tracking-wide">
                   {profile.schoolName}
                 </h1>
-                <span className="text-[10px] uppercase px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/30 font-bold tracking-wider">
+                <span className="text-[10px] uppercase px-2 py-0.5 rounded-full bg-amber-500/15 text-[#F1B33B] border border-amber-500/30 font-bold tracking-wider">
                   T.A {profile.academicYear} • Sem. {profile.semester}
                 </span>
               </div>
               <p className="text-xs text-slate-400">
-                Guru: <span className="text-white font-medium">{profile.teacherName}</span> (NIP: {profile.teacherNip || '-'}) • Mapel: <span className="text-blue-400 font-medium">{profile.subject}</span>
+                Guru: <span className="text-white font-medium">{profile.teacherName}</span> (NIP: {profile.teacherNip || '-'}) • Mapel: <span className="text-[#F1B33B] font-medium">{profile.subject}</span>
               </p>
             </div>
           </div>
@@ -83,11 +84,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={() => setActiveTab(item.id)}
                 className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm transition-all whitespace-nowrap cursor-pointer ${
                   isActive
-                    ? 'bg-blue-600 text-white font-bold shadow-sm'
+                    ? 'bg-[#F1B33B] text-slate-950 font-bold shadow-sm'
                     : 'text-slate-400 hover:bg-slate-800 hover:text-white font-medium'
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                <Icon className={`w-4 h-4 ${isActive ? 'text-slate-950' : 'text-slate-400'}`} />
                 <span>{item.label}</span>
               </button>
             );

@@ -115,7 +115,7 @@ export const ActiveDatabaseBadge: React.FC<ActiveDatabaseBadgeProps> = ({
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="p-2 rounded-xl bg-slate-900/80 border border-slate-800/80 flex items-center justify-between">
                 <div className="flex items-center gap-2 min-w-0">
-                  <BookOpen className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
+                  <BookOpen className="w-3.5 h-3.5 text-[#F1B33B] flex-shrink-0" />
                   <span className="text-[11px] text-slate-300 truncate">Jurnal</span>
                 </div>
                 <span className="text-xs font-bold text-white font-mono">
