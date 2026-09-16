@@ -109,10 +109,10 @@ export const MonthlyReportView: React.FC<MonthlyReportViewProps> = ({ data }) =>
   return (
     <div className="space-y-6">
       {/* Top Banner / Heading */}
-      <div className="bg-[#0F172A] p-5 sm:p-6 rounded-2xl border border-slate-800 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-[#141722] p-5 sm:p-6 rounded-2xl border border-slate-800 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-500/10 text-blue-400 rounded-xl flex items-center justify-center border border-blue-500/20 flex-shrink-0">
+            <div className="w-10 h-10 bg-amber-500/10 text-[#F1B33B] rounded-xl flex items-center justify-center border border-amber-500/20 flex-shrink-0 shadow-xs">
               <FileText className="w-5 h-5" />
             </div>
             <div>
@@ -129,8 +129,9 @@ export const MonthlyReportView: React.FC<MonthlyReportViewProps> = ({ data }) =>
         {/* Action Buttons */}
         <div className="flex items-center gap-2.5">
           <button
+            type="button"
             onClick={handlePrintPreview}
-            className="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 hover:text-white border border-slate-700 rounded-xl transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold text-slate-200 bg-[#1C202C] hover:bg-[#262B3A] hover:text-white border border-slate-700 rounded-xl transition-colors cursor-pointer"
             title="Buka PDF di tab baru untuk cetak"
           >
             <Printer className="w-4 h-4 text-slate-400" />
@@ -138,18 +139,19 @@ export const MonthlyReportView: React.FC<MonthlyReportViewProps> = ({ data }) =>
           </button>
 
           <button
+            type="button"
             onClick={handleDownloadPdf}
             disabled={isGenerating}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-bold rounded-xl shadow-lg shadow-blue-600/20 transition-all active:scale-95 cursor-pointer disabled:opacity-50 tracking-wide"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#F1B33B] hover:bg-[#E0A22B] text-slate-950 text-xs sm:text-sm font-bold rounded-xl shadow-lg shadow-amber-500/10 transition-all active:scale-95 cursor-pointer disabled:opacity-50 tracking-wide"
           >
-            <FileDown className="w-4 h-4 text-white" />
+            <FileDown className="w-4 h-4 text-slate-950" />
             <span>{isGenerating ? 'Membuat PDF...' : 'Unduh Laporan PDF Resmi'}</span>
           </button>
         </div>
       </div>
 
       {/* Configuration Controls Card */}
-      <div className="bg-[#0F172A] p-5 rounded-2xl border border-slate-800 shadow-xl space-y-4">
+      <div className="bg-[#141722] p-5 rounded-2xl border border-slate-800 shadow-xl space-y-4">
         <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
           Pengaturan Laporan yang Diterbitkan
         </h3>
@@ -163,7 +165,7 @@ export const MonthlyReportView: React.FC<MonthlyReportViewProps> = ({ data }) =>
             <select
               value={reportType}
               onChange={(e) => setReportType(e.target.value as any)}
-              className="w-full text-xs font-bold px-3 py-2 border border-slate-700 rounded-lg bg-[#0B1120] text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              className="w-full text-xs font-bold px-3 py-2 border border-slate-700 rounded-lg bg-[#0F1117] text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none"
             >
               <option value="FULL">1. Laporan Lengkap Terpadu (All-in-One)</option>
               <option value="JOURNAL">2. Rekap Jurnal Mengajar & Agenda KBM</option>
@@ -171,13 +173,13 @@ export const MonthlyReportView: React.FC<MonthlyReportViewProps> = ({ data }) =>
               <option value="GRADES">4. Leger Daftar Nilai & Ketuntasan Siswa</option>
             </select>
             {reportType === 'ATTENDANCE' && (
-              <div className="mt-2 flex items-center gap-1.5 p-1 bg-[#080E1A] rounded-lg border border-slate-800">
+              <div className="mt-2 flex items-center gap-1.5 p-1 bg-[#0F1117] rounded-lg border border-slate-800">
                 <button
                   type="button"
                   onClick={() => setAttendanceMatrixMode('CALENDAR')}
                   className={`flex-1 py-1 px-2 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
                     attendanceMatrixMode === 'CALENDAR'
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-[#F1B33B] text-slate-950'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
@@ -188,7 +190,7 @@ export const MonthlyReportView: React.FC<MonthlyReportViewProps> = ({ data }) =>
                   onClick={() => setAttendanceMatrixMode('SESSIONS')}
                   className={`flex-1 py-1 px-2 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
                     attendanceMatrixMode === 'SESSIONS'
-                      ? 'bg-emerald-600 text-white'
+                      ? 'bg-emerald-500 text-slate-950 font-bold'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
@@ -205,7 +207,7 @@ export const MonthlyReportView: React.FC<MonthlyReportViewProps> = ({ data }) =>
               <select
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                className="w-full text-xs font-semibold px-2.5 py-2 border border-slate-700 rounded-lg bg-[#0B1120] text-white focus:border-blue-500"
+                className="w-full text-xs font-semibold px-2.5 py-2 border border-slate-700 rounded-lg bg-[#0F1117] text-white focus:border-amber-500 outline-none"
               >
                 {MONTH_NAMES_ID.map((name, idx) => (
                   <option key={idx + 1} value={idx + 1}>
@@ -220,7 +222,7 @@ export const MonthlyReportView: React.FC<MonthlyReportViewProps> = ({ data }) =>
                 type="number"
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(Number(e.target.value))}
-                className="w-full text-xs font-semibold px-2.5 py-2 border border-slate-700 rounded-lg bg-[#0B1120] text-white focus:border-blue-500"
+                className="w-full text-xs font-semibold px-2.5 py-2 border border-slate-700 rounded-lg bg-[#0F1117] text-white focus:border-amber-500 outline-none"
               />
             </div>
           </div>
@@ -233,7 +235,7 @@ export const MonthlyReportView: React.FC<MonthlyReportViewProps> = ({ data }) =>
             <select
               value={selectedClassId}
               onChange={(e) => setSelectedClassId(e.target.value)}
-              className="w-full text-xs font-semibold px-3 py-2 border border-slate-700 rounded-lg bg-[#0B1120] text-white focus:border-blue-500"
+              className="w-full text-xs font-semibold px-3 py-2 border border-slate-700 rounded-lg bg-[#0F1117] text-white focus:border-amber-500 outline-none"
             >
               <option value="ALL">Semua Kelas ({classes.length} Rombel)</option>
               {classes.map((cls) => (
@@ -255,14 +257,14 @@ export const MonthlyReportView: React.FC<MonthlyReportViewProps> = ({ data }) =>
                 value={signatureCity}
                 onChange={(e) => setSignatureCity(e.target.value)}
                 placeholder="Kota"
-                className="w-1/2 text-xs px-2.5 py-2 border border-slate-700 rounded-lg bg-[#0B1120] text-white focus:border-blue-500"
+                className="w-1/2 text-xs px-2.5 py-2 border border-slate-700 rounded-lg bg-[#0F1117] text-white focus:border-amber-500 outline-none"
               />
               <input
                 type="text"
                 value={signatureDate}
                 onChange={(e) => setSignatureDate(e.target.value)}
                 placeholder="Tgl Pengesahan"
-                className="w-1/2 text-xs px-2.5 py-2 border border-slate-700 rounded-lg bg-[#0B1120] text-white focus:border-blue-500"
+                className="w-1/2 text-xs px-2.5 py-2 border border-slate-700 rounded-lg bg-[#0F1117] text-white focus:border-amber-500 outline-none"
               />
             </div>
           </div>
@@ -270,9 +272,9 @@ export const MonthlyReportView: React.FC<MonthlyReportViewProps> = ({ data }) =>
       </div>
 
       {/* Live Paper Document Preview */}
-      <div className="bg-[#080E1A] p-4 sm:p-8 rounded-2xl border border-slate-800 shadow-2xl flex flex-col items-center">
+      <div className="bg-[#141722] p-4 sm:p-8 rounded-2xl border border-slate-800 shadow-2xl flex flex-col items-center">
         <div className="mb-4 text-xs font-bold text-slate-400 flex items-center gap-1.5 uppercase tracking-wider">
-          <Sparkles className="w-4 h-4 text-blue-400" />
+          <Sparkles className="w-4 h-4 text-[#F1B33B]" />
           <span>Pratinjau Dokumen Cetak (Live Paper Preview)</span>
         </div>
 
@@ -552,6 +554,28 @@ export const MonthlyReportView: React.FC<MonthlyReportViewProps> = ({ data }) =>
               <div className="text-[11px] text-slate-600">NIP. {profile.teacherNip || '-'}</div>
             </div>
           </div>
+        </div>
+
+        {/* Bottom Actions Bar */}
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3 w-full max-w-4xl">
+          <button
+            type="button"
+            onClick={handlePrintPreview}
+            className="inline-flex items-center gap-2 px-5 py-2.5 text-xs sm:text-sm font-semibold text-slate-200 bg-[#1C202C] hover:bg-[#262B3A] hover:text-white border border-slate-700 rounded-xl transition-colors cursor-pointer"
+          >
+            <Printer className="w-4 h-4 text-slate-400" />
+            <span>Cetak / Pratinjau Tab Baru</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleDownloadPdf}
+            disabled={isGenerating}
+            className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#F1B33B] hover:bg-[#E0A22B] text-slate-950 text-xs sm:text-sm font-bold rounded-xl shadow-lg shadow-amber-500/10 transition-all active:scale-95 cursor-pointer disabled:opacity-50 tracking-wide"
+          >
+            <FileDown className="w-4 h-4 text-slate-950" />
+            <span>{isGenerating ? 'Sedang Memproses Berkas...' : 'Unduh Laporan PDF Resmi'}</span>
+          </button>
         </div>
       </div>
     </div>

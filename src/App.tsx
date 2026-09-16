@@ -263,7 +263,7 @@ export default function App() {
       doc.save(`Laporan_Bulanan_Guru_${currentMonth}_${currentYear}.pdf`);
     } catch (err) {
       console.error(err);
-      setActiveTab('report');
+      setActiveTab('reports');
     }
   };
 
@@ -782,7 +782,9 @@ export default function App() {
             />
           )}
 
-          {activeTab === 'report' && <MonthlyReportView data={data} />}
+          {(activeTab === 'reports' || activeTab === 'report') && (
+            <MonthlyReportView data={data} />
+          )}
 
           {activeTab === 'settings' && (
             <SettingsView

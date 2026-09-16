@@ -13,6 +13,7 @@ import {
   Users,
   CheckCircle2,
   CalendarDays,
+  FileText,
 } from 'lucide-react';
 import {
   formatShortDateIndonesian,
@@ -122,10 +123,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           {/* Quick Actions */}
           <div className="flex flex-wrap items-center gap-3">
             <button
-              onClick={onOpenNewJournalModal}
-              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-xl shadow-lg shadow-blue-600/20 transition-all active:scale-95 cursor-pointer tracking-wide"
+              onClick={() => onNavigate('reports')}
+              className="inline-flex items-center gap-2 bg-[#1C202C] hover:bg-[#262B3A] text-slate-200 hover:text-white font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-xl border border-slate-700 shadow-md transition-all active:scale-95 cursor-pointer tracking-wide"
             >
-              <PlusCircle className="w-4 h-4 text-white" />
+              <FileText className="w-4 h-4 text-[#F1B33B]" />
+              <span>Cetak Laporan & PDF</span>
+            </button>
+
+            <button
+              onClick={onOpenNewJournalModal}
+              className="inline-flex items-center gap-2 bg-[#F1B33B] hover:bg-[#E0A22B] text-slate-950 font-bold text-xs sm:text-sm px-5 py-2.5 rounded-xl shadow-lg shadow-amber-500/10 transition-all active:scale-95 cursor-pointer tracking-wide"
+            >
+              <PlusCircle className="w-4 h-4 text-slate-950" />
               <span>Tambah Jurnal & Presensi</span>
             </button>
           </div>

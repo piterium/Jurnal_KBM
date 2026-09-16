@@ -143,7 +143,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = activeTab === item.id;
+          const isActive = activeTab === item.id || (item.id === 'reports' && activeTab === 'report');
 
           const btnClass = isActive
             ? 'bg-[#181C28] border border-amber-500/30 text-white shadow-md shadow-amber-500/5 font-semibold'
