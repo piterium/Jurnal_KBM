@@ -106,7 +106,7 @@ export const AssessmentModal: React.FC<AssessmentModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4.5 bg-[#0B1120] border-b border-slate-800 text-white">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-500/10 text-blue-400 rounded-xl flex items-center justify-center border border-blue-500/20 flex-shrink-0">
+            <div className="w-10 h-10 bg-amber-500/10 text-[#F1B33B] rounded-xl flex items-center justify-center border border-amber-500/20 flex-shrink-0">
               <GraduationCap className="w-5 h-5" />
             </div>
             <div>
@@ -131,7 +131,7 @@ export const AssessmentModal: React.FC<AssessmentModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                Target Kelas <span className="text-blue-400">*</span>
+                Target Kelas <span className="text-[#F1B33B]">*</span>
               </label>
               <select
                 value={classId}
@@ -140,7 +140,7 @@ export const AssessmentModal: React.FC<AssessmentModalProps> = ({
                   const cls = classes.find(c => c.id === e.target.value);
                   if (cls) setKkm(cls.kkm);
                 }}
-                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-[#0B1120] text-white"
+                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none bg-[#0B1120] text-white"
                 required
               >
                 {classes.map((cls) => (
@@ -153,7 +153,7 @@ export const AssessmentModal: React.FC<AssessmentModalProps> = ({
 
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                Kategori Asesmen <span className="text-blue-400">*</span>
+                Kategori Asesmen <span className="text-[#F1B33B]">*</span>
               </label>
               <select
                 value={type}
@@ -169,7 +169,7 @@ export const AssessmentModal: React.FC<AssessmentModalProps> = ({
                     else if (newType === 'SUMATIF_UH5') setTitle('Ulangan Harian 5 (UH5)');
                   }
                 }}
-                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-[#0B1120] text-white font-medium"
+                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none bg-[#0B1120] text-white font-medium"
               >
                 <optgroup label="Asesmen Sumatif Ulangan Harian">
                   <option value="SUMATIF_UH1">Sumatif: Ulangan Harian 1 (UH1)</option>
@@ -195,14 +195,14 @@ export const AssessmentModal: React.FC<AssessmentModalProps> = ({
 
           <div>
             <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-              Judul / Keterangan Penilaian <span className="text-blue-400">*</span>
+              Judul / Keterangan Penilaian <span className="text-[#F1B33B]">*</span>
             </label>
             <input
               type="text"
               placeholder="Contoh: Tugas 1: Algoritma dan Pemrograman Sederhana"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-[#0B1120] text-white"
+              className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none bg-[#0B1120] text-white"
               required
             />
           </div>
@@ -216,7 +216,7 @@ export const AssessmentModal: React.FC<AssessmentModalProps> = ({
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-[#0B1120] text-white"
+                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none bg-[#0B1120] text-white"
                 required
               />
             </div>
@@ -230,7 +230,7 @@ export const AssessmentModal: React.FC<AssessmentModalProps> = ({
                 max="100"
                 value={kkm}
                 onChange={(e) => setKkm(Number(e.target.value))}
-                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-[#0B1120] text-white"
+                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none bg-[#0B1120] text-white"
               />
             </div>
             <div>
@@ -243,7 +243,7 @@ export const AssessmentModal: React.FC<AssessmentModalProps> = ({
                 max="5"
                 value={weight}
                 onChange={(e) => setWeight(Number(e.target.value))}
-                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-[#0B1120] text-white"
+                className="w-full text-xs sm:text-sm px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none bg-[#0B1120] text-white"
               />
             </div>
           </div>
@@ -316,9 +316,9 @@ export const AssessmentModal: React.FC<AssessmentModalProps> = ({
             </button>
             <button
               type="submit"
-              className="inline-flex items-center gap-2 px-5 py-2.5 text-xs sm:text-sm font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-lg shadow-blue-600/20 transition-all active:scale-95 cursor-pointer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-xs sm:text-sm font-bold text-slate-950 bg-[#F1B33B] hover:bg-[#E0A22B] rounded-xl shadow-lg shadow-amber-500/20 transition-all active:scale-95 cursor-pointer"
             >
-              <CheckCircle2 className="w-4 h-4 text-white" />
+              <CheckCircle2 className="w-4 h-4 text-slate-950" />
               <span>{initialData ? 'Simpan Perubahan' : 'Simpan Asesmen & Nilai'}</span>
             </button>
           </div>

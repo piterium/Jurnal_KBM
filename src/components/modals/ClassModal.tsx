@@ -71,7 +71,7 @@ export const ClassModal: React.FC<ClassModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4.5 bg-[#0B1120] border-b border-slate-800 text-white">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-blue-500/10 text-blue-400 rounded-xl flex items-center justify-center border border-blue-500/20 flex-shrink-0">
+            <div className="w-9 h-9 bg-amber-500/10 text-[#F1B33B] rounded-xl flex items-center justify-center border border-amber-500/20 flex-shrink-0">
               <Layers className="w-5 h-5" />
             </div>
             <div>
@@ -96,7 +96,7 @@ export const ClassModal: React.FC<ClassModalProps> = ({
           {/* Nama Kelas */}
           <div>
             <label className="block font-semibold text-slate-300 mb-1.5">
-              Nama Kelas / Rombel <span className="text-blue-400">*</span>
+              Nama Kelas / Rombel <span className="text-[#F1B33B]">*</span>
             </label>
             <input
               type="text"
@@ -104,7 +104,7 @@ export const ClassModal: React.FC<ClassModalProps> = ({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Contoh: VII A atau Kelas 7-A"
-              className="w-full px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-[#0B1120] text-white font-medium placeholder:text-slate-500"
+              className="w-full px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none bg-[#0B1120] text-white font-medium placeholder:text-slate-500"
             />
           </div>
 
@@ -112,12 +112,12 @@ export const ClassModal: React.FC<ClassModalProps> = ({
             {/* Tingkat Dropdown */}
             <div>
               <label className="block font-semibold text-slate-300 mb-1.5">
-                Tingkat / Jenjang <span className="text-blue-400">*</span>
+                Tingkat / Jenjang <span className="text-[#F1B33B]">*</span>
               </label>
               <select
                 value={gradeLevel}
                 onChange={(e) => setGradeLevel(e.target.value)}
-                className="w-full px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-[#0B1120] text-white font-medium cursor-pointer"
+                className="w-full px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none bg-[#0B1120] text-white font-medium cursor-pointer"
                 required
               >
                 {GRADE_LEVELS.map((lvl) => (
@@ -131,7 +131,7 @@ export const ClassModal: React.FC<ClassModalProps> = ({
             {/* KKM */}
             <div>
               <label className="block font-semibold text-slate-300 mb-1.5 flex items-center gap-1">
-                <Award className="w-3.5 h-3.5 text-blue-400" />
+                <Award className="w-3.5 h-3.5 text-[#F1B33B]" />
                 <span>KKM Target</span>
               </label>
               <input
@@ -140,7 +140,7 @@ export const ClassModal: React.FC<ClassModalProps> = ({
                 max="100"
                 value={kkm}
                 onChange={(e) => setKkm(Number(e.target.value))}
-                className="w-full px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-[#0B1120] text-white font-medium"
+                className="w-full px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none bg-[#0B1120] text-white font-medium"
               />
             </div>
           </div>
@@ -149,7 +149,7 @@ export const ClassModal: React.FC<ClassModalProps> = ({
             {/* Mata Pelajaran */}
             <div>
               <label className="block font-semibold text-slate-300 mb-1.5 flex items-center gap-1">
-                <BookOpen className="w-3.5 h-3.5 text-blue-400" />
+                <BookOpen className="w-3.5 h-3.5 text-[#F1B33B]" />
                 <span>Mata Pelajaran</span>
               </label>
               <input
@@ -157,14 +157,14 @@ export const ClassModal: React.FC<ClassModalProps> = ({
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
                 placeholder="Mata Pelajaran"
-                className="w-full px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-[#0B1120] text-white font-medium placeholder:text-slate-500"
+                className="w-full px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none bg-[#0B1120] text-white font-medium placeholder:text-slate-500"
               />
             </div>
 
             {/* Tahun Pelajaran */}
             <div>
               <label className="block font-semibold text-slate-300 mb-1.5 flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5 text-blue-400" />
+                <Calendar className="w-3.5 h-3.5 text-[#F1B33B]" />
                 <span>Tahun Ajaran</span>
               </label>
               <input
@@ -172,7 +172,7 @@ export const ClassModal: React.FC<ClassModalProps> = ({
                 value={academicYear}
                 onChange={(e) => setAcademicYear(e.target.value)}
                 placeholder="2025/2026"
-                className="w-full px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-[#0B1120] text-white font-medium placeholder:text-slate-500"
+                className="w-full px-3.5 py-2.5 border border-slate-700 rounded-xl focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none bg-[#0B1120] text-white font-medium placeholder:text-slate-500"
               />
             </div>
           </div>
@@ -188,9 +188,9 @@ export const ClassModal: React.FC<ClassModalProps> = ({
             </button>
             <button
               type="submit"
-              className="inline-flex items-center gap-2 px-5 py-2.5 font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-lg shadow-blue-600/20 transition-all active:scale-95 cursor-pointer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 font-bold text-slate-950 bg-[#F1B33B] hover:bg-[#E0A22B] rounded-xl shadow-lg shadow-amber-500/20 transition-all active:scale-95 cursor-pointer"
             >
-              <CheckCircle2 className="w-4 h-4 text-white" />
+              <CheckCircle2 className="w-4 h-4 text-slate-950" />
               <span>Simpan Pengaturan</span>
             </button>
           </div>
