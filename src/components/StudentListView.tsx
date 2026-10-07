@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef } from 'react';
-import { Student, ClassRoom, AttendanceRecord, AssessmentItem, SchoolProfile } from '../types';
+import { Student, ClassRoom, AttendanceRecord, AssessmentItem, SchoolProfile, StudentStatus } from '../types';
 import { sortStudentsByAttendanceNo } from '../utils/storage';
 import {
   Users,
@@ -61,6 +61,8 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
   const [formName, setFormName] = useState<string>('');
   const [formClassName, setFormClassName] = useState<string>('');
   const [formGender, setFormGender] = useState<'L' | 'P'>('L');
+  const [formStatus, setFormStatus] = useState<StudentStatus>('aktif');
+  const [statusFilter, setStatusFilter] = useState<'ALL' | StudentStatus>('ALL');
 
   const activeClassId = controlledClassId !== undefined ? controlledClassId : internalClassId;
 
@@ -90,6 +92,7 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
     const stdClass = classes.find((c) => c.id === std.classId);
     setFormClassName(stdClass ? stdClass.name : '');
     setFormGender(std.gender || 'L');
+    setFormStatus(std.status || (std.active !== false ? 'aktif' : 'keluar'));
 
     // Scroll smoothly to form
     formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -107,6 +110,7 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
       setFormClassName('');
     }
     setFormGender('L');
+    setFormStatus('aktif');
   };
 
   const handleFormSubmit = (e: React.FormEvent) => {
@@ -157,7 +161,8 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
       name: formName.trim(),
       gender: formGender,
       classId: targetClassId!,
-      active: true,
+      status: formStatus,
+      active: formStatus === 'aktif',
     };
 
     if (onSaveStudent) {
@@ -175,12 +180,12 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
     const classNameStr = targetCls?.name || 'VII A';
     const csvContent =
       'data:text/csv;charset=utf-8,' +
-      'No Absen,NISN,Nama Lengkap,Jenis Kelamin (L/P),Kelas\n' +
-      `1,0098765401,Ahmad Rizky Pratama,L,${classNameStr}\n` +
-      `2,0098765402,Annisa Rahmawati,P,${classNameStr}\n` +
-      `3,0098765403,Bagas Dwi Santoso,L,${classNameStr}\n` +
-      `4,0098765404,Cantika Putri Permata,P,${classNameStr}\n` +
-      `5,0098765405,Daffa Arya Maulana,L,${classNameStr}`;
+      'No Absen,NISN,Nama Lengkap,Jenis Kelamin (L/P),Kelas,Status (aktif/mutasi/keluar)\n' +
+      `1,0098765401,Ahmad Rizky Pratama,L,${classNameStr},aktif\n` +
+      `2,0098765402,Annisa Rahmawati,P,${classNameStr},aktif\n` +
+      `3,0098765403,Bagas Dwi Santoso,L,${classNameStr},aktif\n` +
+      `4,0098765404,Cantika Putri Permata,P,${classNameStr},mutasi\n` +
+      `5,0098765405,Daffa Arya Maulana,L,${classNameStr},keluar`;
 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
@@ -257,13 +262,31 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
           let name = '';
           let gender: 'L' | 'P' = 'L';
           let className = '';
+          let studentStatus: StudentStatus = 'aktif';
 
           const parseGender = (val: string): 'L' | 'P' => {
             const up = val.toUpperCase().trim();
             return up.startsWith('P') || up.startsWith('W') || up.includes('PEREMPUAN') || up === 'F' ? 'P' : 'L';
           };
 
-          if (parts.length >= 5) {
+          const parseStatus = (val: string): StudentStatus => {
+            const up = val.toLowerCase().trim();
+            if (up.includes('mutasi')) return 'mutasi';
+            if (up.includes('keluar') || up.includes('pindah') || up.includes('non') || up.includes('drop')) return 'keluar';
+            return 'aktif';
+          };
+
+          if (parts.length >= 6) {
+            // Template: No Absen | NISN | Nama Lengkap | Jenis Kelamin | Kelas | Status
+            if (/^\d+$/.test(parts[0])) {
+              attendanceNo = parseInt(parts[0], 10);
+            }
+            nisn = parts[1] || '-';
+            name = parts[2] || '';
+            gender = parseGender(parts[3] || 'L');
+            className = parts[4] || '';
+            studentStatus = parseStatus(parts[5] || 'aktif');
+          } else if (parts.length >= 5) {
             // Template: No Absen | NISN | Nama Lengkap | Jenis Kelamin | Kelas
             if (/^\d+$/.test(parts[0])) {
               attendanceNo = parseInt(parts[0], 10);
@@ -329,7 +352,8 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
             name: name.trim(),
             gender,
             classId: targetClass.id,
-            active: true,
+            status: studentStatus,
+            active: studentStatus === 'aktif',
           };
 
           newStudentsToCreate.push(newStudent);
@@ -363,6 +387,30 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
     e.target.value = '';
   };
 
+  // Calculate stats based on current class selection
+  const classRosterStudents = useMemo(() => {
+    if (!activeClassId || activeClassId === 'ALL') return students;
+    return students.filter((s) => s.classId === activeClassId);
+  }, [students, activeClassId]);
+
+  const studentStats = useMemo(() => {
+    let aktif = 0;
+    let mutasi = 0;
+    let keluar = 0;
+    classRosterStudents.forEach((s) => {
+      const st = s.status || (s.active !== false ? 'aktif' : 'keluar');
+      if (st === 'aktif') aktif++;
+      else if (st === 'mutasi') mutasi++;
+      else if (st === 'keluar') keluar++;
+    });
+    return {
+      total: classRosterStudents.length,
+      aktif,
+      mutasi,
+      keluar,
+    };
+  }, [classRosterStudents]);
+
   const filteredStudents = useMemo(() => {
     // If no class is selected and no search query, return empty list (to trigger empty state matching screenshot)
     if (!activeClassId && !searchQuery.trim()) {
@@ -372,6 +420,11 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
     const list = students.filter((std) => {
       // Class filter
       if (activeClassId && activeClassId !== 'ALL' && std.classId !== activeClassId) {
+        return false;
+      }
+      // Status filter
+      const stdStatus = std.status || (std.active !== false ? 'aktif' : 'keluar');
+      if (statusFilter !== 'ALL' && stdStatus !== statusFilter) {
         return false;
       }
       // Search query
@@ -387,7 +440,7 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
     });
 
     return sortStudentsByAttendanceNo(list);
-  }, [students, activeClassId, searchQuery]);
+  }, [students, activeClassId, statusFilter, searchQuery]);
 
   const currentClass = classes.find((c) => c.id === activeClassId);
 
@@ -540,32 +593,82 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
             </div>
           </div>
 
-          {/* Optional Quick Gender Selection */}
-          <div className="flex items-center gap-4 pt-1">
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-              Jenis Kelamin:
-            </span>
-            <div className="flex items-center gap-3 text-xs">
-              <label className="inline-flex items-center gap-1.5 cursor-pointer text-slate-700 dark:text-slate-300">
-                <input
-                  type="radio"
-                  name="gender"
-                  checked={formGender === 'L'}
-                  onChange={() => setFormGender('L')}
-                  className="text-amber-500 focus:ring-amber-500"
-                />
-                <span>Laki-laki (L)</span>
-              </label>
-              <label className="inline-flex items-center gap-1.5 cursor-pointer text-slate-700 dark:text-slate-300">
-                <input
-                  type="radio"
-                  name="gender"
-                  checked={formGender === 'P'}
-                  onChange={() => setFormGender('P')}
-                  className="text-pink-600 focus:ring-pink-500"
-                />
-                <span>Perempuan (P)</span>
-              </label>
+          {/* Quick Gender & Status Selection */}
+          <div className="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-slate-100 dark:border-slate-800">
+            {/* Gender */}
+            <div className="flex items-center gap-3">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                Jenis Kelamin:
+              </span>
+              <div className="flex items-center gap-3 text-xs">
+                <label className="inline-flex items-center gap-1.5 cursor-pointer text-slate-700 dark:text-slate-300">
+                  <input
+                    type="radio"
+                    name="inline-gender"
+                    checked={formGender === 'L'}
+                    onChange={() => setFormGender('L')}
+                    className="text-amber-500 focus:ring-amber-500 cursor-pointer"
+                  />
+                  <span>Laki-laki (L)</span>
+                </label>
+                <label className="inline-flex items-center gap-1.5 cursor-pointer text-slate-700 dark:text-slate-300">
+                  <input
+                    type="radio"
+                    name="inline-gender"
+                    checked={formGender === 'P'}
+                    onChange={() => setFormGender('P')}
+                    className="text-pink-600 focus:ring-pink-500 cursor-pointer"
+                  />
+                  <span>Perempuan (P)</span>
+                </label>
+              </div>
+            </div>
+
+            {/* Status Siswa Selection */}
+            <div className="flex items-center gap-2.5">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                Status Siswa:
+              </span>
+              <div className="inline-flex items-center p-0.5 rounded-xl bg-slate-100 dark:bg-[#0B1120] border border-slate-200 dark:border-slate-700 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setFormStatus('aktif')}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg font-bold transition-all cursor-pointer ${
+                    formStatus === 'aktif'
+                      ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                  }`}
+                >
+                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  <span>Aktif</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setFormStatus('mutasi')}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg font-bold transition-all cursor-pointer ${
+                    formStatus === 'mutasi'
+                      ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                  }`}
+                >
+                  <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                  <span>Mutasi</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setFormStatus('keluar')}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg font-bold transition-all cursor-pointer ${
+                    formStatus === 'keluar'
+                      ? 'bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                  }`}
+                >
+                  <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+                  <span>Keluar</span>
+                </button>
+              </div>
             </div>
           </div>
         </form>
@@ -608,6 +711,77 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
           </div>
         </div>
 
+        {/* Status Filter Tabs / Chips (Aktif / Mutasi / Keluar) */}
+        {(activeClassId || searchQuery.trim()) && (
+          <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-100 dark:border-slate-800/80">
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mr-1">
+              Filter Status:
+            </span>
+            <button
+              type="button"
+              onClick={() => setStatusFilter('ALL')}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                statusFilter === 'ALL'
+                  ? 'bg-[#F1B33B] text-slate-950 font-bold shadow-sm'
+                  : 'bg-slate-100 dark:bg-[#0B1120] text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
+              }`}
+            >
+              <span>Semua</span>
+              <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${statusFilter === 'ALL' ? 'bg-slate-950/20 text-slate-950 font-bold' : 'bg-slate-200 dark:bg-slate-800 text-slate-500'}`}>
+                {studentStats.total}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setStatusFilter('aktif')}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                statusFilter === 'aktif'
+                  ? 'bg-emerald-600 text-white font-bold shadow-sm'
+                  : 'bg-slate-100 dark:bg-[#0B1120] text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
+              }`}
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span>Aktif</span>
+              <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${statusFilter === 'aktif' ? 'bg-white/20 text-white font-bold' : 'bg-slate-200 dark:bg-slate-800 text-slate-500'}`}>
+                {studentStats.aktif}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setStatusFilter('mutasi')}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                statusFilter === 'mutasi'
+                  ? 'bg-amber-600 text-white font-bold shadow-sm'
+                  : 'bg-slate-100 dark:bg-[#0B1120] text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
+              }`}
+            >
+              <span className="w-2 h-2 rounded-full bg-amber-400"></span>
+              <span>Mutasi</span>
+              <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${statusFilter === 'mutasi' ? 'bg-white/20 text-white font-bold' : 'bg-slate-200 dark:bg-slate-800 text-slate-500'}`}>
+                {studentStats.mutasi}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setStatusFilter('keluar')}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                statusFilter === 'keluar'
+                  ? 'bg-rose-600 text-white font-bold shadow-sm'
+                  : 'bg-slate-100 dark:bg-[#0B1120] text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
+              }`}
+            >
+              <span className="w-2 h-2 rounded-full bg-rose-400"></span>
+              <span>Keluar</span>
+              <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${statusFilter === 'keluar' ? 'bg-white/20 text-white font-bold' : 'bg-slate-200 dark:bg-slate-800 text-slate-500'}`}>
+                {studentStats.keluar}
+              </span>
+            </button>
+          </div>
+        )}
+
         {/* Table Content */}
         <div className="rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
           <div className="overflow-x-auto">
@@ -618,7 +792,8 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
                   <th className="py-3 px-4 w-32">NISN</th>
                   <th className="py-3 px-4">NAMA LENGKAP</th>
                   <th className="py-3 px-4 w-28 text-center">JENIS KELAMIN</th>
-                  <th className="py-3 px-4 w-32">KELAS</th>
+                  <th className="py-3 px-4 w-28">KELAS</th>
+                  <th className="py-3 px-4 w-32 text-center">STATUS</th>
                   <th className="py-3 px-4 w-28 text-center">AKSI</th>
                 </tr>
               </thead>
@@ -626,7 +801,7 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
                 {/* Case 1: No Class Selected and No Search Query -> Exact Empty State in Image */}
                 {!activeClassId && !searchQuery.trim() ? (
                   <tr>
-                    <td colSpan={6} className="py-16 text-center">
+                    <td colSpan={7} className="py-16 text-center">
                       <div className="flex flex-col items-center justify-center space-y-3">
                         <div className="w-14 h-14 rounded-2xl bg-amber-500/10 text-[#F1B33B] flex items-center justify-center">
                           <Users className="w-8 h-8" />
@@ -645,6 +820,8 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
                       std.attendanceNo !== undefined && std.attendanceNo !== ''
                         ? std.attendanceNo
                         : idx + 1;
+                    const stdStatus: StudentStatus =
+                      std.status || (std.active !== false ? 'aktif' : 'keluar');
 
                     return (
                       <tr
@@ -688,6 +865,38 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
                           </span>
                         </td>
 
+                        {/* STATUS SISWA (Aktif / Mutasi / Keluar) */}
+                        <td className="py-3.5 px-4 text-center">
+                          <select
+                            value={stdStatus}
+                            onChange={(e) => {
+                              const newStatus = e.target.value as StudentStatus;
+                              const updated: Student = {
+                                ...std,
+                                status: newStatus,
+                                active: newStatus === 'aktif',
+                              };
+                              if (onSaveStudent) {
+                                onSaveStudent(updated);
+                              } else {
+                                onEditStudent(updated);
+                              }
+                            }}
+                            className={`text-xs font-bold px-2.5 py-1 rounded-full border cursor-pointer outline-none transition-all ${
+                              stdStatus === 'aktif'
+                                ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:border-emerald-500'
+                                : stdStatus === 'mutasi'
+                                ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30 hover:border-amber-500'
+                                : 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30 hover:border-rose-500'
+                            }`}
+                            title="Klik untuk mengubah status siswa"
+                          >
+                            <option value="aktif" className="bg-slate-900 text-emerald-400">● Aktif</option>
+                            <option value="mutasi" className="bg-slate-900 text-amber-400">● Mutasi</option>
+                            <option value="keluar" className="bg-slate-900 text-rose-400">● Keluar</option>
+                          </select>
+                        </td>
+
                         {/* AKSI */}
                         <td className="py-3.5 px-4 text-center">
                           <div className="flex items-center justify-center gap-1.5">
@@ -723,7 +932,7 @@ export const StudentListView: React.FC<StudentListViewProps> = ({
                 ) : (
                   /* Case 3: Filter / Class selected but 0 students found */
                   <tr>
-                    <td colSpan={6} className="py-12 text-center text-slate-400">
+                    <td colSpan={7} className="py-12 text-center text-slate-400">
                       <Users className="w-10 h-10 mx-auto mb-2.5 text-slate-400 dark:text-slate-600" />
                       <p className="text-sm font-bold text-slate-700 dark:text-slate-300">
                         Tidak ada data siswa ditemukan

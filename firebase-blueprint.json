@@ -213,6 +213,11 @@
           "description": "Gender Laki-laki (L) or Perempuan (P)",
           "enum": ["L", "P"]
         },
+        "status": {
+          "type": "string",
+          "description": "Enrollment status of student: aktif, mutasi, or keluar",
+          "enum": ["aktif", "mutasi", "keluar"]
+        },
         "active": {
           "type": "boolean",
           "description": "Active status of student"

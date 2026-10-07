@@ -47,6 +47,15 @@ export function getEmptyAppData(): AppData {
   };
 }
 
+export function normalizeStudent(s: Student): Student {
+  const status = s.status || (s.active !== false ? 'aktif' : 'keluar');
+  return {
+    ...s,
+    status,
+    active: status === 'aktif',
+  };
+}
+
 export function loadAppData(): AppData {
   try {
     // Clear legacy dummy cache if present
@@ -75,7 +84,7 @@ export function loadAppData(): AppData {
     return {
       profile: { ...defaultProfile, ...(parsed.profile || {}) },
       classes: parsed.classes || [],
-      students: parsed.students || [],
+      students: (parsed.students || []).map(normalizeStudent),
       teachers: parsed.teachers || [],
       journals: parsed.journals || [],
       attendances: parsed.attendances || [],

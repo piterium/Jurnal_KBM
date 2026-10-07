@@ -32,6 +32,15 @@ export function cleanFirestoreObject<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj));
 }
 
+function normalizeStudentData(s: Student): Student {
+  const status = s.status || (s.active !== false ? 'aktif' : 'keluar');
+  return {
+    ...s,
+    status,
+    active: status === 'aktif',
+  };
+}
+
 export function getFirebaseConfigSummary() {
   return {
     projectId: firebaseConfig.projectId,
@@ -62,7 +71,7 @@ export async function loadSchoolAppDataFromFirestore(
 
     // 3. Fetch Students
     const studentsSnap = await getDocs(collection(db, 'schools', cleanSchoolId, 'students'));
-    const students: Student[] = studentsSnap.docs.map((d) => d.data() as Student);
+    const students: Student[] = studentsSnap.docs.map((d) => normalizeStudentData(d.data() as Student));
 
     // 4. Fetch Teachers
     const teachersSnap = await getDocs(collection(db, 'schools', cleanSchoolId, 'teachers'));
@@ -312,7 +321,7 @@ export function subscribeToSchoolRealtime(
         (snap) => {
           const list: Student[] = [];
           snap.forEach((docSnap) => {
-            list.push(docSnap.data() as Student);
+            list.push(normalizeStudentData(docSnap.data() as Student));
           });
           callbacks.onStudentsUpdate?.(list);
         },

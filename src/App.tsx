@@ -469,18 +469,23 @@ export default function App() {
   };
 
   const handleSaveStudent = (std: Student) => {
+    const normalizedStd: Student = {
+      ...std,
+      status: std.status || (std.active !== false ? 'aktif' : 'keluar'),
+      active: std.status ? std.status === 'aktif' : std.active !== false,
+    };
     const updated = [...data.students];
-    const existingIndex = updated.findIndex((s) => s.id === std.id);
+    const existingIndex = updated.findIndex((s) => s.id === normalizedStd.id);
     if (existingIndex >= 0) {
-      updated[existingIndex] = std;
+      updated[existingIndex] = normalizedStd;
     } else {
-      updated.push(std);
+      updated.push(normalizedStd);
     }
     setData((prev) => ({ ...prev, students: updated }));
-    const cls = data.classes.find((c) => c.id === std.classId);
+    const cls = data.classes.find((c) => c.id === normalizedStd.classId);
     triggerSaveNotification(
       'Berhasil Disimpan!',
-      `Data siswa ${std.name} (${cls?.name || ''}) tersimpan!`
+      `Data siswa ${normalizedStd.name} (${cls?.name || ''}) tersimpan!`
     );
   };
 
@@ -513,13 +518,18 @@ export default function App() {
     // Merge students
     const currentStudents = [...data.students];
     newStudents.forEach((newStd) => {
+      const normalizedNewStd: Student = {
+        ...newStd,
+        status: newStd.status || (newStd.active !== false ? 'aktif' : 'keluar'),
+        active: newStd.status ? newStd.status === 'aktif' : newStd.active !== false,
+      };
       const existingIdx = currentStudents.findIndex(
-        (s) => s.id === newStd.id || (s.nisn && s.nisn !== '-' && s.nisn === newStd.nisn)
+        (s) => s.id === normalizedNewStd.id || (s.nisn && s.nisn !== '-' && s.nisn === normalizedNewStd.nisn)
       );
       if (existingIdx >= 0) {
-        currentStudents[existingIdx] = newStd;
+        currentStudents[existingIdx] = normalizedNewStd;
       } else {
-        currentStudents.push(newStd);
+        currentStudents.push(normalizedNewStd);
       }
     });
 

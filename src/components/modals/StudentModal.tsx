@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Student, ClassRoom } from '../../types';
+import { Student, ClassRoom, StudentStatus } from '../../types';
 import { X, UserPlus, CheckCircle2 } from 'lucide-react';
 
 interface StudentModalProps {
@@ -24,6 +24,7 @@ export const StudentModal: React.FC<StudentModalProps> = ({
   const [nisn, setNisn] = useState('');
   const [gender, setGender] = useState<'L' | 'P'>('L');
   const [classId, setClassId] = useState('');
+  const [status, setStatus] = useState<StudentStatus>('aktif');
 
   useEffect(() => {
     if (initialData) {
@@ -32,6 +33,7 @@ export const StudentModal: React.FC<StudentModalProps> = ({
       setNisn(initialData.nisn || '');
       setGender(initialData.gender || 'L');
       setClassId(initialData.classId || (selectedClassId && selectedClassId !== 'ALL' ? selectedClassId : classes[0]?.id || ''));
+      setStatus(initialData.status || (initialData.active !== false ? 'aktif' : 'keluar'));
     } else {
       // Clean, completely empty form for new student
       setAttendanceNo('');
@@ -39,6 +41,7 @@ export const StudentModal: React.FC<StudentModalProps> = ({
       setNisn('');
       setGender('L');
       setClassId(selectedClassId && selectedClassId !== 'ALL' ? selectedClassId : classes[0]?.id || '');
+      setStatus('aktif');
     }
   }, [initialData, isOpen, selectedClassId, classes]);
 
@@ -62,7 +65,8 @@ export const StudentModal: React.FC<StudentModalProps> = ({
       nisn: nisn.trim(),
       gender,
       classId,
-      active: true,
+      status,
+      active: status === 'aktif',
     };
 
     onSave(student);
@@ -165,6 +169,57 @@ export const StudentModal: React.FC<StudentModalProps> = ({
                 <option value="P">Perempuan (P)</option>
               </select>
             </div>
+          </div>
+
+          <div>
+            <label className="block font-semibold text-slate-300 mb-1.5">
+              Status Siswa <span className="text-[#F1B33B]">*</span>
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => setStatus('aktif')}
+                className={`flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                  status === 'aktif'
+                    ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-md shadow-emerald-500/10'
+                    : 'bg-[#0B1120] border-slate-700 text-slate-400 hover:border-slate-600'
+                }`}
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span>Aktif</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setStatus('mutasi')}
+                className={`flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                  status === 'mutasi'
+                    ? 'bg-amber-500/20 border-amber-500 text-amber-400 shadow-md shadow-amber-500/10'
+                    : 'bg-[#0B1120] border-slate-700 text-slate-400 hover:border-slate-600'
+                }`}
+              >
+                <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                <span>Mutasi</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setStatus('keluar')}
+                className={`flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                  status === 'keluar'
+                    ? 'bg-rose-500/20 border-rose-500 text-rose-400 shadow-md shadow-rose-500/10'
+                    : 'bg-[#0B1120] border-slate-700 text-slate-400 hover:border-slate-600'
+                }`}
+              >
+                <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+                <span>Keluar</span>
+              </button>
+            </div>
+            <p className="text-[11px] text-slate-400 mt-1.5">
+              {status === 'aktif' && '✓ Siswa aktif mengikuti kegiatan belajar mengajar dan masuk dalam daftar presensi.'}
+              {status === 'mutasi' && 'ℹ Siswa telah mutasi (pindah sekolah/kelas). Data tersimpan sebagai arsip.'}
+              {status === 'keluar' && '✕ Siswa telah keluar / mengundurkan diri / non-aktif.'}
+            </p>
           </div>
 
           <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-800">

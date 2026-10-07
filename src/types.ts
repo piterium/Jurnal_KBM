@@ -14,6 +14,8 @@ export type AssessmentType =
   | 'SUMATIF_SAS'
   | 'LAINNYA';
 
+export type StudentStatus = 'aktif' | 'mutasi' | 'keluar';
+
 export interface Student {
   id: string;
   attendanceNo?: number | string; // Nomor Absen / Presensi
@@ -22,6 +24,7 @@ export interface Student {
   name: string;
   gender: 'L' | 'P';
   classId: string;
+  status?: StudentStatus; // 'aktif' | 'mutasi' | 'keluar'
   active: boolean;
 }
 

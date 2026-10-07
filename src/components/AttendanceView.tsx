@@ -26,6 +26,7 @@ import {
   Table as TableIcon,
   FileText,
   RotateCcw,
+  X,
 } from 'lucide-react';
 import {
   formatDateIndonesian,
@@ -74,6 +75,10 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
   const [genderFilter, setGenderFilter] = useState<'ALL' | 'L' | 'P'>('ALL');
   const [isExportingPdf, setIsExportingPdf] = useState(false);
 
+  // Search & Filter for Daily Attendance INPUT mode
+  const [inputSearchQuery, setInputSearchQuery] = useState<string>('');
+  const [inputStatusFilter, setInputStatusFilter] = useState<'ALL' | AttendanceStatus>('ALL');
+
   // Sync selectedClassId if props change
   useEffect(() => {
     if (initialClassId) setSelectedClassId(initialClassId);
@@ -110,13 +115,38 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
     );
   }, [students, selectedClassId]);
 
+  // Filtered students for INPUT mode
+  const filteredInputStudents = useMemo(() => {
+    return classStudents.filter((std) => {
+      // Status filter
+      if (inputStatusFilter !== 'ALL') {
+        const rec = currentRecords[std.id] || { status: '-' };
+        if (rec.status !== inputStatusFilter) return false;
+      }
+
+      // Search query
+      if (inputSearchQuery.trim()) {
+        const q = inputSearchQuery.toLowerCase().trim();
+        const matchName = std.name.toLowerCase().includes(q);
+        const matchNisn = std.nisn ? std.nisn.toLowerCase().includes(q) : false;
+        const matchNo =
+          std.attendanceNo !== undefined && String(std.attendanceNo).includes(q);
+        return matchName || matchNisn || matchNo;
+      }
+
+      return true;
+    });
+  }, [classStudents, currentRecords, inputStatusFilter, inputSearchQuery]);
+
   // Filtered students for recap view
   const filteredStudents = useMemo(() => {
     return classStudents.filter((s) => {
+      const q = searchQuery.toLowerCase().trim();
       const matchSearch =
-        searchQuery === '' ||
-        s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (s.nisn && s.nisn.includes(searchQuery));
+        !q ||
+        s.name.toLowerCase().includes(q) ||
+        (s.nisn && s.nisn.toLowerCase().includes(q)) ||
+        (s.attendanceNo !== undefined && String(s.attendanceNo).includes(q));
       const matchGender = genderFilter === 'ALL' || s.gender === genderFilter;
       return matchSearch && matchGender;
     });
@@ -608,23 +638,67 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
 
           {/* Student Roster Table */}
           <div className="bg-[#0F172A] rounded-2xl border border-slate-800 shadow-xl overflow-hidden">
-            <div className="px-5 py-4 bg-[#0B1120] border-b border-slate-800 flex items-center justify-between">
-              <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-                Daftar Presensi: <span className="text-[#F1B33B]">{currentClass?.name}</span> ({formatDateIndonesian(selectedDate)})
-              </h3>
-              <div className="flex items-center gap-2">
-                {countNonActive > 0 && (
-                  <span className="text-[11px] px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-400 border border-amber-500/30 font-semibold">
-                    {countNonActive} belum dipresensi (non-aktif)
+            <div className="p-4 sm:p-5 bg-[#0B1120] border-b border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                  Daftar Presensi: <span className="text-[#F1B33B]">{currentClass?.name}</span> ({formatDateIndonesian(selectedDate)})
+                </h3>
+                <div className="flex flex-wrap items-center gap-2 mt-1">
+                  {countNonActive > 0 && (
+                    <span className="text-[11px] px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-400 border border-amber-500/30 font-semibold">
+                      {countNonActive} belum dipresensi (non-aktif)
+                    </span>
+                  )}
+                  <span className="text-xs text-slate-400">
+                    Menampilkan <strong className="text-[#F1B33B]">{filteredInputStudents.length}</strong> dari {classStudents.length} Siswa Terdaftar
                   </span>
-                )}
-                <span className="text-xs text-slate-400">{classStudents.length} Siswa Terdaftar</span>
+                </div>
+              </div>
+
+              {/* Search Bar & Quick Status Filter for Input Mode */}
+              <div className="flex flex-wrap items-center gap-2.5">
+                {/* Search Input Box */}
+                <div className="relative min-w-[220px] sm:w-72">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    type="text"
+                    placeholder="Cari nama, NISN, no. absen..."
+                    value={inputSearchQuery}
+                    onChange={(e) => setInputSearchQuery(e.target.value)}
+                    className="w-full bg-[#0F172A] text-xs text-white pl-9 pr-8 py-2 rounded-xl border border-slate-700 focus:outline-none focus:border-amber-500 placeholder:text-slate-500 transition-colors"
+                  />
+                  {inputSearchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setInputSearchQuery('')}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-0.5 cursor-pointer"
+                      title="Hapus pencarian"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Filter Status Selector */}
+                <select
+                  value={inputStatusFilter}
+                  onChange={(e) => setInputStatusFilter(e.target.value as any)}
+                  className="text-xs font-semibold px-3 py-2 rounded-xl border border-slate-700 bg-[#0F172A] text-slate-200 focus:outline-none focus:border-amber-500 cursor-pointer"
+                  title="Filter berdasarkan status presensi"
+                >
+                  <option value="ALL">Semua Status</option>
+                  <option value="-">Belum Dipresensi (-)</option>
+                  <option value="H">Hadir (H)</option>
+                  <option value="S">Sakit (S)</option>
+                  <option value="I">Izin (I)</option>
+                  <option value="A">Alpa (A)</option>
+                </select>
               </div>
             </div>
 
             <div className="divide-y divide-slate-800">
-              {classStudents.length > 0 ? (
-                classStudents.map((std, idx) => {
+              {filteredInputStudents.length > 0 ? (
+                filteredInputStudents.map((std, idx) => {
                   const rec = currentRecords[std.id] || { status: '-', note: '' };
                   return (
                     <div
@@ -714,9 +788,33 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                     </div>
                   );
                 })
-              ) : (
+              ) : classStudents.length === 0 ? (
                 <div className="p-8 text-center text-xs text-slate-400">
                   Belum ada siswa terdaftar di kelas ini. Tambahkan siswa di menu Kelola Siswa.
+                </div>
+              ) : (
+                <div className="p-12 text-center text-slate-400 flex flex-col items-center justify-center space-y-2">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-[#F1B33B] flex items-center justify-center">
+                    <Search className="w-6 h-6" />
+                  </div>
+                  <p className="text-sm font-bold text-slate-200">
+                    Tidak ada siswa yang sesuai
+                  </p>
+                  <p className="text-xs text-slate-400 max-w-sm">
+                    {inputSearchQuery
+                      ? `Tidak ditemukan siswa yang cocok dengan kata kunci "${inputSearchQuery}".`
+                      : 'Tidak ada siswa dengan filter status yang dipilih.'}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setInputSearchQuery('');
+                      setInputStatusFilter('ALL');
+                    }}
+                    className="mt-2 px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-[#F1B33B] text-xs font-semibold rounded-xl border border-slate-700 transition-colors cursor-pointer"
+                  >
+                    Reset Pencarian & Filter
+                  </button>
                 </div>
               )}
             </div>
@@ -875,14 +973,24 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
             <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-800">
               <div className="flex items-center gap-2 flex-1 max-w-sm">
                 <div className="relative w-full">
-                  <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="text"
-                    placeholder="Cari nama siswa atau NISN..."
+                    placeholder="Cari nama siswa, NISN, no. absen..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-[#0B1120] text-xs text-white pl-9 pr-3 py-1.5 rounded-xl border border-slate-700 focus:outline-none focus:border-amber-500 placeholder:text-slate-500"
+                    className="w-full bg-[#0B1120] text-xs text-white pl-9 pr-8 py-1.5 rounded-xl border border-slate-700 focus:outline-none focus:border-amber-500 placeholder:text-slate-500"
                   />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-0.5 cursor-pointer"
+                      title="Hapus pencarian"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
               </div>
 
